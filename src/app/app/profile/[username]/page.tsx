@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 
 import { ProfileView } from "@/features/discovery-contacts/components/ProfileView";
 import { getProfile } from "@/features/discovery-contacts/service";
+import { BlockUserButton } from "@/features/safety/components/BlockUserButton";
+import { ReportUserButton } from "@/features/safety/components/ReportUserButton";
 import { getSessionContext } from "@/platform/session";
 
 type PageProps = {
@@ -21,13 +23,26 @@ export default async function ProfilePage({ params }: PageProps) {
     notFound();
   }
 
-  const newChatHref = `/app/chats/new?username=${encodeURIComponent(result.value.username)}`;
+  const profile = result.value;
+  const newChatHref = `/app/chats/new?username=${encodeURIComponent(profile.username)}`;
+  const isSelf = profile.id === session.userId;
 
   return (
-    <ProfileView
-      profile={result.value}
-      signedIn
-      newChatHref={newChatHref}
-    />
+    <>
+      <ProfileView profile={profile} signedIn newChatHref={newChatHref} />
+      {isSelf ? null : (
+        <div style={{ display: "flex", gap: 12, padding: 16 }}>
+          <BlockUserButton
+            userId={profile.id}
+            username={profile.username}
+            displayName={profile.displayName}
+          />
+          <ReportUserButton
+            userId={profile.id}
+            subjectLabel={profile.displayName ?? profile.username}
+          />
+        </div>
+      )}
+    </>
   );
 }

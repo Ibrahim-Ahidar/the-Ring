@@ -1,0 +1,85 @@
+{
+  "pageTitle": "Confidentialité et sécurité",
+  "sections": {
+    "discovery": "Qui peut vous trouver",
+    "presence": "Présence et accusés de lecture",
+    "messaging": "Qui peut vous écrire",
+    "groups": "Invitations de groupe"
+  },
+  "settings": {
+    "discoverable": "Les autres peuvent me trouver via la recherche exacte du nom d'utilisateur.",
+    "profileVisibility": "Qui peut ouvrir mon profil lorsque la recherche le permet.",
+    "showOnline": "Les autres peuvent voir quand je suis en ligne.",
+    "showLastSeen": "Les autres peuvent voir ma dernière activité.",
+    "sendReadReceipts": "Les autres peuvent voir quand j'ai lu leurs messages.",
+    "whoCanMessage": "Qui peut démarrer une conversation directe avec moi.",
+    "whoCanAddToGroups": "Qui peut m'ajouter à des groupes."
+  },
+  "options": {
+    "profileVisibility": {
+      "public": "Toute personne autorisée à me découvrir",
+      "contacts": "Les personnes en favori ou qui m'ont mis en favori",
+      "private": "Moi seulement"
+    },
+    "whoCanMessage": {
+      "everyone": "Tout le monde selon mes autres réglages",
+      "requests": "Seulement après acceptation d'une demande",
+      "nobody": "Personne ne peut ouvrir un nouveau chat"
+    },
+    "whoCanAddToGroups": {
+      "everyone": "Toute personne autorisée à m'écrire",
+      "contacts": "Les personnes en favori ou qui m'ont mis en favori",
+      "nobody": "Personne ne peut m'ajouter à un groupe"
+    }
+  },
+  "block": {
+    "action": "Bloquer le membre",
+    "listTitle": "Membres bloqués",
+    "empty": "Vous n'avez bloqué personne.",
+    "unblock": "Débloquer",
+    "confirmTitle": "Bloquer {name} ?",
+    "confirmBody": "Cette personne ne pourra plus vous découvrir, vous écrire ou vous inviter, et vous ne pourrez plus non plus initier ces interactions.",
+    "confirmAction": "Bloquer",
+    "unblockTitle": "Débloquer {name} ?",
+    "unblockBody": "Les interactions suivront à nouveau vos réglages de confidentialité.",
+    "unblockConfirm": "Débloquer"
+  },
+  "report": {
+    "action": "Signaler",
+    "reportMessage": "Signaler le message",
+    "dialogTitle": "Envoyer un signalement",
+    "subject": "Concernant : {subject}",
+    "categoryLabel": "Choisissez la raison la plus proche.",
+    "detailsLabel": "Détails optionnels (1000 caractères maximum).",
+    "submit": "Envoyer",
+    "listTitle": "Vos signalements",
+    "empty": "Vous n'avez envoyé aucun signalement.",
+    "categories": {
+      "spam": "Spam",
+      "harassment": "Harcèlement ou abus",
+      "impersonation": "Usurpation d'identité",
+      "other": "Autre"
+    },
+    "status": {
+      "open": "Reçu",
+      "reviewed": "Examiné",
+      "dismissed": "Fermé"
+    }
+  },
+  "actions": {
+    "cancel": "Annuler",
+    "retry": "Réessayer"
+  },
+  "states": {
+    "loading": "Chargement…"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite. Réessayez.",
+    "detailsTooLong": "Les détails doivent contenir au plus 1000 caractères.",
+    "invalidSetting": "Cette valeur n'est pas autorisée.",
+    "notFound": "Élément introuvable.",
+    "cannotBlockSelf": "Vous ne pouvez pas vous bloquer vous-même.",
+    "rateLimited": "Trop de signalements. Réessayez plus tard.",
+    "unauthenticated": "Connectez-vous pour continuer."
+  }
+}

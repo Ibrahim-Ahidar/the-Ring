@@ -1,0 +1,85 @@
+{
+  "pageTitle": "Privacy and safety",
+  "sections": {
+    "discovery": "Who can find you",
+    "presence": "Presence and read receipts",
+    "messaging": "Who can message you",
+    "groups": "Group invitations"
+  },
+  "settings": {
+    "discoverable": "People can find me by exact username search.",
+    "profileVisibility": "Who can open my profile when search allows it.",
+    "showOnline": "Others can see when I am online.",
+    "showLastSeen": "Others can see when I was last active.",
+    "sendReadReceipts": "Others can see when I have read their messages.",
+    "whoCanMessage": "Who can start a direct chat with me.",
+    "whoCanAddToGroups": "Who can add me to group conversations."
+  },
+  "options": {
+    "profileVisibility": {
+      "public": "Everyone who can discover me",
+      "contacts": "People I have favorited or who favorited me",
+      "private": "Only me"
+    },
+    "whoCanMessage": {
+      "everyone": "Everyone allowed by my other settings",
+      "requests": "Only after I accept a message request",
+      "nobody": "No one can start a new chat"
+    },
+    "whoCanAddToGroups": {
+      "everyone": "Any member who can message me",
+      "contacts": "People I have favorited or who favorited me",
+      "nobody": "No one can add me to groups"
+    }
+  },
+  "block": {
+    "action": "Block member",
+    "listTitle": "Blocked members",
+    "empty": "You have not blocked anyone.",
+    "unblock": "Unblock",
+    "confirmTitle": "Block {name}?",
+    "confirmBody": "They will not be able to discover you, message you, or invite you, and you will not be able to start those interactions with them.",
+    "confirmAction": "Block",
+    "unblockTitle": "Unblock {name}?",
+    "unblockBody": "Interactions will follow your privacy settings again.",
+    "unblockConfirm": "Unblock"
+  },
+  "report": {
+    "action": "Report",
+    "reportMessage": "Report message",
+    "dialogTitle": "Submit a report",
+    "subject": "About: {subject}",
+    "categoryLabel": "Choose the closest reason for this report.",
+    "detailsLabel": "Add optional details (up to 1000 characters).",
+    "submit": "Send report",
+    "listTitle": "Your reports",
+    "empty": "You have not submitted any reports.",
+    "categories": {
+      "spam": "Spam",
+      "harassment": "Harassment or abuse",
+      "impersonation": "Impersonation",
+      "other": "Something else"
+    },
+    "status": {
+      "open": "Received",
+      "reviewed": "Reviewed",
+      "dismissed": "Closed"
+    }
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "retry": "Try again"
+  },
+  "states": {
+    "loading": "Loading…"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "detailsTooLong": "Details must be 1000 characters or fewer.",
+    "invalidSetting": "That value is not allowed.",
+    "notFound": "We could not find what you reported.",
+    "cannotBlockSelf": "You cannot block yourself.",
+    "rateLimited": "You have sent too many reports. Try again later.",
+    "unauthenticated": "Sign in to continue."
+  }
+}
