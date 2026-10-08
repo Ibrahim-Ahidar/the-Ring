@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   type ReactNode,
 } from "react";
 
@@ -25,6 +26,10 @@ import {
 import { firstUnreadMessageId } from "../delivery";
 import { messagePageNextCursor } from "../service";
 import type { ConversationDetail, ConversationSummary } from "../types";
+import {
+  inboxFiltersToListArgs,
+  type InboxFilters,
+} from "../lib/inbox-filters";
 import { rowToTimelineMessage } from "./map-row";
 import { createInitialState, messagingReducer } from "./reducer";
 import {
@@ -75,6 +80,7 @@ type ProviderProps = {
   userId: string;
   initialConversations: ConversationSummary[];
   initialConversationsHasMore: boolean;
+  inboxFilters?: InboxFilters;
   initialConversationId?: string;
   initialMessages?: TimelineMessage[];
   initialMessagesHasMore?: boolean;
@@ -86,12 +92,22 @@ export function MessagingProvider({
   userId,
   initialConversations,
   initialConversationsHasMore,
+  inboxFilters,
   initialConversationId,
   initialMessages,
   initialMessagesHasMore,
   initialDetail,
   children,
 }: ProviderProps) {
+  const inboxFiltersRef = useRef(inboxFilters);
+  inboxFiltersRef.current = inboxFilters;
+
+  const listInbox = useCallback(async () => {
+    const args = inboxFiltersToListArgs(
+      inboxFiltersRef.current ?? { includeArchived: false, folderId: null },
+    );
+    return listConversationsAction(args);
+  }, []);
   const [state, dispatch] = useReducer(
     messagingReducer,
     userId,
@@ -164,7 +180,7 @@ export function MessagingProvider({
   }, [flushPending, state.connectionStatus]);
 
   const reconcile = useCallback(async () => {
-    const list = await listConversationsAction({});
+    const list = await listInbox();
     if (list.ok) {
       dispatch({
         type: "conversations/set",
@@ -192,7 +208,7 @@ export function MessagingProvider({
       });
     }
     await flushPending();
-  }, [flushPending, initialConversationId, state.pendingSends]);
+  }, [flushPending, initialConversationId, listInbox, state.pendingSends]);
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -217,7 +233,7 @@ export function MessagingProvider({
 
     const offChange = inbox.onChange((change) => {
       if (change.table === "conversations" || change.table === "conversation_members") {
-        void listConversationsAction({}).then((result) => {
+        void listInbox().then((result) => {
           if (result.ok) {
             dispatch({
               type: "conversations/set",
@@ -234,7 +250,7 @@ export function MessagingProvider({
       offChange();
       inbox.leave();
     };
-  }, [reconcile, state.connectionStatus, userId]);
+  }, [listInbox, reconcile, state.connectionStatus, userId]);
 
   useEffect(() => {
     if (!initialConversationId) {

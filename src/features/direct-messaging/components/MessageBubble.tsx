@@ -64,6 +64,7 @@ function MessageBubbleInner({
     >
       <article
         className={styles.bubble}
+        tabIndex={-1}
         data-message-id={
           message.id.startsWith("pending-") ? message.client_id : message.id
         }
@@ -95,6 +96,7 @@ function MessageBubbleInner({
           conversationId={conversationId}
           currentUserId={currentUserId}
           conversationType={conversationType}
+          role={detail?.role}
         />
       </div>
     </div>

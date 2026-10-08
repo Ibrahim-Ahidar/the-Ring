@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { memo, useMemo } from "react";
 import { useFormatter, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 
 import { getContributions } from "@/shell/slots";
 
@@ -33,11 +34,22 @@ function previewText(
 
 function ConversationListInner({ activeConversationId }: Props) {
   const t = useTranslations("direct-messaging");
+  const tOrg = useTranslations("conversation-organization");
+  const tFeature = useTranslations();
   const format = useFormatter();
+  const searchParams = useSearchParams();
+  const folderId = searchParams.get("folder");
   const { state } = useMessaging();
   const menus = useMemo(() => getContributions("listItemMenu"), []);
 
   if (state.conversations.length === 0) {
+    if (folderId) {
+      return (
+        <div className={styles.empty}>
+          <p>{tOrg("folderEmptyHint")}</p>
+        </div>
+      );
+    }
     return (
       <div className={styles.empty}>
         <p>{t("emptyList")}</p>
@@ -83,26 +95,35 @@ function ConversationListInner({ activeConversationId }: Props) {
               <p className={styles.listPreview}>{previewText(item, t)}</p>
             </div>
             {item.unread_count > 0 ? (
-              <span className={styles.badge} aria-label={t("unreadCount", { count: item.unread_count })}>
+              <span
+                className={styles.badge}
+                aria-label={t("unreadCount", { count: item.unread_count })}
+              >
                 {item.unread_count}
               </span>
             ) : null}
             <div className={styles.toolsRow}>
               {menus
                 .filter((menu) => menu.isAvailable(menuCtx))
-                .map((menu) => (
-                  <button
-                    key={menu.id}
-                    type="button"
-                    aria-label={menu.labelKey}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      void menu.run(menuCtx);
-                    }}
-                  >
-                    {menu.labelKey}
-                  </button>
-                ))}
+                .map((menu) => {
+                  const Icon = menu.icon;
+                  const label = tFeature(menu.labelKey!);
+                  return (
+                    <button
+                      key={menu.id}
+                      type="button"
+                      className={styles.listMenuButton}
+                      aria-label={label}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        void menu.run(menuCtx);
+                      }}
+                    >
+                      <Icon size={18} aria-hidden />
+                      <span className="visually-hidden">{label}</span>
+                    </button>
+                  );
+                })}
             </div>
           </Link>
         );

@@ -23,6 +23,7 @@
   "send": "إرسال",
   "retrySend": "إعادة المحاولة",
   "messageActions": "إجراءات الرسالة",
+  "closeActionMenu": "إغلاق القائمة",
   "reconnecting": "إعادة الاتصال…",
   "requestRequired": "هذا الشخص يقبل طلبات المراسلة فقط.",
   "directFallback": "محادثة مباشرة",

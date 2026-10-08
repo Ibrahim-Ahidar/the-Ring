@@ -12,7 +12,10 @@ import {
 import { SendHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { emitComposerActivity } from "@/platform/composer-events";
+import {
+  emitComposerActivity,
+  getComposerSendExtras,
+} from "@/platform/composer-events";
 import { getContributions } from "@/shell/slots";
 
 import { useMessaging } from "../context/MessagingProvider";
@@ -69,7 +72,12 @@ function MessageComposerInner({ conversationId }: Props) {
     if (!body) {
       return;
     }
-    await sendMessage({ conversationId, body });
+    const extras = getComposerSendExtras(conversationId);
+    await sendMessage({
+      conversationId,
+      body,
+      replyToId: extras?.replyToId,
+    });
     emitComposerActivity({ kind: "input", conversationId, isEmpty: true });
   };
 

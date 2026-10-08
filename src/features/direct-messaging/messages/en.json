@@ -23,6 +23,7 @@
   "send": "Send",
   "retrySend": "Retry",
   "messageActions": "Message actions",
+  "closeActionMenu": "Close menu",
   "reconnecting": "Reconnecting…",
   "requestRequired": "This person only accepts message requests.",
   "directFallback": "Direct chat",

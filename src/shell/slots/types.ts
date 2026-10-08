@@ -58,8 +58,17 @@ export type MessageActionContribution = {
   order: number;
   labelKey: string;
   icon: LucideIcon;
+  /** When true, rendered in a separated destructive section of the action sheet. */
   destructive?: boolean;
+  /** Alternative to {@link destructive}; `danger` marks a separated destructive action. */
+  tone?: "default" | "danger";
   isAvailable: (ctx: MessageActionContext) => boolean;
+  /**
+   * When {@link isAvailable} is false, optional short catalog key under the owning
+   * feature (same convention as {@link labelKey}) explaining why the action is disabled.
+   * Unavailable actions without a reason are hidden instead of shown disabled.
+   */
+  unavailableReasonKey?: (ctx: MessageActionContext) => string | undefined;
   run: (ctx: MessageActionContext) => void | Promise<void>;
 };
 
@@ -87,6 +96,8 @@ export type MessageRendererType =
  */
 export type MessageRendererContribution = {
   type: MessageRendererType;
+  /** Lower values win when multiple renderers target the same {@link type}. */
+  order?: number;
   Component: ComponentType<{
     message: TimelineMessage;
     currentUserId: string;

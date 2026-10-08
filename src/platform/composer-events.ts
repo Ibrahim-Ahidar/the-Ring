@@ -22,3 +22,26 @@ export function onComposerActivity(listener: Listener): () => void {
     listeners.delete(listener);
   };
 }
+
+export type ComposerSendExtras = {
+  replyToId?: string | null;
+};
+
+type ComposerSendExtrasProvider = (
+  conversationId: string,
+) => ComposerSendExtras | undefined;
+
+let sendExtrasProvider: ComposerSendExtrasProvider | null = null;
+
+/** Lets features (e.g. message-actions) supply send fields without hooking form submit. */
+export function setComposerSendExtrasProvider(
+  provider: ComposerSendExtrasProvider | null,
+): void {
+  sendExtrasProvider = provider;
+}
+
+export function getComposerSendExtras(
+  conversationId: string,
+): ComposerSendExtras | undefined {
+  return sendExtrasProvider?.(conversationId);
+}

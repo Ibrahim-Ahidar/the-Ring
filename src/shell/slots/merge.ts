@@ -55,7 +55,18 @@ export function mergeContributions<K extends ContributionKind>(
     if (kind === "messageRenderer") {
       const typeA = "type" in a ? String(a.type) : "";
       const typeB = "type" in b ? String(b.type) : "";
-      return typeA.localeCompare(typeB);
+      const typeCmp = typeA.localeCompare(typeB);
+      if (typeCmp !== 0) {
+        return typeCmp;
+      }
+      const orderA = hasOrder(a) ? a.order : 0;
+      const orderB = hasOrder(b) ? b.order : 0;
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+      const idA = "id" in a ? String(a.id) : "";
+      const idB = "id" in b ? String(b.id) : "";
+      return idA.localeCompare(idB);
     }
 
     const orderA = hasOrder(a) ? a.order : 0;

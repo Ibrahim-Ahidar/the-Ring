@@ -9,6 +9,7 @@ import { getContributions } from "@/shell/slots";
 import { useMessaging } from "../context/MessagingProvider";
 import type { ConversationDetail } from "../types";
 import { MessageComposer } from "./MessageComposer";
+import { MessageJumpTarget } from "./MessageJumpTarget";
 import { MessageTimeline } from "./MessageTimeline";
 import styles from "../direct-messaging.module.css";
 
@@ -57,6 +58,7 @@ function ThreadPanelInner({ conversationId, detail, currentUserId }: Props) {
           </div>
         ) : null}
       </header>
+      <MessageJumpTarget conversationId={conversationId} />
       <MessageTimeline
         conversationId={conversationId}
         conversationType={detail.type}

@@ -23,6 +23,7 @@
   "send": "Envoyer",
   "retrySend": "Réessayer",
   "messageActions": "Actions du message",
+  "closeActionMenu": "Fermer le menu",
   "reconnecting": "Reconnexion…",
   "requestRequired": "Cette personne n'accepte que les demandes de message.",
   "directFallback": "Discussion directe",

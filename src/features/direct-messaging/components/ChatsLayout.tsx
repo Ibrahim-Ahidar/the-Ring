@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { memo } from "react";
+import { memo, Suspense } from "react";
 import { useTranslations } from "next-intl";
 
 import { useMessaging } from "../context/MessagingProvider";
@@ -39,7 +39,10 @@ function ChatsLayoutInner({
           <h1 className={styles.threadTitle}>{t("title")}</h1>
           <Link href="/app/chats/new">{t("newChat")}</Link>
         </div>
-        <ConversationList activeConversationId={activeConversationId} />
+        <div id="conversation-folders" />
+        <Suspense fallback={null}>
+          <ConversationList activeConversationId={activeConversationId} />
+        </Suspense>
       </section>
       {activeConversationId && liveDetail ? (
         <ThreadPanel

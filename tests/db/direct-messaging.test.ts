@@ -444,6 +444,18 @@ describe("list filters and access control", () => {
       conversationId: opened.value.conversationId,
     });
     expect(allowed.ok).toBe(true);
+    if (allowed.ok) expect(allowed.value.role).toBe("member");
+
+    await asSuperuser(
+      db,
+      `update public.conversation_members set role = 'admin'
+       where conversation_id = $1 and user_id = $2`,
+      [opened.value.conversationId, a.id],
+    );
+    const promoted = await getConversation(aRpc, {
+      conversationId: opened.value.conversationId,
+    });
+    expect(promoted.ok && promoted.value.role).toBe("admin");
 
     const denied = await getConversation(cRpc, {
       conversationId: opened.value.conversationId,

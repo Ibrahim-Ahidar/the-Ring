@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import type { TimelineMessage } from "@/platform/timeline";
 import { getContributions } from "@/shell/slots";
 
+import { pickMessageRenderer } from "../lib/message-renderer-pick";
 import { TextMessageRenderer } from "./TextMessageRenderer";
 
 type Props = {
@@ -16,22 +17,13 @@ type Props = {
 function MessageRendererHostInner({ message, currentUserId }: Props) {
   const t = useTranslations("direct-messaging");
   const renderers = useMemo(() => getContributions("messageRenderer"), []);
-  const match = renderers.find((entry) => entry.type === message.type);
-  const Component = match?.Component;
 
   if (message.deletion_scope === "everyone") {
     return <p className="dm-tombstone">{t("messageDeleted")}</p>;
   }
 
-  if (message.type === "system") {
-    const system = renderers.find((entry) => entry.type === "system");
-    if (system?.Component) {
-      return (
-        <system.Component message={message} currentUserId={currentUserId} />
-      );
-    }
-    return <p>{message.body ?? t("systemMessage")}</p>;
-  }
+  const match = pickMessageRenderer(renderers, message.type);
+  const Component = match?.Component;
 
   if (Component) {
     return <Component message={message} currentUserId={currentUserId} />;
@@ -41,6 +33,10 @@ function MessageRendererHostInner({ message, currentUserId }: Props) {
     return (
       <TextMessageRenderer message={message} currentUserId={currentUserId} />
     );
+  }
+
+  if (message.type === "system") {
+    return <p>{message.body ?? t("systemMessage")}</p>;
   }
 
   return <p>{t("messageUnavailable")}</p>;

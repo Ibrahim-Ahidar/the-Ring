@@ -62,6 +62,7 @@ export type ConversationDetail = {
   other_last_read_message_id: string | null;
   other_last_read_created_at: string | null;
   other_send_read_receipts: boolean | null;
+  role: "owner" | "admin" | "member";
 };
 
 export type MarkReadResult = {

@@ -16,6 +16,7 @@ import { ReplyComposerTool } from "./components/ReplyComposerTool";
 import { TextMessageWithLinksRenderer } from "./components/TextMessageWithLinksRenderer";
 import { copyTextToClipboard } from "./lib/copy-text";
 import {
+  type ActionAvailability,
   canCopy,
   canDeleteForEveryone,
   canDeleteForMe,
@@ -33,6 +34,10 @@ import {
   requestJumpToReply,
   setReplyTarget,
 } from "./message-actions-events";
+
+function reasonOf(availability: ActionAvailability): string | undefined {
+  return availability.allowed ? undefined : availability.reasonKey;
+}
 
 export const contributions: FeatureContributions = {
   overlay: [
@@ -61,6 +66,7 @@ export const contributions: FeatureContributions = {
       labelKey: "actions.reply",
       icon: CornerUpLeft,
       isAvailable: (ctx) => canReply(ctx.message).allowed,
+      unavailableReasonKey: (ctx) => reasonOf(canReply(ctx.message)),
       run: (ctx) => {
         const preview = ctx.message.body?.trim().slice(0, 120) ?? "";
         setReplyTarget({
@@ -93,6 +99,7 @@ export const contributions: FeatureContributions = {
       labelKey: "actions.copy",
       icon: Copy,
       isAvailable: (ctx) => canCopy(ctx.message).allowed,
+      unavailableReasonKey: (ctx) => reasonOf(canCopy(ctx.message)),
       run: (ctx) => {
         void copyTextToClipboard(ctx.message.body ?? "").then((ok) => {
           requestActionToast(ok ? "toast.copied" : "toast.copyFailed");
@@ -106,6 +113,7 @@ export const contributions: FeatureContributions = {
       icon: Pencil,
       isAvailable: (ctx) =>
         canEdit(ctx.message, ctx.currentUserId).allowed,
+      unavailableReasonKey: (ctx) => reasonOf(canEdit(ctx.message, ctx.currentUserId)),
       run: (ctx) => {
         requestEditDialog({
           message: ctx.message,
@@ -119,6 +127,7 @@ export const contributions: FeatureContributions = {
       labelKey: "actions.forward",
       icon: Forward,
       isAvailable: (ctx) => canForward(ctx.message).allowed,
+      unavailableReasonKey: (ctx) => reasonOf(canForward(ctx.message)),
       run: (ctx) => {
         requestForwardDialog({
           message: ctx.message,
@@ -134,6 +143,8 @@ export const contributions: FeatureContributions = {
       isAvailable: (ctx) =>
         canPin(ctx.conversationType, ctx.role).allowed &&
         !ctx.message.pinned_at,
+      unavailableReasonKey: (ctx) =>
+        ctx.message.pinned_at ? undefined : reasonOf(canPin(ctx.conversationType, ctx.role)),
       run: (ctx) => {
         void runPinToggle({
           messageId: ctx.message.id,
@@ -165,6 +176,7 @@ export const contributions: FeatureContributions = {
       icon: Trash2,
       destructive: true,
       isAvailable: (ctx) => canDeleteForMe(ctx.message).allowed,
+      unavailableReasonKey: (ctx) => reasonOf(canDeleteForMe(ctx.message)),
       run: (ctx) => {
         requestDeleteDialog({
           message: ctx.message,
@@ -186,6 +198,15 @@ export const contributions: FeatureContributions = {
           ctx.conversationType,
           ctx.role,
         ).allowed,
+      unavailableReasonKey: (ctx) =>
+        reasonOf(
+          canDeleteForEveryone(
+            ctx.message,
+            ctx.currentUserId,
+            ctx.conversationType,
+            ctx.role,
+          ),
+        ),
       run: (ctx) => {
         requestDeleteDialog({
           message: ctx.message,

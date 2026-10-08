@@ -102,6 +102,7 @@ as $$
   where m.conversation_id = p_conversation_id
     and m.sender_id is distinct from p_user_id
     and m.deletion_scope <> 'everyone'
+    and coalesce(m.metadata->>'upload', 'ready') = 'ready'
     and not exists (
       select 1
       from public.message_hides mh
@@ -650,7 +651,8 @@ returns table(
   other_avatar_url text,
   other_last_read_message_id uuid,
   other_last_read_created_at timestamptz,
-  other_send_read_receipts boolean
+  other_send_read_receipts boolean,
+  role public.member_role
 )
 language plpgsql
 stable
@@ -692,7 +694,8 @@ begin
     op.avatar_url as other_avatar_url,
     case when op.send_read_receipts then other_cm.last_read_message_id end as other_last_read_message_id,
     case when op.send_read_receipts then other_cursor.created_at end as other_last_read_created_at,
-    op.send_read_receipts as other_send_read_receipts
+    op.send_read_receipts as other_send_read_receipts,
+    cm.role
   from public.conversations c
   join public.conversation_members cm
     on cm.conversation_id = c.id
@@ -793,6 +796,10 @@ begin
       select m.body, m.deletion_scope, m.type
       from public.messages m
       where m.conversation_id = c.id
+        and (
+          coalesce(m.metadata->>'upload', 'ready') = 'ready'
+          or m.sender_id = v_uid
+        )
         and not exists (
           select 1
           from public.message_hides mh
