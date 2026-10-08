@@ -1,0 +1,129 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  padding-block: var(--space-16);
+}
+
+.searchForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: flex-end;
+}
+
+.searchField {
+  flex: 1 1 12rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.searchInput {
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.searchButton {
+  padding: var(--space-8) var(--space-16);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.rowLink {
+  display: block;
+  padding: var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: inherit;
+}
+
+.rowLink:hover {
+  border-color: var(--color-accent);
+}
+
+.rowTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.rowMeta {
+  margin: var(--space-8) 0 0;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.snippet {
+  margin: var(--space-8) 0 0;
+  font-size: 0.875rem;
+}
+
+.snippet mark {
+  background: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  color: inherit;
+  padding-inline: 0.1em;
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+}
+
+.tabButton {
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tabButton[data-active="true"] {
+  border-color: var(--color-accent);
+}
+
+.panel {
+  margin-block-start: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rowLink:hover {
+    transition: none;
+  }
+}

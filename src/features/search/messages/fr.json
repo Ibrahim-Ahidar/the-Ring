@@ -1,0 +1,25 @@
+{
+  "pageTitle": "Recherche",
+  "fieldLabel": "Rechercher dans Pulse",
+  "submit": "Rechercher",
+  "loading": "Recherche…",
+  "empty": "Aucun résultat pour cette requête.",
+  "loadMore": "Charger plus de messages",
+  "conversationFallback": "Conversation",
+  "threadTabLabel": "Recherche",
+  "threadFieldLabel": "Rechercher dans cette discussion",
+  "sections": {
+    "people": "Personnes",
+    "conversations": "Conversations",
+    "messages": "Messages"
+  },
+  "errors": {
+    "platform": {
+      "unauthenticated": "Connectez-vous pour rechercher.",
+      "rate_limited": "Trop de recherches. Réessayez dans une minute."
+    },
+    "search": {
+      "not_member": "Vous ne participez pas à cette conversation."
+    }
+  }
+}

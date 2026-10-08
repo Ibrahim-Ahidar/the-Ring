@@ -1,0 +1,25 @@
+{
+  "pageTitle": "Search",
+  "fieldLabel": "Search Pulse",
+  "submit": "Search",
+  "loading": "Searching…",
+  "empty": "No results for this query.",
+  "loadMore": "Load more messages",
+  "conversationFallback": "Conversation",
+  "threadTabLabel": "Search",
+  "threadFieldLabel": "Search in this chat",
+  "sections": {
+    "people": "People",
+    "conversations": "Conversations",
+    "messages": "Messages"
+  },
+  "errors": {
+    "platform": {
+      "unauthenticated": "Sign in to search.",
+      "rate_limited": "Too many searches. Try again in a minute."
+    },
+    "search": {
+      "not_member": "You are not in this conversation."
+    }
+  }
+}

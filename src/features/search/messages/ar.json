@@ -1,0 +1,25 @@
+{
+  "pageTitle": "بحث",
+  "fieldLabel": "ابحث في Pulse",
+  "submit": "بحث",
+  "loading": "جارٍ البحث…",
+  "empty": "لا توجد نتائج لهذا الاستعلام.",
+  "loadMore": "تحميل المزيد من الرسائل",
+  "conversationFallback": "محادثة",
+  "threadTabLabel": "بحث",
+  "threadFieldLabel": "ابحث في هذه المحادثة",
+  "sections": {
+    "people": "أشخاص",
+    "conversations": "محادثات",
+    "messages": "رسائل"
+  },
+  "errors": {
+    "platform": {
+      "unauthenticated": "سجّل الدخول للبحث.",
+      "rate_limited": "محاولات بحث كثيرة. حاول بعد دقيقة."
+    },
+    "search": {
+      "not_member": "لست عضواً في هذه المحادثة."
+    }
+  }
+}
