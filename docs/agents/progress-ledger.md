@@ -33,7 +33,23 @@ Branch: `agent/pulse-build` (local only; nothing pushed, no issues closed).
 | --- | --- | --- | --- | --- |
 | #1 | done | 67c1877 | lint, typecheck, 14 unit tests, build, fail-fast start verified | Coordinator fixed ESLint ignoring `.next/` |
 | #2 | done | 48c28b2 | 14 PGlite DB tests (RLS enforced), 6 rpc mapping tests; live Supabase tests skip without env | Coordinator hardening: revoked TRUNCATE/REFERENCES/TRIGGER, default privileges so later tables/functions start locked, `decide_interaction` refuses third-party probes, `is_blocked_either` not callable by clients. Known low-risk gap: `is_member` lets a member check membership of a guessed conversation id. |
-| #4 | in progress | | | |
+| #4 | done | 74e6fa3 | 91 passed / 2 skipped across the suite; TS and SQL username rules checked for parity | `mentions_only` filtering deferred to #17 per spec |
+| shared | done | 0554016 | 3 realtime-hub tests | Coordinator added `realtime-hub.ts` (one ref-counted channel per topic), `composer-events.ts`, `session.ts`, nav badges, `docs/agents/agent-brief.md` |
+| #7–#10 identity | done | c410a12 | 13 PGlite + jsdom tests; Playwright: /login and /signup render | Coordinator fixes: signup limiter made server-only (anon could burn another email's allowance); `/app` layout now enforces confirmed email + active device; email-link sign-in registers a device; error catalog keys were dotted and never resolved in next-intl (fixed in identity, DM, discovery + `tests/scripts/catalogs.test.ts` guard). Known limit: revoking a device blocks `/app` via the device cookie, but Supabase refresh tokens on that device stay valid until expiry. |
+| #21–#24 direct messaging | done | db14d69, 13a5d89 | 13 PGlite tests | Coordinator: `messaging_unread_count` revoked from clients; `list_messages` now returns attachments and reactions for wave 4. Independent SQL review running. |
+| #25–#26 typing/presence | done | 0f34987 | 15 tests | Mounted via `headerStatus` only |
+| #14–#15 locale/appearance | done | b6b33af | 12 tests | Coordinator added `command` slot kind; quick language bar is a floating overlay because the shell header has no slot. Browser assertions for theme/palette deferred to #48. |
+| build | green | | `npm run build` OK; Playwright smoke 6 passed, 1 skipped | after wave 3 |
+| #27–#29 message actions | in progress | | | Composer 2.5 |
+| #30 reactions | in progress | | | Composer 2.5 Fast |
+| #31–#34 media | in progress | | | Composer 2.5 |
+| #35–#38 groups | in progress | | | Composer 2.5 |
+| #39–#40 search | in progress | | | Composer 2.5 |
+| #41–#42 organization | in progress | | | Composer 2.5 Fast |
+| #43–#44 message requests | in progress | | | Composer 2.5 |
+| #11–#13 safety | in progress | | | Composer 2.5 |
+| #16–#17 notifications | in progress | | | Composer 2.5 Fast |
+| #18–#20 discovery | done | 53f0c5f | 12 PGlite service tests | Username search lives on `/app/contacts` per spec. Coordinator fixes: internal helpers (`discovery_shared_groups`, recent-search writers, profile builder) were callable by any signed-in user and leaked shared groups / allowed writing others' history — now revoked; added `tests/db/function-grants.test.ts` guard; generator scanned the wrong folder (`./features`); `createUser` now coexists with the identity signup trigger. `is_online` stays false on profile pages (live presence is the typing-presence feature). |
 | #3 | done | 747577d | lint, typecheck, unit tests, build; Playwright smoke 4 passed, 1 skipped (authenticated shell needs a live Supabase) | Coordinator fixes: landing now follows the visitor's locale (it always showed Arabic copy) with localized legal links; locale and theme share one cached profile lookup per request |
 | #5 | done | 3661afb | workflow YAML parsed; not run on GitHub (nothing pushed) | Coordinator fixed the migrations job to use the installed CLI binary |
 | #6 | done | c212df2 | 29 unit tests, ESLint clean | Coordinator closed a leak: `Error` objects nested in event properties now drop their message |
