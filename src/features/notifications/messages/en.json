@@ -1,0 +1,35 @@
+{
+  "navLabel": "Notifications",
+  "pageTitle": "Notifications",
+  "settingsTitle": "Notification settings",
+  "loading": "Loading notifications…",
+  "loadingMore": "Loading…",
+  "loadMore": "Load more",
+  "error": "Could not load notifications.",
+  "retry": "Try again",
+  "emptyTitle": "No notifications yet",
+  "emptyBody": "When something needs your attention, it will show up here.",
+  "listLabel": "Notification list",
+  "markAllRead": "Mark all as read",
+  "unknownActor": "Someone",
+  "itemAria": "{title}, {time}",
+  "unreadCount": "{count, plural, =0 {No unread notifications} one {# unread notification} other {# unread notifications}}",
+  "unreadBadge": "{count, plural, one {#} other {#}}",
+  "types": {
+    "default": "Update from {actor}",
+    "messageCreated": "New message from {actor}",
+    "reactionCreated": "{actor} reacted to a message"
+  },
+  "settings": {
+    "inApp": "In-app notifications",
+    "inAppHint": "When off, new alerts are not added to your inbox.",
+    "push": "Push notifications",
+    "pushHint": "Saved for a future update; no push is sent yet.",
+    "mentionsOnly": "Mentions only",
+    "mentionsOnlyHint": "Only @mentions in groups create inbox alerts.",
+    "save": "Save preferences",
+    "saving": "Saving…",
+    "saved": "Preferences saved.",
+    "saveError": "Could not save preferences."
+  }
+}

@@ -1,0 +1,169 @@
+.badge {
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-end: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding-inline: var(--space-8);
+  border-radius: 999px;
+  background: var(--color-danger);
+  color: var(--color-accent-contrast);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  max-width: 40rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.unreadMeta {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.item {
+  margin: 0;
+}
+
+.itemButton {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-card);
+  color: var(--color-text);
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--motion-fast) var(--motion-ease);
+}
+
+.itemButton:hover {
+  border-color: var(--color-accent);
+}
+
+.itemButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.itemButton[data-unread="true"] {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+}
+
+.itemTitle {
+  font-weight: 600;
+}
+
+.itemMeta {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.empty,
+.errorBox {
+  padding: var(--space-24);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-control);
+  text-align: center;
+}
+
+.errorBox {
+  border-style: solid;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  justify-content: center;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-border);
+  background: var(--color-panel);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.primaryButton {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.settingsForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  max-width: 28rem;
+}
+
+.field {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+}
+
+.fieldLabel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.fieldHint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.loading {
+  padding: var(--space-24);
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .itemButton,
+  .primaryButton,
+  .secondaryButton {
+    transition: none;
+  }
+}
