@@ -40,8 +40,9 @@ Branch: `agent/pulse-build` (local only; nothing pushed, no issues closed).
 | #25–#26 typing/presence | done | 0f34987 | 15 tests | Mounted via `headerStatus` only |
 | #14–#15 locale/appearance | done | b6b33af | 12 tests | Coordinator added `command` slot kind; quick language bar is a floating overlay because the shell header has no slot. Browser assertions for theme/palette deferred to #48. |
 | build | green | | `npm run build` OK; Playwright smoke 6 passed, 1 skipped | after wave 3 |
-| #27–#29 message actions | in progress | | | Composer 2.5 |
-| #30 reactions | in progress | | | Composer 2.5 Fast |
+| #27–#29 message actions | done (UI integration pending) | 5b9bded | 8 PGlite + 7 unit | Coordinator: `forward_message` skipped the block check, so a blocked user could forward into the blocked direct chat; fixed + test. Menu translation, disabled reasons, focus trap and link renderer selection live in DM hosts; handed to the DM integration agent. |
+| #30 reactions | done | 8d8675f | 8 PGlite + 3 unit | Coordinator: reacting in a blocked direct chat was allowed (and notified the blocker); fixed + test. |
+| build | green at 5b9bded | | tsc, eslint 0 errors, build OK, vitest 231 passed / 2 skipped | |
 | #31–#34 media | in progress | | | Composer 2.5 |
 | #35–#38 groups | in progress | | | Composer 2.5 |
 | #39–#40 search | in progress | | | Composer 2.5 |
