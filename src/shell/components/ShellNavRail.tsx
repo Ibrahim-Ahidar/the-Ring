@@ -11,7 +11,7 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
-import { memo, useMemo } from "react";
+import { memo, useMemo, type ComponentType } from "react";
 import { useTranslations } from "next-intl";
 
 import { getContributions } from "@/shell/slots";
@@ -21,6 +21,7 @@ type ShellNavItem = {
   href: string;
   label: string;
   icon: typeof Home;
+  badge?: ComponentType;
 };
 
 function ShellNavRailInner() {
@@ -64,6 +65,7 @@ function ShellNavRailInner() {
       href: item.href,
       label: tFeature(item.labelKey!),
       icon: item.icon,
+      badge: item.badge,
     }));
     const byId = new Map<string, ShellNavItem>();
     for (const item of [...shellItems, ...fromFeatures]) {
@@ -76,6 +78,7 @@ function ShellNavRailInner() {
     <nav className="shell-nav" aria-label={t("home")}>
       {merged.map((item) => {
         const Icon = item.icon;
+        const Badge = item.badge;
         const active =
           item.href === "/app"
             ? pathname === "/app"
@@ -91,6 +94,7 @@ function ShellNavRailInner() {
             title={item.label}
           >
             <Icon size={22} aria-hidden />
+            {Badge ? <Badge /> : null}
           </Link>
         );
       })}
