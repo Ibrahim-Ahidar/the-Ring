@@ -1,6 +1,6 @@
 import type { PGliteInterface } from "@electric-sql/pglite";
 
-import { asAnon, asUser } from "./pglite";
+import { asAnon, asSuperuser, asUser } from "./pglite";
 
 type RpcError = { message: string; code?: string };
 type RpcResult = { data: unknown; error: RpcError | null };
@@ -145,6 +145,49 @@ export function createRpcClient(
   return {
     rpc(fn, args) {
       return runRpc(db, userId, fn, args ?? {});
+    },
+  };
+}
+
+/** Bypass RLS and internal RPC grants (service-role equivalent in PGlite). */
+export function createSuperuserRpcClient(db: PGliteInterface): PgliteRpcClient {
+  return {
+    async rpc(fn, args = {}) {
+      const meta = await getProcMeta(db, fn);
+      const argKeys = Object.keys(args);
+      const sql = buildCall(fn, meta, argKeys);
+      const params = argKeys.map((key) => serializeArg(args[key]));
+
+      try {
+        const result = await asSuperuser(db, sql, params);
+        const rows = (result as { rows: Record<string, unknown>[] }).rows;
+
+        if (meta.proretset) {
+          return { data: rows, error: null };
+        }
+
+        if (rows.length === 0) {
+          return { data: null, error: null };
+        }
+
+        const row = rows[0]!;
+        if ("value" in row) {
+          return { data: row.value, error: null };
+        }
+        return { data: row, error: null };
+      } catch (error) {
+        const pgError = error as {
+          message?: string;
+          code?: string;
+        };
+        return {
+          data: null,
+          error: {
+            message: pgError.message ?? String(error),
+            code: pgError.code,
+          },
+        };
+      }
     },
   };
 }
