@@ -45,8 +45,9 @@ Branch: `agent/pulse-build` (local only; nothing pushed, no issues closed).
 | build | green at 5b9bded | | tsc, eslint 0 errors, build OK, vitest 231 passed / 2 skipped | |
 | #31–#34 media | in progress | | | Composer 2.5 |
 | #35–#38 groups | in progress | | | Composer 2.5 |
-| #39–#40 search | in progress | | | Composer 2.5 |
-| #41–#42 organization | in progress | | | Composer 2.5 Fast |
+| #39–#40 search | done | adfb665 | 9 PGlite + 2 unit; independent SQL review clean (no leaks) | Coordinator: search RPCs were marked `stable` but write rate-limit counters, now volatile. Not changed: reviewer suggested rate-limiting before the membership check; that cannot work because the raised error rolls back the counter in the same transaction. A valid-username global search consumes two `search_users` units (search + discovery). Jump-to-message moving into DM (integration agent). |
+| #41–#42 organization | done (list wiring pending) | a6256d8 | 7 PGlite + 3 unit; independent SQL review clean | Folder strip mount point, `?archived=1` / `?folder=` list filters and translated list-menu labels are in DM; handed to the DM integration agent. |
+| build | green at a6256d8 | | tsc, eslint, build OK; vitest 256 passed / 2 skipped | |
 | #43–#44 message requests | in progress | | | Composer 2.5 |
 | #11–#13 safety | done | 2cb71b8 | 8 PGlite + 1 jsdom | Coordinator mounted Block / Report buttons on `/app/profile/[username]` (otherwise blocking had no entry point). Group report review (`list_group_reports`, `mark_report_reviewed`) lives here; groups #38 should reuse it. |
 | #16–#17 notifications | done | 858b71a | 9 PGlite + 3 unit; ports suite still green | `notify` gains `notifications.skipped_mentions_only`; coordinator added it to the typed port. |
