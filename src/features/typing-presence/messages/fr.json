@@ -1,0 +1,6 @@
+{
+  "online": "En ligne",
+  "lastSeen": "Vu pour la dernière fois {when}",
+  "typingOne": "{name} est en train d'écrire",
+  "typingMany": "{count, plural, one {# personne écrit} other {# personnes écrivent}}"
+}

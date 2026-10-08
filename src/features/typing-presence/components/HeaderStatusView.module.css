@@ -1,0 +1,42 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+.presenceRow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.onlineDot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .onlineDot {
+    animation: pulse-dot var(--motion-slow) var(--motion-ease) infinite
+      alternate;
+  }
+}
+
+@keyframes pulse-dot {
+  from {
+    opacity: 0.65;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.typing {
+  min-block-size: 1.25em;
+}

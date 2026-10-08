@@ -1,0 +1,6 @@
+{
+  "online": "Online",
+  "lastSeen": "Last seen {when}",
+  "typingOne": "{name} is typing",
+  "typingMany": "{count, plural, one {# person is typing} other {# people are typing}}"
+}
