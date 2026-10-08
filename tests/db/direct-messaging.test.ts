@@ -452,6 +452,104 @@ describe("list filters and access control", () => {
   });
 });
 
+describe("review regressions", () => {
+  it("refuses sends in an existing direct chat after either side blocks", async () => {
+    const a = await createTestUser({ username: "blk_a" });
+    const b = await createTestUser({ username: "blk_b" });
+    const aRpc = createRpcClient(db, a.id);
+    const bRpc = createRpcClient(db, b.id);
+    const opened = await openDirect(aRpc, { username: "blk_b" });
+    if (!opened.ok) throw new Error("open failed");
+    const conversationId = opened.value.conversationId;
+
+    await asSuperuser(
+      db,
+      `insert into public.blocks (blocker_id, blocked_id) values ($1, $2)`,
+      [b.id, a.id],
+    );
+
+    const fromBlocked = await sendText(aRpc, {
+      conversationId,
+      clientId: randomUUID(),
+      body: "hello?",
+    });
+    expect(fromBlocked).toEqual({
+      ok: false,
+      error: { code: "messaging.send_not_allowed" },
+    });
+
+    const fromBlocker = await sendText(bRpc, {
+      conversationId,
+      clientId: randomUUID(),
+      body: "bye",
+    });
+    expect(fromBlocker).toEqual({
+      ok: false,
+      error: { code: "messaging.send_not_allowed" },
+    });
+  });
+
+  it("hides the other read cursor when their read receipts are off", async () => {
+    const a = await createTestUser({ username: "rr_a" });
+    const b = await createTestUser({
+      username: "rr_b",
+      profileOverrides: { send_read_receipts: false },
+    });
+    const aRpc = createRpcClient(db, a.id);
+    const bRpc = createRpcClient(db, b.id);
+    const opened = await openDirect(aRpc, { username: "rr_b" });
+    if (!opened.ok) throw new Error("open failed");
+    const conversationId = opened.value.conversationId;
+
+    const sent = await sendText(aRpc, {
+      conversationId,
+      clientId: randomUUID(),
+      body: "read me",
+    });
+    if (!sent.ok) throw new Error("send failed");
+    const marked = await markRead(bRpc, { conversationId, messageId: sent.value.id });
+    expect(marked.ok).toBe(true);
+
+    const detail = await getConversation(aRpc, { conversationId });
+    expect(detail.ok).toBe(true);
+    if (!detail.ok) return;
+    expect(detail.value.other_send_read_receipts).toBe(false);
+    expect(detail.value.other_last_read_message_id).toBeNull();
+    expect(detail.value.other_last_read_created_at).toBeNull();
+  });
+
+  it("previews the latest message the caller has not hidden", async () => {
+    const a = await createTestUser({ username: "pv_a" });
+    const b = await createTestUser({ username: "pv_b" });
+    const aRpc = createRpcClient(db, a.id);
+    const bRpc = createRpcClient(db, b.id);
+    const opened = await openDirect(aRpc, { username: "pv_b" });
+    if (!opened.ok) throw new Error("open failed");
+    const conversationId = opened.value.conversationId;
+
+    await sendText(aRpc, { conversationId, clientId: randomUUID(), body: "first" });
+    const second = await sendText(aRpc, {
+      conversationId,
+      clientId: randomUUID(),
+      body: "second",
+    });
+    if (!second.ok) throw new Error("send failed");
+    await asSuperuser(
+      db,
+      `insert into public.message_hides (message_id, user_id) values ($1, $2)`,
+      [second.value.id, b.id],
+    );
+
+    const bList = await listConversations(bRpc, {});
+    const aList = await listConversations(aRpc, {});
+    if (!bList.ok || !aList.ok) throw new Error("list failed");
+    const bItem = bList.value.items.find((item) => item.id === conversationId);
+    const aItem = aList.value.items.find((item) => item.id === conversationId);
+    expect(bItem?.last_message_preview).toBe("first");
+    expect(aItem?.last_message_preview).toBe("second");
+  });
+});
+
 describe("notify and rate limit", () => {
   it("creates a notification for the recipient on send", async () => {
     const a = await createTestUser({ username: "ntf_a" });

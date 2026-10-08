@@ -298,6 +298,19 @@ begin
     raise exception 'messaging.send_not_allowed' using errcode = 'P0001';
   end if;
 
+  if exists (
+    select 1
+    from public.conversations c
+    join public.conversation_members peer
+      on peer.conversation_id = c.id
+     and peer.user_id <> v_uid
+    where c.id = p_conversation_id
+      and c.type = 'direct'
+      and public.is_blocked_either(v_uid, peer.user_id)
+  ) then
+    raise exception 'messaging.send_not_allowed' using errcode = 'P0001';
+  end if;
+
   v_trimmed := btrim(coalesce(p_body, ''));
   if v_trimmed = '' then
     raise exception 'messaging.body_required' using errcode = 'P0001';
@@ -318,23 +331,48 @@ begin
     end if;
   end if;
 
-  insert into public.messages (
-    conversation_id,
-    sender_id,
-    client_id,
-    type,
-    body,
-    reply_to_id
-  )
-  values (
-    p_conversation_id,
-    v_uid,
-    p_client_id,
-    'text',
-    v_trimmed,
-    p_reply_to_id
-  )
-  returning messages.id into v_message_id;
+  begin
+    insert into public.messages (
+      conversation_id,
+      sender_id,
+      client_id,
+      type,
+      body,
+      reply_to_id
+    )
+    values (
+      p_conversation_id,
+      v_uid,
+      p_client_id,
+      'text',
+      v_trimmed,
+      p_reply_to_id
+    )
+    returning messages.id into v_message_id;
+  exception
+    when unique_violation then
+      -- A concurrent retry with the same client id won the insert; return its row.
+      return query
+      select
+        m.id,
+        m.conversation_id,
+        m.sender_id,
+        m.client_id,
+        m.type,
+        m.body,
+        m.reply_to_id,
+        m.created_at,
+        m.edited_at,
+        m.deleted_at,
+        m.deletion_scope,
+        m.pinned_at,
+        m.forwarded,
+        m.metadata
+      from public.messages m
+      where m.sender_id = v_uid
+        and m.client_id = p_client_id;
+      return;
+  end;
 
   update public.conversations c
   set
@@ -652,8 +690,8 @@ begin
     op.username as other_username,
     op.display_name as other_display_name,
     op.avatar_url as other_avatar_url,
-    other_cm.last_read_message_id as other_last_read_message_id,
-    other_cursor.created_at as other_last_read_created_at,
+    case when op.send_read_receipts then other_cm.last_read_message_id end as other_last_read_message_id,
+    case when op.send_read_receipts then other_cursor.created_at end as other_last_read_created_at,
     op.send_read_receipts as other_send_read_receipts
   from public.conversations c
   join public.conversation_members cm
@@ -751,7 +789,19 @@ begin
       on cm.conversation_id = c.id
      and cm.user_id = v_uid
      and cm.left_at is null
-    left join public.messages lm on lm.id = c.last_message_id
+    left join lateral (
+      select m.body, m.deletion_scope, m.type
+      from public.messages m
+      where m.conversation_id = c.id
+        and not exists (
+          select 1
+          from public.message_hides mh
+          where mh.message_id = m.id
+            and mh.user_id = v_uid
+        )
+      order by m.created_at desc, m.id desc
+      limit 1
+    ) lm on true
     where (p_include_archived or cm.archived_at is null)
       and (
         p_folder_id is null
