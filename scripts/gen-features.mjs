@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Scans feature modules and writes src/shell/generated/features.ts (or --out path).
- * Usage: node scripts/gen-features.mjs [featuresRootParent] [--out path]
+ * Usage: node scripts/gen-features.mjs [featuresParent] [--out path]
  * Default features dir: src/features under project root.
  * Fixture: node scripts/gen-features.mjs tests/fixtures/gen-features --out /tmp/features.ts
  *   (expects a features/ subdirectory under the given root)
@@ -14,7 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
 
 function parseArgs(argv) {
-  let featuresParent = projectRoot;
+  let featuresParent = path.join(projectRoot, "src");
   let outFile = path.join(projectRoot, "src/shell/generated/features.ts");
 
   const rest = [...argv];

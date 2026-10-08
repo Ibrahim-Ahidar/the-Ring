@@ -1,0 +1,39 @@
+{
+  "search": {
+    "title": "البحث باسم المستخدم",
+    "label": "اسم المستخدم",
+    "placeholder": "اسم المستخدم بالضبط",
+    "submit": "بحث",
+    "loading": "جارٍ البحث…",
+    "noResult": "لم يُعثر على أحد بهذا الاسم.",
+    "resultsLabel": "نتيجة البحث"
+  },
+  "recents": {
+    "title": "عمليات البحث الأخيرة",
+    "clearAll": "مسح كل عمليات البحث الأخيرة",
+    "removeOne": "إزالة {username} من عمليات البحث الأخيرة"
+  },
+  "favorites": {
+    "title": "جهات الاتصال",
+    "empty": "لا توجد جهات اتصال بعد. ابحث باسم المستخدم أعلاه لإضافة أشخاص.",
+    "loading": "جارٍ تحميل جهات الاتصال…"
+  },
+  "profile": {
+    "online": "متصل",
+    "offline": "غير متصل",
+    "lastSeen": "آخر ظهور {time}",
+    "startConversation": "بدء محادثة",
+    "favorite": "إضافة {username} إلى جهات الاتصال",
+    "unfavorite": "إزالة {username} من جهات الاتصال",
+    "favoriteShort": "إضافة إلى جهات الاتصال",
+    "unfavoriteShort": "في جهات الاتصال",
+    "sharedGroups": "مجموعات مشتركة",
+    "noSharedGroups": "لا مجموعات مشتركة",
+    "untitledGroup": "مجموعة بلا عنوان"
+  },
+  "errors": {
+    "generic": "حدث خطأ. حاول مرة أخرى.",
+    "platform.rate_limited": "عمليات بحث كثيرة. انتظر قليلاً ثم أعد المحاولة.",
+    "platform.unauthenticated": "سجّل الدخول للبحث."
+  }
+}

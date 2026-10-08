@@ -68,20 +68,26 @@ export async function createUser(
 
   await db.query(
     `insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data)
-     values ($1, $2, now(), '{}'::jsonb)`,
-    [id, email],
+     values ($1, $2, now(), $3::jsonb)`,
+    [id, email, JSON.stringify({ username: options.username })],
   );
 
-  const columns = ["id", "username", ...Object.keys(options.profileOverrides ?? {})];
+  // A signup trigger may already have created the profile; upsert either way.
+  const overrideKeys = Object.keys(options.profileOverrides ?? {});
+  const columns = ["id", "username", ...overrideKeys];
   const values: unknown[] = [id, options.username];
-  for (const key of Object.keys(options.profileOverrides ?? {})) {
+  for (const key of overrideKeys) {
     values.push(options.profileOverrides![key]);
   }
 
   const placeholders = values.map((_, i) => `$${i + 1}`).join(", ");
+  const updates = ["username", ...overrideKeys]
+    .map((column) => `${column} = excluded.${column}`)
+    .join(", ");
   await db.query(
     `insert into public.profiles (${columns.join(", ")})
-     values (${placeholders})`,
+     values (${placeholders})
+     on conflict (id) do update set ${updates}`,
     values,
   );
 

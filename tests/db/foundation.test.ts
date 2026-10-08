@@ -311,9 +311,14 @@ describe("username_is_valid", () => {
 
   it("enforces normalized uniqueness", async () => {
     await createUser(db, { username: "Ibrahim" });
-    await expect(
-      createUser(db, { username: "ibrahim" }),
-    ).rejects.toMatchObject({ code: "23505" });
+    const failure = await createUser(db, { username: "ibrahim" }).then(
+      () => null,
+      (error: { code?: string; message?: string }) => error,
+    );
+    // Raw unique violation, or the signup trigger's mapped code.
+    expect(
+      failure?.code === "23505" || failure?.message === "identity.username_taken",
+    ).toBe(true);
   });
 });
 
