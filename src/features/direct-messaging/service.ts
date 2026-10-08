@@ -33,6 +33,8 @@ export function mapMessageRow(row: RpcMessageRow): TimelineMessage {
     pinned_at: row.pinned_at,
     forwarded: row.forwarded,
     metadata: row.metadata,
+    ...(row.attachments ? { attachments: row.attachments } : {}),
+    ...(row.reactions ? { reactions: row.reactions } : {}),
   };
 }
 

@@ -20,7 +20,7 @@ export type MessageAttachment = {
   storage_path: string;
   mime_type: string;
   size_bytes: number;
-  file_name: string;
+  file_name: string | null;
   width: number | null;
   height: number | null;
   duration_ms: number | null;

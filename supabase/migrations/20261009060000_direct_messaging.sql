@@ -404,6 +404,8 @@ returns table(
   pinned_at timestamptz,
   forwarded boolean,
   metadata jsonb,
+  attachments jsonb,
+  reactions jsonb,
   has_more boolean
 )
 language plpgsql
@@ -468,7 +470,43 @@ begin
     t.deletion_scope,
     t.pinned_at,
     t.forwarded,
-    t.metadata,
+    case when t.deletion_scope = 'everyone' then '{}'::jsonb else t.metadata end as metadata,
+    case
+      when t.deletion_scope = 'everyone' then '[]'::jsonb
+      else coalesce((
+        select jsonb_agg(
+          jsonb_build_object(
+            'id', a.id,
+            'message_id', a.message_id,
+            'storage_path', a.storage_path,
+            'mime_type', a.mime_type,
+            'size_bytes', a.size_bytes,
+            'file_name', a.file_name,
+            'width', a.width,
+            'height', a.height,
+            'duration_ms', a.duration_ms,
+            'waveform', a.waveform,
+            'created_at', a.created_at
+          )
+          order by a.created_at, a.id
+        )
+        from public.attachments a
+        where a.message_id = t.id
+      ), '[]'::jsonb)
+    end as attachments,
+    coalesce((
+      select jsonb_agg(
+        jsonb_build_object(
+          'message_id', r.message_id,
+          'user_id', r.user_id,
+          'emoji', r.emoji,
+          'created_at', r.created_at
+        )
+        order by r.created_at, r.user_id, r.emoji
+      )
+      from public.message_reactions r
+      where r.message_id = t.id
+    ), '[]'::jsonb) as reactions,
     (select count(*) > v_limit from page) as has_more
   from trimmed t
   order by t.created_at desc, t.id desc;

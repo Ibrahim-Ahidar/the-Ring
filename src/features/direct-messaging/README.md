@@ -11,7 +11,7 @@ All calls go through `callRpc` / `supabase.rpc` — no direct table access from 
 | `open_direct(p_username)` | Create or return direct conversation; `decide_interaction` + `create_conversation` rate limit on insert |
 | `send_text(p_conversation_id, p_client_id, p_body, p_reply_to_id?)` | Idempotent on `(sender_id, client_id)`; `send_message` rate limit; `notify` peers |
 | `list_conversations(p_cursor?, p_include_archived?, p_folder_id?)` | Page 30; unread via read cursor |
-| `list_messages(p_conversation_id, p_cursor?)` | Page 50, newest first; hides + tombstones |
+| `list_messages(p_conversation_id, p_cursor?)` | Page 50, newest first; hides + tombstones; each row carries `attachments` and `reactions` (jsonb arrays) |
 | `mark_read(p_conversation_id, p_message_id)` | Forward-only read cursor |
 | `get_conversation(p_conversation_id)` | Membership + direct peer display fields |
 

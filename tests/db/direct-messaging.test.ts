@@ -150,6 +150,43 @@ describe("sendText and listMessages", () => {
     expect(blocked).toEqual({ ok: false, error: { code: "messaging.not_member" } });
   });
 
+  it("returns each message's attachments and reactions", async () => {
+    const alice = await createTestUser({ username: "att_alice" });
+    const bob = await createTestUser({ username: "att_bob" });
+    const aliceRpc = createRpcClient(db, alice.id);
+    const bobRpc = createRpcClient(db, bob.id);
+    const opened = await openDirect(aliceRpc, { username: "att_bob" });
+    if (!opened.ok) throw new Error(opened.error.code);
+    const sent = await sendText(aliceRpc, {
+      conversationId: opened.value.conversationId,
+      clientId: randomUUID(),
+      body: "with extras",
+    });
+    if (!sent.ok) throw new Error(sent.error.code);
+
+    await asSuperuser(
+      db,
+      `insert into public.attachments (message_id, storage_path, mime_type, size_bytes, file_name)
+       values ($1, 'c/m/file.pdf', 'application/pdf', 1024, 'file.pdf')`,
+      [sent.value.id],
+    );
+    await asSuperuser(
+      db,
+      `insert into public.message_reactions (message_id, user_id, emoji) values ($1, $2, '👍')`,
+      [sent.value.id, bob.id],
+    );
+
+    const list = await listMessages(bobRpc, { conversationId: opened.value.conversationId });
+    if (!list.ok) throw new Error(list.error.code);
+    const message = list.value.items.find((item) => item.id === sent.value.id);
+    expect(message?.attachments).toEqual([
+      expect.objectContaining({ mime_type: "application/pdf", file_name: "file.pdf" }),
+    ]);
+    expect(message?.reactions).toEqual([
+      expect.objectContaining({ user_id: bob.id, emoji: "👍" }),
+    ]);
+  });
+
   it("is idempotent on sender and client id", async () => {
     const a = await createTestUser({ username: "idem_a" });
     const b = await createTestUser({ username: "idem_b" });

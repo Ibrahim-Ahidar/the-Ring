@@ -1,4 +1,9 @@
-import type { DeletionScope, MessageType } from "@/platform/timeline";
+import type {
+  DeletionScope,
+  MessageAttachment,
+  MessageReaction,
+  MessageType,
+} from "@/platform/timeline";
 
 export type RpcMessageRow = {
   id: string;
@@ -15,6 +20,8 @@ export type RpcMessageRow = {
   pinned_at: string | null;
   forwarded: boolean;
   metadata: Record<string, unknown> | null;
+  attachments?: MessageAttachment[];
+  reactions?: MessageReaction[];
   has_more?: boolean;
 };
 
