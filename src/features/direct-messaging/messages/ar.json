@@ -1,0 +1,48 @@
+{
+  "title": "المحادثات",
+  "listLabel": "قائمة المحادثات",
+  "threadLabel": "المحادثة",
+  "newChat": "محادثة جديدة",
+  "newChatTitle": "بدء محادثة",
+  "startChat": "ابدأ محادثة",
+  "openChat": "فتح المحادثة",
+  "usernameLabel": "اسم المستخدم",
+  "emptyList": "لا توجد محادثات بعد. ابدأ من البحث أو رابط ملف شخصي.",
+  "emptyThread": "لا رسائل بعد. قل مرحبًا.",
+  "selectConversation": "اختر محادثة أو ابدأ محادثة جديدة.",
+  "noPreview": "لا رسائل بعد",
+  "messageDeleted": "تم حذف الرسالة",
+  "messageUnavailable": "نوع الرسالة غير متاح بعد.",
+  "systemMessage": "رسالة نظام",
+  "edited": "معدّلة",
+  "replyQuote": "رد على رسالة",
+  "newMessages": "رسائل جديدة",
+  "loadOlder": "تحميل رسائل أقدم",
+  "composerLabel": "الرسالة",
+  "composerPlaceholder": "اكتب رسالة…",
+  "send": "إرسال",
+  "retrySend": "إعادة المحاولة",
+  "messageActions": "إجراءات الرسالة",
+  "reconnecting": "إعادة الاتصال…",
+  "requestRequired": "هذا الشخص يقبل طلبات المراسلة فقط.",
+  "directFallback": "محادثة مباشرة",
+  "groupFallback": "مجموعة",
+  "unreadCount": "{count, plural, =0 {لا رسائل غير مقروءة} zero {لا رسائل غير مقروءة} one {رسالة غير مقروءة واحدة} two {رسالتان غير مقروءتان} few {# رسائل غير مقروءة} many {# رسالة غير مقروءة} other {# رسالة غير مقروءة}}",
+  "delivery": {
+    "pending": "جارٍ الإرسال…",
+    "failed": "فشل الإرسال",
+    "sent": "تم الإرسال",
+    "read": "مقروءة"
+  },
+  "errors": {
+    "messaging": {
+      "not_allowed": "لا يمكنك مراسلة هذا الشخص.",
+      "request_required": "يتطلب طلب مراسلة أولًا.",
+      "not_found": "المستخدم أو المحادثة غير موجود."
+    },
+    "platform": {
+      "unauthenticated": "سجّل الدخول للمتابعة.",
+      "unexpected": "حدث خطأ ما."
+    }
+  }
+}

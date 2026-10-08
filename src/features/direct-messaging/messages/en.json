@@ -1,0 +1,48 @@
+{
+  "title": "Chats",
+  "listLabel": "Conversation list",
+  "threadLabel": "Conversation",
+  "newChat": "New chat",
+  "newChatTitle": "Start a chat",
+  "startChat": "Start a conversation",
+  "openChat": "Open chat",
+  "usernameLabel": "Username",
+  "emptyList": "No conversations yet. Start one from search or a profile link.",
+  "emptyThread": "No messages yet. Say hello.",
+  "selectConversation": "Select a conversation or start a new chat.",
+  "noPreview": "No messages yet",
+  "messageDeleted": "Message deleted",
+  "messageUnavailable": "This message type is not available yet.",
+  "systemMessage": "System message",
+  "edited": "Edited",
+  "replyQuote": "Replying to a message",
+  "newMessages": "New messages",
+  "loadOlder": "Load older messages",
+  "composerLabel": "Message",
+  "composerPlaceholder": "Write a message…",
+  "send": "Send",
+  "retrySend": "Retry",
+  "messageActions": "Message actions",
+  "reconnecting": "Reconnecting…",
+  "requestRequired": "This person only accepts message requests.",
+  "directFallback": "Direct chat",
+  "groupFallback": "Group chat",
+  "unreadCount": "{count, plural, =0 {No unread messages} one {# unread message} other {# unread messages}}",
+  "delivery": {
+    "pending": "Sending…",
+    "failed": "Failed to send",
+    "sent": "Sent",
+    "read": "Read"
+  },
+  "errors": {
+    "messaging": {
+      "not_allowed": "You cannot message this person.",
+      "request_required": "They require a message request first.",
+      "not_found": "User or conversation not found."
+    },
+    "platform": {
+      "unauthenticated": "Sign in to continue.",
+      "unexpected": "Something went wrong."
+    }
+  }
+}

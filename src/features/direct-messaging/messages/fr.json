@@ -1,0 +1,48 @@
+{
+  "title": "Discussions",
+  "listLabel": "Liste des conversations",
+  "threadLabel": "Conversation",
+  "newChat": "Nouvelle discussion",
+  "newChatTitle": "Démarrer une discussion",
+  "startChat": "Démarrer une conversation",
+  "openChat": "Ouvrir la discussion",
+  "usernameLabel": "Nom d'utilisateur",
+  "emptyList": "Aucune conversation. Commencez depuis la recherche ou un profil.",
+  "emptyThread": "Aucun message. Dites bonjour.",
+  "selectConversation": "Choisissez une conversation ou démarrez-en une.",
+  "noPreview": "Aucun message",
+  "messageDeleted": "Message supprimé",
+  "messageUnavailable": "Ce type de message n'est pas encore disponible.",
+  "systemMessage": "Message système",
+  "edited": "Modifié",
+  "replyQuote": "Réponse à un message",
+  "newMessages": "Nouveaux messages",
+  "loadOlder": "Charger les messages plus anciens",
+  "composerLabel": "Message",
+  "composerPlaceholder": "Écrire un message…",
+  "send": "Envoyer",
+  "retrySend": "Réessayer",
+  "messageActions": "Actions du message",
+  "reconnecting": "Reconnexion…",
+  "requestRequired": "Cette personne n'accepte que les demandes de message.",
+  "directFallback": "Discussion directe",
+  "groupFallback": "Groupe",
+  "unreadCount": "{count, plural, =0 {Aucun message non lu} one {# message non lu} other {# messages non lus}}",
+  "delivery": {
+    "pending": "Envoi…",
+    "failed": "Échec de l'envoi",
+    "sent": "Envoyé",
+    "read": "Lu"
+  },
+  "errors": {
+    "messaging": {
+      "not_allowed": "Vous ne pouvez pas contacter cette personne.",
+      "request_required": "Une demande de message est requise.",
+      "not_found": "Utilisateur ou conversation introuvable."
+    },
+    "platform": {
+      "unauthenticated": "Connectez-vous pour continuer.",
+      "unexpected": "Une erreur s'est produite."
+    }
+  }
+}
