@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "gen:features": "node scripts/gen-features.mjs",
+    "predev": "npm run gen:features",
+    "prebuild": "npm run gen:features",
+    "pretypecheck": "npm run gen:features",
+    "prelint": "npm run gen:features",
+    "pretest": "npm run gen:features",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

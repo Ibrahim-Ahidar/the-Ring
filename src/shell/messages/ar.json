@@ -1,0 +1,48 @@
+{
+  "landing": {
+    "title": "Pulse",
+    "proposition": "اعثر على الناس باسم المستخدم، ابدأ محادثة، وابقَ على تواصل منظم.",
+    "login": "تسجيل الدخول",
+    "signup": "إنشاء حساب"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "chats": "المحادثات",
+    "groups": "المجموعات",
+    "search": "بحث",
+    "contacts": "جهات الاتصال",
+    "notifications": "الإشعارات",
+    "settings": "الإعدادات",
+    "back": "رجوع"
+  },
+  "skipLink": "تخطي إلى المحتوى",
+  "routes": {
+    "login": "تسجيل الدخول",
+    "signup": "إنشاء حساب",
+    "home": "الرئيسية",
+    "chats": "المحادثات",
+    "chatsNew": "محادثة جديدة",
+    "chat": "محادثة",
+    "groups": "المجموعات",
+    "groupsNew": "مجموعة جديدة",
+    "group": "مجموعة",
+    "search": "بحث",
+    "contacts": "جهات الاتصال",
+    "notifications": "الإشعارات",
+    "profile": "الملف الشخصي",
+    "publicProfile": "ملف عام",
+    "settingsAccount": "الحساب",
+    "settingsSecurity": "الأمان",
+    "settingsPrivacy": "الخصوصية",
+    "settingsNotifications": "الإشعارات",
+    "settingsAppearance": "المظهر",
+    "settingsLanguage": "اللغة",
+    "media": "الوسائط",
+    "terms": "الشروط",
+    "privacy": "الخصوصية"
+  },
+  "legal": {
+    "termsBody": "هذه صفحة شروط مؤقتة لـ Pulse. سيتم تحديث النص قبل الإطلاق العام.",
+    "privacyBody": "هذه صفحة خصوصية مؤقتة لـ Pulse. سيتم تحديث النص قبل الإطلاق العام."
+  }
+}

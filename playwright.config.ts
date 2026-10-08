@@ -1,7 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const port = 3100;
 const baseURL =
-  process.env.NEXT_PUBLIC_APP_URL?.trim() || "http://localhost:3000";
+  process.env.NEXT_PUBLIC_APP_URL?.trim() || `http://localhost:${port}`;
+
+const webServerEnv = {
+  NEXT_PUBLIC_APP_URL: baseURL,
+  NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e2e-dummy-anon",
+  SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e2e-dummy-service",
+  ...process.env,
+};
 
 export default defineConfig({
   testDir: "e2e",
@@ -21,8 +30,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
+    command: `npm run dev -- --port ${port}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
+    env: webServerEnv,
   },
 });

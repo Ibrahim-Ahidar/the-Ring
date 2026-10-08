@@ -1,0 +1,48 @@
+{
+  "landing": {
+    "title": "Pulse",
+    "proposition": "Trouvez des personnes par nom d'utilisateur, démarrez une conversation et gardez vos échanges organisés.",
+    "login": "Connexion",
+    "signup": "Inscription"
+  },
+  "nav": {
+    "home": "Accueil",
+    "chats": "Discussions",
+    "groups": "Groupes",
+    "search": "Recherche",
+    "contacts": "Contacts",
+    "notifications": "Notifications",
+    "settings": "Paramètres",
+    "back": "Retour"
+  },
+  "skipLink": "Aller au contenu",
+  "routes": {
+    "login": "Connexion",
+    "signup": "Inscription",
+    "home": "Accueil",
+    "chats": "Discussions",
+    "chatsNew": "Nouvelle discussion",
+    "chat": "Discussion",
+    "groups": "Groupes",
+    "groupsNew": "Nouveau groupe",
+    "group": "Groupe",
+    "search": "Recherche",
+    "contacts": "Contacts",
+    "notifications": "Notifications",
+    "profile": "Profil",
+    "publicProfile": "Profil public",
+    "settingsAccount": "Compte",
+    "settingsSecurity": "Sécurité",
+    "settingsPrivacy": "Confidentialité",
+    "settingsNotifications": "Notifications",
+    "settingsAppearance": "Apparence",
+    "settingsLanguage": "Langue",
+    "media": "Médias",
+    "terms": "Conditions",
+    "privacy": "Confidentialité"
+  },
+  "legal": {
+    "termsBody": "Ceci est un texte provisoire des conditions pour Pulse. Il sera remplacé avant un lancement public.",
+    "privacyBody": "Ceci est un texte provisoire de confidentialité pour Pulse. Il sera remplacé avant un lancement public."
+  }
+}

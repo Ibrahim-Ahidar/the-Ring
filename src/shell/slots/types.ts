@@ -1,0 +1,195 @@
+import type { ComponentType } from "react";
+import type { LucideIcon } from "lucide-react";
+
+import type { TimelineMessage } from "@/platform/timeline";
+
+export type ConversationType = "direct" | "group";
+
+export type MemberRole = "owner" | "admin" | "member";
+
+/**
+ * Primary shell navigation rail item contributed by a feature module.
+ */
+export type NavContribution = {
+  id: string;
+  /** Short key in the feature catalog; resolved as `{feature}.{labelKey}`. */
+  labelKey: string;
+  href: string;
+  icon: LucideIcon;
+  order: number;
+  badge?: ComponentType;
+};
+
+/**
+ * Global overlay mounted once in the app shell (command palette, dialogs, etc.).
+ */
+export type OverlayContribution = {
+  id: string;
+  Component: ComponentType;
+};
+
+export type ComposerToolProps = {
+  conversationId: string;
+  disabled: boolean;
+};
+
+/**
+ * Toolbar control beside the message composer for a conversation.
+ */
+export type ComposerToolContribution = {
+  id: string;
+  order: number;
+  Component: ComponentType<ComposerToolProps>;
+};
+
+export type MessageActionContext = {
+  message: TimelineMessage;
+  conversationId: string;
+  currentUserId: string;
+  role?: MemberRole;
+  conversationType: ConversationType;
+};
+
+/**
+ * Context menu or action sheet entry for a timeline message.
+ */
+export type MessageActionContribution = {
+  id: string;
+  order: number;
+  labelKey: string;
+  icon: LucideIcon;
+  destructive?: boolean;
+  isAvailable: (ctx: MessageActionContext) => boolean;
+  run: (ctx: MessageActionContext) => void | Promise<void>;
+};
+
+/**
+ * Extra content rendered inside or beside a message bubble.
+ */
+export type BubbleExtraContribution = {
+  id: string;
+  order: number;
+  Component: ComponentType<{
+    message: TimelineMessage;
+    currentUserId: string;
+  }>;
+};
+
+export type MessageRendererType =
+  | "text"
+  | "image"
+  | "file"
+  | "audio"
+  | "system";
+
+/**
+ * Renderer for a specific persisted message type in the timeline.
+ */
+export type MessageRendererContribution = {
+  type: MessageRendererType;
+  Component: ComponentType<{
+    message: TimelineMessage;
+    currentUserId: string;
+  }>;
+};
+
+/**
+ * Status line or presence chip in the conversation header.
+ */
+export type HeaderStatusContribution = {
+  id: string;
+  order: number;
+  Component: ComponentType<{
+    conversationId: string;
+    conversationType: ConversationType;
+    otherUserId?: string;
+  }>;
+};
+
+/**
+ * Tab in the optional right pane for a conversation.
+ */
+export type RightPanelTabContribution = {
+  id: string;
+  order: number;
+  labelKey: string;
+  Component: ComponentType<{ conversationId: string }>;
+};
+
+export type ListItemMenuContext = {
+  conversationId: string;
+  conversationType: ConversationType;
+  membership: {
+    pinned_at: string | null;
+    muted_until: string | null;
+    archived_at: string | null;
+  };
+};
+
+/**
+ * Overflow menu action on a conversation list row.
+ */
+export type ListItemMenuContribution = {
+  id: string;
+  order: number;
+  labelKey: string;
+  icon: LucideIcon;
+  destructive?: boolean;
+  isAvailable: (ctx: ListItemMenuContext) => boolean;
+  run: (ctx: ListItemMenuContext) => void | Promise<void>;
+};
+
+/**
+ * UI shown when `decideInteraction` returns `request` for messaging.
+ */
+export type RequestRequiredContribution = {
+  id: string;
+  Component: ComponentType<{
+    targetUserId: string;
+    onDone: () => void;
+  }>;
+};
+
+export type FeatureContributions = {
+  nav?: NavContribution[];
+  overlay?: OverlayContribution[];
+  composerTool?: ComposerToolContribution[];
+  messageAction?: MessageActionContribution[];
+  bubbleExtra?: BubbleExtraContribution[];
+  messageRenderer?: MessageRendererContribution[];
+  headerStatus?: HeaderStatusContribution[];
+  rightPanelTab?: RightPanelTabContribution[];
+  listItemMenu?: ListItemMenuContribution[];
+  requestRequired?: RequestRequiredContribution[];
+};
+
+export const CONTRIBUTION_KINDS = [
+  "nav",
+  "overlay",
+  "composerTool",
+  "messageAction",
+  "bubbleExtra",
+  "messageRenderer",
+  "headerStatus",
+  "rightPanelTab",
+  "listItemMenu",
+  "requestRequired",
+] as const;
+
+export type ContributionKind = (typeof CONTRIBUTION_KINDS)[number];
+
+export type ContributionKindMap = {
+  nav: NavContribution;
+  overlay: OverlayContribution;
+  composerTool: ComposerToolContribution;
+  messageAction: MessageActionContribution;
+  bubbleExtra: BubbleExtraContribution;
+  messageRenderer: MessageRendererContribution;
+  headerStatus: HeaderStatusContribution;
+  rightPanelTab: RightPanelTabContribution;
+  listItemMenu: ListItemMenuContribution;
+  requestRequired: RequestRequiredContribution;
+};
+
+export type ResolvedContribution<K extends ContributionKind> =
+  ContributionKindMap[K] & { feature: string; labelKey?: string };

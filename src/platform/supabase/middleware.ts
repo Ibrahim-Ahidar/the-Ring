@@ -15,6 +15,12 @@ function readMiddlewareEnv() {
 export async function updateSession(request: NextRequest) {
   const env = readMiddlewareEnv();
   if (!env) {
+    if (request.nextUrl.pathname.startsWith("/app")) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.search = "";
+      return NextResponse.redirect(loginUrl);
+    }
     return NextResponse.next({ request });
   }
 
@@ -37,7 +43,16 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user && request.nextUrl.pathname.startsWith("/app")) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.search = "";
+    return NextResponse.redirect(loginUrl);
+  }
 
   return supabaseResponse;
 }

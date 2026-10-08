@@ -1,0 +1,48 @@
+{
+  "landing": {
+    "title": "Pulse",
+    "proposition": "Find people by username, start a conversation, and keep communication organized.",
+    "login": "Log in",
+    "signup": "Sign up"
+  },
+  "nav": {
+    "home": "Home",
+    "chats": "Chats",
+    "groups": "Groups",
+    "search": "Search",
+    "contacts": "Contacts",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "back": "Back"
+  },
+  "skipLink": "Skip to content",
+  "routes": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "home": "Home",
+    "chats": "Chats",
+    "chatsNew": "New chat",
+    "chat": "Chat",
+    "groups": "Groups",
+    "groupsNew": "New group",
+    "group": "Group",
+    "search": "Search",
+    "contacts": "Contacts",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "publicProfile": "Public profile",
+    "settingsAccount": "Account",
+    "settingsSecurity": "Security",
+    "settingsPrivacy": "Privacy",
+    "settingsNotifications": "Notifications",
+    "settingsAppearance": "Appearance",
+    "settingsLanguage": "Language",
+    "media": "Media",
+    "terms": "Terms",
+    "privacy": "Privacy"
+  },
+  "legal": {
+    "termsBody": "This is placeholder terms copy for Pulse. It will be replaced before a public launch.",
+    "privacyBody": "This is placeholder privacy copy for Pulse. It will be replaced before a public launch."
+  }
+}
