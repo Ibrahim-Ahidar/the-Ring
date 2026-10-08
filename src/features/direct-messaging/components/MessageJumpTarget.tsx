@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { memo, Suspense, useEffect, useRef } from "react";
 
 import { useMessaging } from "../context/MessagingProvider";
+import styles from "../direct-messaging.module.css";
 
 const MAX_PAGES = 10;
 
@@ -21,10 +22,10 @@ function findMessageElement(messageId: string): HTMLElement | null {
 }
 
 function highlightMessage(node: HTMLElement): void {
-  node.classList.add("dm-message-jump-highlight");
+  node.classList.add(styles.jumpHighlight);
   window.setTimeout(() => {
-    node.classList.remove("dm-message-jump-highlight");
-  }, prefersReducedMotion() ? 0 : 1600);
+    node.classList.remove(styles.jumpHighlight);
+  }, 1600);
 }
 
 function MessageJumpTargetInner({ conversationId }: { conversationId: string }) {
