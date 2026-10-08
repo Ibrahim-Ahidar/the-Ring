@@ -1,0 +1,44 @@
+{
+  "menuOpen": "خيارات المحادثة",
+  "menuTitle": "تنظيم المحادثة",
+  "pin": "تثبيت",
+  "unpin": "إلغاء التثبيت",
+  "mute": "كتم الإشعارات",
+  "unmute": "إلغاء الكتم",
+  "archive": "أرشفة",
+  "unarchive": "إلغاء الأرشفة",
+  "close": "إغلاق",
+  "cancel": "إلغاء",
+  "save": "حفظ",
+  "folderSection": "مجلد",
+  "moveToFolder": "نقل إلى {name}",
+  "removeFromFolder": "إزالة من المجلد",
+  "allChats": "كل المحادثات",
+  "archivedChats": "المؤرشفة",
+  "createFolder": "إنشاء مجلد",
+  "renameFolder": "إعادة تسمية المجلد",
+  "folderNameLabel": "اسم المجلد",
+  "newFolder": "مجلد جديد",
+  "folderToolbar": "مجلدات المحادثات",
+  "noFoldersYet": "أنشئ مجلداً لتجميع المحادثات.",
+  "folderEmptyHint": "المحادثات التي تضيفها إلى هذا المجلد تظهر هنا.",
+  "muteDuration": {
+    "1h": "ساعة واحدة",
+    "8h": "8 ساعات",
+    "24h": "يوم واحد",
+    "7d": "أسبوع واحد",
+    "forever": "حتى ألغي الكتم"
+  },
+  "errors": {
+    "generic": "حدث خطأ. حاول مرة أخرى.",
+    "organization": {
+      "not_found": "المحادثة غير موجودة.",
+      "invalid_name": "يجب أن يكون اسم المجلد من 1 إلى 40 حرفاً.",
+      "invalid_mute": "مدة كتم غير صالحة.",
+      "invalid_order": "تعذر إعادة ترتيب المجلدات."
+    },
+    "platform": {
+      "unauthenticated": "سجّل الدخول للمتابعة."
+    }
+  }
+}

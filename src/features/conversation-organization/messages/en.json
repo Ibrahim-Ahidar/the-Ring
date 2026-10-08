@@ -1,0 +1,44 @@
+{
+  "menuOpen": "Conversation options",
+  "menuTitle": "Organize conversation",
+  "pin": "Pin",
+  "unpin": "Unpin",
+  "mute": "Mute notifications",
+  "unmute": "Unmute",
+  "archive": "Archive",
+  "unarchive": "Unarchive",
+  "close": "Close",
+  "cancel": "Cancel",
+  "save": "Save",
+  "folderSection": "Folder",
+  "moveToFolder": "Move to {name}",
+  "removeFromFolder": "Remove from folder",
+  "allChats": "All chats",
+  "archivedChats": "Archived",
+  "createFolder": "Create folder",
+  "renameFolder": "Rename folder",
+  "folderNameLabel": "Folder name",
+  "newFolder": "New folder",
+  "folderToolbar": "Chat folders",
+  "noFoldersYet": "Create a folder to group conversations.",
+  "folderEmptyHint": "Conversations you add to this folder appear here.",
+  "muteDuration": {
+    "1h": "1 hour",
+    "8h": "8 hours",
+    "24h": "1 day",
+    "7d": "1 week",
+    "forever": "Until I turn it off"
+  },
+  "errors": {
+    "generic": "Something went wrong. Try again.",
+    "organization": {
+      "not_found": "Conversation not found.",
+      "invalid_name": "Folder name must be 1–40 characters.",
+      "invalid_mute": "Invalid mute duration.",
+      "invalid_order": "Could not reorder folders."
+    },
+    "platform": {
+      "unauthenticated": "Sign in to continue."
+    }
+  }
+}

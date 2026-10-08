@@ -1,0 +1,44 @@
+{
+  "menuOpen": "Options de conversation",
+  "menuTitle": "Organiser la conversation",
+  "pin": "Épingler",
+  "unpin": "Retirer l'épingle",
+  "mute": "Couper les notifications",
+  "unmute": "Réactiver les notifications",
+  "archive": "Archiver",
+  "unarchive": "Désarchiver",
+  "close": "Fermer",
+  "cancel": "Annuler",
+  "save": "Enregistrer",
+  "folderSection": "Dossier",
+  "moveToFolder": "Déplacer vers {name}",
+  "removeFromFolder": "Retirer du dossier",
+  "allChats": "Toutes les discussions",
+  "archivedChats": "Archivées",
+  "createFolder": "Créer un dossier",
+  "renameFolder": "Renommer le dossier",
+  "folderNameLabel": "Nom du dossier",
+  "newFolder": "Nouveau dossier",
+  "folderToolbar": "Dossiers de discussion",
+  "noFoldersYet": "Créez un dossier pour regrouper vos discussions.",
+  "folderEmptyHint": "Les conversations ajoutées à ce dossier s'affichent ici.",
+  "muteDuration": {
+    "1h": "1 heure",
+    "8h": "8 heures",
+    "24h": "1 jour",
+    "7d": "1 semaine",
+    "forever": "Jusqu'à désactivation"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite. Réessayez.",
+    "organization": {
+      "not_found": "Conversation introuvable.",
+      "invalid_name": "Le nom du dossier doit contenir entre 1 et 40 caractères.",
+      "invalid_mute": "Durée de silence invalide.",
+      "invalid_order": "Impossible de réordonner les dossiers."
+    },
+    "platform": {
+      "unauthenticated": "Connectez-vous pour continuer."
+    }
+  }
+}
