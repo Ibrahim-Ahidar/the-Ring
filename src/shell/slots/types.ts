@@ -150,6 +150,17 @@ export type RequestRequiredContribution = {
   }>;
 };
 
+/**
+ * Command palette entry: navigates to `href`. Contributed by any feature.
+ */
+export type CommandContribution = {
+  id: string;
+  order: number;
+  /** Short key in the feature catalog; resolved as `{feature}.{labelKey}`. */
+  labelKey: string;
+  href: string;
+};
+
 export type FeatureContributions = {
   nav?: NavContribution[];
   overlay?: OverlayContribution[];
@@ -161,6 +172,7 @@ export type FeatureContributions = {
   rightPanelTab?: RightPanelTabContribution[];
   listItemMenu?: ListItemMenuContribution[];
   requestRequired?: RequestRequiredContribution[];
+  command?: CommandContribution[];
 };
 
 export const CONTRIBUTION_KINDS = [
@@ -174,6 +186,7 @@ export const CONTRIBUTION_KINDS = [
   "rightPanelTab",
   "listItemMenu",
   "requestRequired",
+  "command",
 ] as const;
 
 export type ContributionKind = (typeof CONTRIBUTION_KINDS)[number];
@@ -189,6 +202,7 @@ export type ContributionKindMap = {
   rightPanelTab: RightPanelTabContribution;
   listItemMenu: ListItemMenuContribution;
   requestRequired: RequestRequiredContribution;
+  command: CommandContribution;
 };
 
 export type ResolvedContribution<K extends ContributionKind> =
