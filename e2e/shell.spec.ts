@@ -44,6 +44,15 @@ test.describe("shell smoke", () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
+  for (const path of ["/login", "/signup"]) {
+    test(`${path} renders its form`, async ({ page }) => {
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(200);
+      await expect(page.locator('input[type="password"]').first()).toBeVisible();
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    });
+  }
+
   test("authenticated shell uses profile locale", async () => {
     test.skip(
       !process.env.E2E_SUPABASE,

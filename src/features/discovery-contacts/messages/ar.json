@@ -33,7 +33,9 @@
   },
   "errors": {
     "generic": "حدث خطأ. حاول مرة أخرى.",
-    "platform.rate_limited": "عمليات بحث كثيرة. انتظر قليلاً ثم أعد المحاولة.",
-    "platform.unauthenticated": "سجّل الدخول للبحث."
+    "platform": {
+      "rate_limited": "عمليات بحث كثيرة. انتظر قليلاً ثم أعد المحاولة.",
+      "unauthenticated": "سجّل الدخول للبحث."
+    }
   }
 }

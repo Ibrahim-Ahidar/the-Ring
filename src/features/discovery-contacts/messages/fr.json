@@ -33,7 +33,9 @@
   },
   "errors": {
     "generic": "Une erreur s'est produite. Réessayez.",
-    "platform.rate_limited": "Trop de recherches. Patientez un instant.",
-    "platform.unauthenticated": "Connectez-vous pour rechercher."
+    "platform": {
+      "rate_limited": "Trop de recherches. Patientez un instant.",
+      "unauthenticated": "Connectez-vous pour rechercher."
+    }
   }
 }

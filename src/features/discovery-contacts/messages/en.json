@@ -33,7 +33,9 @@
   },
   "errors": {
     "generic": "Something went wrong. Try again.",
-    "platform.rate_limited": "Too many searches. Wait a moment and try again.",
-    "platform.unauthenticated": "Sign in to search."
+    "platform": {
+      "rate_limited": "Too many searches. Wait a moment and try again.",
+      "unauthenticated": "Sign in to search."
+    }
   }
 }

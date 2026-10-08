@@ -12,9 +12,12 @@ import { createTestDb } from "./pglite";
 const ANON_CALLABLE = new Set<string>([
   // Public profile page for anonymous visitors; returns public, discoverable profiles only.
   "discovery_get_profile",
+  // Signup form availability check; signup itself would reveal a taken name anyway.
+  "identity_is_username_available",
 ]);
 
 const DEFINER_WITHOUT_AUTH_UID = new Set<string>([
+  "identity_is_username_available",
   // Read-only predicates used by RLS policies; they reveal only facts about the caller
   // or refuse third-party probes internally.
   "is_member",
