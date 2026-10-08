@@ -18,7 +18,8 @@ export type NotifyInput = {
 export type NotifyOutcome =
   | "notifications.created"
   | "notifications.skipped_disabled"
-  | "notifications.skipped_muted";
+  | "notifications.skipped_muted"
+  | "notifications.skipped_mentions_only";
 
 export async function notify(
   client: RpcClient,
@@ -44,7 +45,8 @@ export async function notify(
   if (
     outcome === "notifications.created" ||
     outcome === "notifications.skipped_disabled" ||
-    outcome === "notifications.skipped_muted"
+    outcome === "notifications.skipped_muted" ||
+    outcome === "notifications.skipped_mentions_only"
   ) {
     return ok(outcome);
   }

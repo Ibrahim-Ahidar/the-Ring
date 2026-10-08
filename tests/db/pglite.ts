@@ -11,8 +11,11 @@ let templateReady: Promise<PGliteInterface> | null = null;
 
 async function listMigrationFiles(): Promise<string[]> {
   const entries = await readdir(MIGRATIONS_DIR);
+  // Lets a run skip later migrations that are still being written in a shared tree.
+  const until = process.env.PULSE_TEST_MIGRATIONS_UNTIL;
   return entries
     .filter((name) => name.endsWith(".sql"))
+    .filter((name) => !until || name.slice(0, until.length) <= until)
     .sort()
     .map((name) => path.join(MIGRATIONS_DIR, name));
 }
