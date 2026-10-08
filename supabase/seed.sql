@@ -1,0 +1,1 @@
+-- Pulse seed placeholder. Foundation migrations and demo data arrive in later tickets.

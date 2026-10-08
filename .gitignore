@@ -3,3 +3,10 @@ node_modules/
 .env*
 !.env.example
 .next/
+coverage/
+test-results/
+playwright-report/
+next-env.d.ts
+supabase/.temp/
+supabase/.branches/
+*.tsbuildinfo

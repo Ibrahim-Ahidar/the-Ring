@@ -1,0 +1,21 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    Inter,
+    "Noto Naskh Arabic",
+    system-ui,
+    sans-serif;
+  background: #fafafa;
+  color: #111;
+}
