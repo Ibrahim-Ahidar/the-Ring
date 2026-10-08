@@ -1,0 +1,20 @@
+{
+  "reactAction": "Ajouter une réaction",
+  "pickerTitle": "Choisir une réaction",
+  "pickerClose": "Fermer",
+  "chipLabel": "{emojiName}, {count, plural, one {# réaction} other {# réactions}}",
+  "reactionsGroup": "Réactions",
+  "emojiThumbsUp": "Pouce levé",
+  "emojiHeart": "Cœur",
+  "emojiLaugh": "Rire",
+  "emojiSurprised": "Surpris",
+  "emojiSad": "Triste",
+  "emojiThanks": "Mains jointes",
+  "errors": {
+    "reactions": {
+      "invalid_emoji": "Cet emoji n’est pas pris en charge.",
+      "not_found": "Réaction introuvable.",
+      "not_allowed": "Vous ne pouvez pas réagir à ce message."
+    }
+  }
+}

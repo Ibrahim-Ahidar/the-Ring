@@ -1,0 +1,20 @@
+{
+  "reactAction": "Add reaction",
+  "pickerTitle": "Choose a reaction",
+  "pickerClose": "Close",
+  "chipLabel": "{emojiName}, {count, plural, one {# reaction} other {# reactions}}",
+  "reactionsGroup": "Reactions",
+  "emojiThumbsUp": "Thumbs up",
+  "emojiHeart": "Heart",
+  "emojiLaugh": "Laughing",
+  "emojiSurprised": "Surprised",
+  "emojiSad": "Sad",
+  "emojiThanks": "Folded hands",
+  "errors": {
+    "reactions": {
+      "invalid_emoji": "That emoji is not supported.",
+      "not_found": "Reaction not found.",
+      "not_allowed": "You cannot react to this message."
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "reactAction": "إضافة تفاعل",
+  "pickerTitle": "اختر تفاعلاً",
+  "pickerClose": "إغلاق",
+  "chipLabel": "{emojiName}، {count, plural, one {تفاعل واحد} other {# تفاعلات}}",
+  "reactionsGroup": "التفاعلات",
+  "emojiThumbsUp": "إعجاب",
+  "emojiHeart": "قلب",
+  "emojiLaugh": "ضحك",
+  "emojiSurprised": "دهشة",
+  "emojiSad": "حزن",
+  "emojiThanks": "شكر",
+  "errors": {
+    "reactions": {
+      "invalid_emoji": "هذا الرمز غير مدعوم.",
+      "not_found": "التفاعل غير موجود.",
+      "not_allowed": "لا يمكنك التفاعل مع هذه الرسالة."
+    }
+  }
+}
