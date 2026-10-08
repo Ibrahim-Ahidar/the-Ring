@@ -1,0 +1,59 @@
+{
+  "actions": {
+    "reply": "Répondre",
+    "jumpToReply": "Aller au message cité",
+    "copy": "Copier le texte",
+    "edit": "Modifier",
+    "forward": "Transférer",
+    "pin": "Épingler le message",
+    "unpin": "Retirer l'épingle",
+    "deleteMe": "Supprimer pour vous",
+    "deleteEveryone": "Supprimer pour tout le monde",
+    "cancel": "Annuler"
+  },
+  "reply": {
+    "bannerLabel": "En réponse à",
+    "dismiss": "Annuler la réponse"
+  },
+  "edit": {
+    "title": "Modifier le message",
+    "label": "Texte mis à jour",
+    "save": "Enregistrer"
+  },
+  "delete": {
+    "meTitle": "Supprimer ce message pour vous ?",
+    "meBody": "Le message disparaîtra de votre fil. Les autres membres le verront encore.",
+    "meConfirm": "Supprimer pour vous",
+    "everyoneTitle": "Supprimer ce message pour tout le monde ?",
+    "everyoneBody": "Personne dans cette conversation ne verra plus le texte. Cette action est définitive.",
+    "everyoneConfirm": "Supprimer pour tout le monde"
+  },
+  "forward": {
+    "title": "Transférer le message",
+    "label": "Choisir une conversation",
+    "placeholder": "Sélectionner un chat",
+    "confirm": "Transférer"
+  },
+  "toast": {
+    "copied": "Texte du message copié.",
+    "copyFailed": "Impossible de copier le texte."
+  },
+  "reasons": {
+    "noText": "Il n'y a pas de texte utilisable.",
+    "notText": "Cette action s'applique seulement aux messages texte.",
+    "notSender": "Seule la personne qui a envoyé le message peut faire cela.",
+    "editWindow": "Les modifications ne sont possibles que dans les 15 minutes après l'envoi.",
+    "deleteWindow": "L'expéditeur ne peut supprimer pour tout le monde que dans les 48 heures.",
+    "notModerator": "Seuls les admins ou propriétaires du groupe peuvent supprimer le message d'un autre.",
+    "alreadyDeleted": "Ce message a déjà été supprimé pour tout le monde.",
+    "pending": "Attendez la fin de l'envoi du message.",
+    "pinRole": "Seuls les admins ou propriétaires du groupe peuvent épingler ici."
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite. Le message n'a pas été modifié.",
+    "message_actions": {
+      "not_allowed": "Vous n'êtes pas autorisé à effectuer cette action.",
+      "invalid_body": "Saisissez entre 1 et 4000 caractères."
+    }
+  }
+}

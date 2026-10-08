@@ -1,0 +1,59 @@
+{
+  "actions": {
+    "reply": "Reply",
+    "jumpToReply": "Jump to quoted message",
+    "copy": "Copy text",
+    "edit": "Edit",
+    "forward": "Forward",
+    "pin": "Pin message",
+    "unpin": "Unpin message",
+    "deleteMe": "Delete for you",
+    "deleteEveryone": "Delete for everyone",
+    "cancel": "Cancel"
+  },
+  "reply": {
+    "bannerLabel": "Replying to",
+    "dismiss": "Cancel reply"
+  },
+  "edit": {
+    "title": "Edit message",
+    "label": "Updated message text",
+    "save": "Save changes"
+  },
+  "delete": {
+    "meTitle": "Delete this message for you?",
+    "meBody": "The message will disappear from your timeline. Other members will still see it.",
+    "meConfirm": "Delete for you",
+    "everyoneTitle": "Delete this message for everyone?",
+    "everyoneBody": "Nobody in this chat will see the message text after this. You cannot undo this action.",
+    "everyoneConfirm": "Delete for everyone"
+  },
+  "forward": {
+    "title": "Forward message",
+    "label": "Choose a conversation",
+    "placeholder": "Select a chat",
+    "confirm": "Forward"
+  },
+  "toast": {
+    "copied": "Message text copied.",
+    "copyFailed": "Could not copy text."
+  },
+  "reasons": {
+    "noText": "There is no text to use.",
+    "notText": "This action only applies to text messages.",
+    "notSender": "Only the sender can do this.",
+    "editWindow": "Edits are only allowed within 15 minutes of sending.",
+    "deleteWindow": "Senders can only delete for everyone within 48 hours.",
+    "notModerator": "Only group admins or owners can delete others' messages.",
+    "alreadyDeleted": "This message was already deleted for everyone.",
+    "pending": "Wait until the message finishes sending.",
+    "pinRole": "Only group admins or owners can pin messages here."
+  },
+  "errors": {
+    "generic": "Something went wrong. Your message was not changed.",
+    "message_actions": {
+      "not_allowed": "You are not allowed to perform this action.",
+      "invalid_body": "Enter between 1 and 4000 characters."
+    }
+  }
+}
