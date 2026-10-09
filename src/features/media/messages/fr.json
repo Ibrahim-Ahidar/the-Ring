@@ -1,0 +1,49 @@
+{
+  "attachFiles": "Joindre un fichier",
+  "sharedMedia": "Médias partagés",
+  "sharedMediaLink": "Ouvrir les médias partagés",
+  "sharedTabs": "Onglets des médias partagés",
+  "download": "Télécharger",
+  "downloadLabel": "Télécharger {name}",
+  "uploadProgress": "Progression de l’envoi",
+  "uploadFailed": "Échec de l’envoi",
+  "retryUpload": "Réessayer l’envoi",
+  "cancelUpload": "Annuler l’envoi",
+  "retry": "Réessayer",
+  "cancel": "Annuler",
+  "imageAlt": "Image partagée",
+  "loadingImage": "Chargement de l’image…",
+  "attachmentMissing": "Pièce jointe indisponible",
+  "playAudio": "Lire le message vocal",
+  "pauseAudio": "Mettre en pause",
+  "durationLabel": "Durée {time}",
+  "startRecording": "Enregistrer un message vocal",
+  "stopRecording": "Arrêter l’enregistrement",
+  "micDenied": "Accès au micro refusé",
+  "loading": "Chargement…",
+  "loadMore": "Charger plus",
+  "openImage": "Ouvrir l’image",
+  "tabs": {
+    "media": "Images",
+    "files": "Fichiers",
+    "links": "Liens"
+  },
+  "empty": {
+    "media": "Aucune image partagée pour l’instant",
+    "files": "Aucun fichier partagé pour l’instant",
+    "links": "Aucun lien dans cette conversation"
+  },
+  "errors": {
+    "media": {
+      "unsupported_type": "Type de fichier non pris en charge",
+      "too_large": "Fichier trop volumineux",
+      "too_long": "Enregistrement trop long",
+      "quota_exceeded": "Quota de stockage dépassé",
+      "not_member": "Vous n’êtes pas membre de cette conversation",
+      "not_found": "Pièce jointe introuvable",
+      "not_ready": "Pièce jointe pas encore prête",
+      "rejected": "Impossible de vérifier l’envoi",
+      "storage_error": "Stockage indisponible"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "attachFiles": "Attach file",
+  "sharedMedia": "Shared media",
+  "sharedMediaLink": "Open shared media",
+  "sharedTabs": "Shared media tabs",
+  "download": "Download",
+  "downloadLabel": "Download {name}",
+  "uploadProgress": "Upload progress",
+  "uploadFailed": "Upload failed",
+  "retryUpload": "Retry upload",
+  "cancelUpload": "Cancel upload",
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "imageAlt": "Shared image",
+  "loadingImage": "Loading image…",
+  "attachmentMissing": "Attachment unavailable",
+  "playAudio": "Play voice message",
+  "pauseAudio": "Pause voice message",
+  "durationLabel": "Duration {time}",
+  "startRecording": "Record voice message",
+  "stopRecording": "Stop recording",
+  "micDenied": "Microphone access was denied",
+  "loading": "Loading…",
+  "loadMore": "Load more",
+  "openImage": "Open image",
+  "tabs": {
+    "media": "Images",
+    "files": "Files",
+    "links": "Links"
+  },
+  "empty": {
+    "media": "No images shared yet",
+    "files": "No files shared yet",
+    "links": "No links in this chat yet"
+  },
+  "errors": {
+    "media": {
+      "unsupported_type": "This file type is not supported",
+      "too_large": "This file is too large",
+      "too_long": "Recording is too long",
+      "quota_exceeded": "Storage quota exceeded",
+      "not_member": "You are not a member of this conversation",
+      "not_found": "Attachment not found",
+      "not_ready": "Attachment is not ready yet",
+      "rejected": "Upload could not be verified",
+      "storage_error": "Storage is unavailable"
+    }
+  }
+}
