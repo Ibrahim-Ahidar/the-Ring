@@ -8,6 +8,7 @@ import {
   useMemo,
   useReducer,
   useRef,
+  type MutableRefObject,
   type ReactNode,
 } from "react";
 
@@ -16,6 +17,8 @@ import { joinConversation, joinInbox } from "@/platform/realtime-hub";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 import type { TimelineMessage } from "@/platform/timeline";
 
+import { getMessageAttachmentsAction } from "@/features/media/actions";
+
 import {
   getConversationAction,
   listConversationsAction,
@@ -23,6 +26,7 @@ import {
   markReadAction,
   sendTextAction,
 } from "../actions";
+import { needsAttachmentFetch } from "../lib/realtime-message";
 import { firstUnreadMessageId } from "../delivery";
 import { messagePageNextCursor } from "../service";
 import type { ConversationDetail, ConversationSummary } from "../types";
@@ -52,6 +56,21 @@ type MessagingContextValue = {
 };
 
 const MessagingContext = createContext<MessagingContextValue | null>(null);
+
+const INBOX_REFRESH_DEBOUNCE_MS = 400;
+
+function scheduleInboxRefresh(
+  timerRef: MutableRefObject<ReturnType<typeof setTimeout> | null>,
+  refresh: () => void,
+): void {
+  if (timerRef.current) {
+    clearTimeout(timerRef.current);
+  }
+  timerRef.current = setTimeout(() => {
+    timerRef.current = null;
+    refresh();
+  }, INBOX_REFRESH_DEBOUNCE_MS);
+}
 
 function readDraftsFromStorage(): Record<string, string> {
   if (typeof window === "undefined") {
@@ -210,6 +229,20 @@ export function MessagingProvider({
     await flushPending();
   }, [flushPending, initialConversationId, listInbox, state.pendingSends]);
 
+  const inboxRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const refreshInboxList = useCallback(() => {
+    void listInbox().then((result) => {
+      if (result.ok) {
+        dispatch({
+          type: "conversations/set",
+          items: result.value.items,
+          hasMore: result.value.hasMore,
+        });
+      }
+    });
+  }, [listInbox]);
+
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
     const inbox = joinInbox(supabase, userId);
@@ -232,25 +265,33 @@ export function MessagingProvider({
     });
 
     const offChange = inbox.onChange((change) => {
-      if (change.table === "conversations" || change.table === "conversation_members") {
-        void listInbox().then((result) => {
-          if (result.ok) {
-            dispatch({
-              type: "conversations/set",
-              items: result.value.items,
-              hasMore: result.value.hasMore,
-            });
-          }
-        });
+      if (change.table === "conversations") {
+        if (change.eventType === "UPDATE") {
+          scheduleInboxRefresh(inboxRefreshTimerRef, refreshInboxList);
+        }
+        return;
+      }
+      if (change.table === "conversation_members") {
+        if (
+          change.eventType === "INSERT" ||
+          change.eventType === "UPDATE" ||
+          change.eventType === "DELETE"
+        ) {
+          scheduleInboxRefresh(inboxRefreshTimerRef, refreshInboxList);
+        }
       }
     });
 
     return () => {
+      const timer = inboxRefreshTimerRef.current;
+      if (timer) {
+        clearTimeout(timer);
+      }
       offStatus();
       offChange();
       inbox.leave();
     };
-  }, [listInbox, reconcile, state.connectionStatus, userId]);
+  }, [reconcile, refreshInboxList, state.connectionStatus, userId]);
 
   useEffect(() => {
     if (!initialConversationId) {
@@ -271,9 +312,55 @@ export function MessagingProvider({
       }
     });
 
+    const applyMessageRow = (row: Record<string, unknown>) => {
+      const message = rowToTimelineMessage(row);
+      if (!message) {
+        return;
+      }
+      dispatch({
+        type: "messages/upsert",
+        conversationId: initialConversationId,
+        message,
+      });
+      if (needsAttachmentFetch(message)) {
+        void getMessageAttachmentsAction({ messageId: message.id }).then(
+          (result) => {
+            if (!result.ok || !result.value?.length) {
+              return;
+            }
+            dispatch({
+              type: "messages/upsert",
+              conversationId: initialConversationId,
+              message: { ...message, attachments: result.value },
+            });
+          },
+        );
+      }
+    };
+
     const offChange = topic.onChange((change) => {
-      if (change.table !== "messages") {
-        if (change.table === "conversation_members") {
+      if (change.table === "message_hides") {
+        if (change.eventType !== "INSERT") {
+          return;
+        }
+        const hideUserId = change.new.user_id;
+        const messageId = change.new.message_id;
+        if (hideUserId === userId && typeof messageId === "string") {
+          dispatch({
+            type: "messages/remove",
+            conversationId: initialConversationId,
+            messageId,
+          });
+        }
+        return;
+      }
+
+      if (change.table === "conversation_members") {
+        if (
+          change.eventType === "INSERT" ||
+          change.eventType === "UPDATE" ||
+          change.eventType === "DELETE"
+        ) {
           void getConversationAction({
             conversationId: initialConversationId,
           }).then((result) => {
@@ -288,15 +375,14 @@ export function MessagingProvider({
         }
         return;
       }
-      const message = rowToTimelineMessage(change.new);
-      if (!message) {
+
+      if (change.table !== "messages") {
         return;
       }
-      dispatch({
-        type: "messages/upsert",
-        conversationId: initialConversationId,
-        message,
-      });
+
+      if (change.eventType === "INSERT" || change.eventType === "UPDATE") {
+        applyMessageRow(change.new);
+      }
     });
 
     return () => {
@@ -304,7 +390,7 @@ export function MessagingProvider({
       offChange();
       topic.leave();
     };
-  }, [initialConversationId, state.detailsByConversation, userId]);
+  }, [initialConversationId, userId]);
 
   useEffect(() => {
     if (!initialConversationId || !initialDetail || !initialMessages) {

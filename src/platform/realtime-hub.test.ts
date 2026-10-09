@@ -87,4 +87,27 @@ describe("realtime hub", () => {
     expect(onStatus).toHaveBeenCalledWith("SUBSCRIBED");
     handle.leave();
   });
+
+  it("subscribes to message row updates and caller message hides", () => {
+    const fake = fakeSupabase();
+    joinConversation(fake.supabase, "c4", "u1");
+    const postgres = fake.channel.on.mock.calls.filter(
+      (call) => call[0] === "postgres_changes",
+    );
+    const tables = postgres.map(
+      (call) => (call[1] as { table: string }).table,
+    );
+    expect(tables).toEqual(
+      expect.arrayContaining([
+        "messages",
+        "message_reactions",
+        "conversation_members",
+        "message_hides",
+      ]),
+    );
+    const hideSub = postgres.find(
+      (call) => (call[1] as { table: string }).table === "message_hides",
+    );
+    expect(hideSub?.[1]).toMatchObject({ event: "*", filter: "user_id=eq.u1" });
+  });
 });

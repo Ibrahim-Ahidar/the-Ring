@@ -174,6 +174,7 @@ export function joinConversation(
         table: "conversation_members",
         filter: `conversation_id=eq.${conversationId}`,
       },
+      { table: "message_hides", filter: `user_id=eq.${userId}` },
     ],
     userId,
   );

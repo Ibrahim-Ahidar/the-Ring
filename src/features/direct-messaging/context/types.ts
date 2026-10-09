@@ -49,6 +49,11 @@ export type MessagingAction =
       cursor: string | null;
     }
   | { type: "messages/upsert"; conversationId: string; message: TimelineMessage }
+  | {
+      type: "messages/remove";
+      conversationId: string;
+      messageId: string;
+    }
   | { type: "detail/set"; conversationId: string; detail: ConversationDetail }
   | { type: "pending/add"; pending: PendingSend }
   | {

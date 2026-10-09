@@ -1,5 +1,9 @@
 import type { TimelineMessage } from "@/platform/timeline";
 
+import {
+  mergeRealtimeMessage,
+  shouldApplyRealtimeMessage,
+} from "../lib/realtime-message";
 import type { MessagingAction, MessagingState } from "./types";
 
 function mergeMessages(
@@ -93,11 +97,37 @@ export function messagingReducer(
       };
     case "messages/upsert": {
       const current = state.messagesByConversation[action.conversationId] ?? [];
+      if (!shouldApplyRealtimeMessage(action.message, state.userId)) {
+        return {
+          ...state,
+          messagesByConversation: {
+            ...state.messagesByConversation,
+            [action.conversationId]: current.filter(
+              (m) => m.id !== action.message.id,
+            ),
+          },
+        };
+      }
+      const existing = current.find((m) => m.id === action.message.id);
+      const merged = mergeRealtimeMessage(existing, action.message);
+      const without = current.filter((m) => m.id !== merged.id);
       return {
         ...state,
         messagesByConversation: {
           ...state.messagesByConversation,
-          [action.conversationId]: mergeMessages(current, [action.message]),
+          [action.conversationId]: mergeMessages(without, [merged]),
+        },
+      };
+    }
+    case "messages/remove": {
+      const current = state.messagesByConversation[action.conversationId] ?? [];
+      return {
+        ...state,
+        messagesByConversation: {
+          ...state.messagesByConversation,
+          [action.conversationId]: current.filter(
+            (m) => m.id !== action.messageId,
+          ),
         },
       };
     }
