@@ -10,6 +10,7 @@ import { err, ok, type Result } from "@/platform/result";
 import { reportError } from "@/platform/telemetry";
 import { validateUsername } from "@/platform/username";
 
+import { MIN_PASSWORD_LENGTH } from "./password-policy";
 import type {
   DeviceSession,
   OwnProfile,
@@ -263,17 +264,104 @@ async function registerSignedInDevice(
   return device;
 }
 
+/**
+ * Sends the recovery email (6-digit code; the link in `redirectTo` is a fallback).
+ * Unknown emails succeed silently on the Supabase side, so this never reveals accounts.
+ */
 export async function requestPasswordReset(
   supabase: SupabaseClient,
   email: string,
   redirectTo: string,
 ): Promise<Result<void>> {
-  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+  const trimmed = email.trim();
+  if (!trimmed) {
+    return err("identity.email_required");
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
     redirectTo,
   });
 
   if (error) {
-    return err("platform.unexpected");
+    return err(await mapCommonAuthError(error, "identity.request_password_reset"));
+  }
+
+  return ok(undefined);
+}
+
+/**
+ * Checks the 6-digit code from the recovery email. On success the member is signed in
+ * (registered like a password sign-in) so the next screen can set a new password.
+ */
+export async function verifyRecoveryCode(
+  supabase: SupabaseClient,
+  rpc: RpcClient,
+  input: { email: string; token: string; deviceLabel?: string },
+  deviceId: string | undefined,
+  newDeviceId?: () => string,
+): Promise<Result<string>> {
+  const token = input.token.trim();
+  if (!SIGNUP_CODE.test(token)) {
+    return err("identity.code_invalid");
+  }
+
+  const { error } = await supabase.auth.verifyOtp({
+    email: input.email.trim(),
+    token,
+    type: "recovery",
+  });
+  if (error) {
+    return err(await mapVerifyCodeError(error));
+  }
+
+  return registerSignedInDevice(supabase, rpc, input.deviceLabel, deviceId, newDeviceId);
+}
+
+/** Maps an `updateUser({ password })` error by its `AuthApiError` code. */
+export async function mapUpdatePasswordError(error: AuthFailure): Promise<string> {
+  if (error.code === "weak_password") {
+    return "identity.password_weak";
+  }
+  if (error.code === "same_password") {
+    return "identity.password_same";
+  }
+  if (error.code === "session_not_found" || error.status === 401) {
+    return "identity.reset_session_expired";
+  }
+  return mapCommonAuthError(error, "identity.update_password");
+}
+
+/**
+ * Sets a new password for the signed-in member, then signs out every other session:
+ * Supabase refresh tokens (`scope: "others"`) and the app's device rows except this one.
+ */
+export async function updatePassword(
+  supabase: SupabaseClient,
+  rpc: RpcClient,
+  password: string,
+  currentDeviceId: string | undefined,
+): Promise<Result<void>> {
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return err("identity.password_weak");
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return err(await mapUpdatePasswordError(error));
+  }
+
+  const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
+  if (signOutError) {
+    await reportError(signOutError, { operation: "identity.sign_out_others" });
+  }
+
+  const devices = await listSessions(rpc);
+  if (devices.ok) {
+    for (const device of devices.value) {
+      if (device.id !== currentDeviceId && !device.revoked_at) {
+        await revokeSession(rpc, device.id);
+      }
+    }
   }
 
   return ok(undefined);

@@ -6,10 +6,7 @@ import { memo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
-import {
-  requestPasswordResetAction,
-  signInAction,
-} from "../actions";
+import { signInAction } from "../actions";
 import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-context";
 import styles from "../identity.module.css";
 import { FormFeedback } from "./FormFeedback";
@@ -42,16 +39,6 @@ function LoginFormInner() {
     finishSubmit({ successMessage: null });
     router.push("/app");
     router.refresh();
-  }
-
-  async function onReset() {
-    startSubmit();
-    const result = await requestPasswordResetAction(email);
-    if (!result.ok) {
-      finishSubmit({ errorCode: result.error.code });
-      return;
-    }
-    finishSubmit({ successMessage: t("resetSent") });
   }
 
   if (confirming) {
@@ -103,14 +90,15 @@ function LoginFormInner() {
           />
         </div>
         <div className={styles.authRow}>
-          <button
-            className={ui.linkBtn}
-            type="button"
-            disabled={submitting || !email.trim()}
-            onClick={onReset}
+          <Link
+            href={
+              email.trim()
+                ? `/forgot-password?email=${encodeURIComponent(email.trim())}`
+                : "/forgot-password"
+            }
           >
-            {t("forgotPassword")}
-          </button>
+            {t("forgotPasswordLink")}
+          </Link>
         </div>
       </div>
       <FormFeedback />
