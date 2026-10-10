@@ -53,6 +53,22 @@
   "exportHint": "Download a copy of your data.",
   "exportSubmit": "Request export",
   "exportUnavailable": "Export is not available yet. No archive is generated.",
+  "forgotPasswordLink": "Forgot password?",
+  "forgotPasswordTitle": "Reset your password",
+  "forgotPasswordSubtitle": "We'll email you a 6-digit code to set a new password.",
+  "sendResetCode": "Send code",
+  "resetCodeTitle": "Check your email",
+  "backToLogin": "Back to log in",
+  "resetPasswordTitle": "Set a new password",
+  "resetPasswordSubtitle": "Choose a password you don't use anywhere else.",
+  "newPasswordLabel": "New password",
+  "newPasswordHint": "At least {min} characters.",
+  "confirmPasswordLabel": "Confirm new password",
+  "submitNewPassword": "Update password",
+  "requestNewCode": "Request a new code",
+  "resetExpiredTitle": "This link has expired",
+  "resetExpiredBody": "The reset code or link has expired or was already used. Request a new one to continue.",
+  "passwordUpdated": "Password updated",
   "errors": {
     "identity": {
       "username_too_short": "Username must be at least 3 characters.",
@@ -71,7 +87,12 @@
       "export_unavailable": "Export is not available yet.",
       "code_invalid": "Enter the 6-digit code from the email.",
       "code_expired": "That code is wrong or has expired. Check it or send a new one.",
-      "code_attempts_exhausted": "Too many wrong codes. Request a new code."
+      "code_attempts_exhausted": "Too many wrong codes. Request a new code.",
+      "email_required": "Enter your email.",
+      "password_weak": "That password is too weak. Use at least 6 characters.",
+      "password_same": "Choose a password different from your current one.",
+      "password_mismatch": "The passwords don't match.",
+      "reset_session_expired": "Your reset session has expired. Request a new code."
     },
     "platform": {
       "rate_limited": "Too many attempts. Wait a moment and try again.",

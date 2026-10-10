@@ -131,14 +131,48 @@ export async function requestPasswordResetAction(
 ): Promise<Result<void>> {
   const supabase = await tryCreateSupabaseServerClient();
   if (!supabase) {
-    return err("platform.unexpected");
+    return err("platform.auth_unavailable");
   }
 
   return identity.requestPasswordReset(
     supabase,
     email,
-    `${appOrigin()}/auth/callback?next=/login`,
+    `${appOrigin()}/auth/callback?next=/reset-password`,
   );
+}
+
+export async function verifyRecoveryCodeAction(input: {
+  email: string;
+  token: string;
+  deviceLabel?: string;
+}): Promise<Result<void>> {
+  const supabase = await tryCreateSupabaseServerClient();
+  if (!supabase) {
+    return err("platform.auth_unavailable");
+  }
+
+  const result = await identity.verifyRecoveryCode(
+    supabase,
+    asRpcClient(supabase),
+    input,
+    await readDeviceId(),
+    randomUUID,
+  );
+  if (!result.ok) {
+    return result;
+  }
+  await writeDeviceId(result.value);
+  return ok(undefined);
+}
+
+export async function updatePasswordAction(
+  password: string,
+): Promise<Result<void>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("identity.reset_session_expired");
+  }
+  return identity.updatePassword(ctx.supabase, ctx.rpc, password, await readDeviceId());
 }
 
 export async function loadOwnProfileAction(): Promise<Result<OwnProfile | null>> {

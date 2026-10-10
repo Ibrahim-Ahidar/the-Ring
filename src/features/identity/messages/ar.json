@@ -53,6 +53,22 @@
   "exportHint": "نسخة من بياناتك.",
   "exportSubmit": "طلب تصدير",
   "exportUnavailable": "التصدير غير متاح بعد. لا يُنشأ أرشيف.",
+  "forgotPasswordLink": "نسيت كلمة المرور؟",
+  "forgotPasswordTitle": "إعادة تعيين كلمة المرور",
+  "forgotPasswordSubtitle": "سنرسل إليك رمزًا من 6 أرقام لتعيين كلمة مرور جديدة.",
+  "sendResetCode": "أرسل الرمز",
+  "resetCodeTitle": "تحقّق من بريدك",
+  "backToLogin": "العودة إلى تسجيل الدخول",
+  "resetPasswordTitle": "عيّن كلمة مرور جديدة",
+  "resetPasswordSubtitle": "اختر كلمة مرور لا تستخدمها في أي مكان آخر.",
+  "newPasswordLabel": "كلمة المرور الجديدة",
+  "newPasswordHint": "{min} أحرف على الأقل.",
+  "confirmPasswordLabel": "أكّد كلمة المرور الجديدة",
+  "submitNewPassword": "تحديث كلمة المرور",
+  "requestNewCode": "اطلب رمزًا جديدًا",
+  "resetExpiredTitle": "انتهت صلاحية هذا الرابط",
+  "resetExpiredBody": "انتهت صلاحية رمز أو رابط إعادة التعيين أو سبق استخدامه. اطلب رمزًا جديدًا للمتابعة.",
+  "passwordUpdated": "تم تحديث كلمة المرور",
   "errors": {
     "identity": {
       "username_too_short": "اسم المستخدم 3 أحرف على الأقل.",
@@ -71,7 +87,12 @@
       "export_unavailable": "التصدير غير متاح بعد.",
       "code_invalid": "أدخل الرمز المكوّن من 6 أرقام من البريد.",
       "code_expired": "الرمز خاطئ أو منتهي الصلاحية. تحقّق منه أو اطلب رمزًا جديدًا.",
-      "code_attempts_exhausted": "محاولات خاطئة كثيرة. اطلب رمزًا جديدًا."
+      "code_attempts_exhausted": "محاولات خاطئة كثيرة. اطلب رمزًا جديدًا.",
+      "email_required": "أدخل بريدك الإلكتروني.",
+      "password_weak": "كلمة المرور هذه ضعيفة. استخدم 6 أحرف على الأقل.",
+      "password_same": "اختر كلمة مرور مختلفة عن الحالية.",
+      "password_mismatch": "كلمتا المرور غير متطابقتين.",
+      "reset_session_expired": "انتهت جلسة إعادة التعيين. اطلب رمزًا جديدًا."
     },
     "platform": {
       "rate_limited": "محاولات كثيرة. انتظر قليلًا.",

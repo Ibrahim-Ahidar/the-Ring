@@ -53,6 +53,22 @@
   "exportHint": "Copie de vos données.",
   "exportSubmit": "Demander l'export",
   "exportUnavailable": "L'export n'est pas disponible. Aucune archive n'est produite.",
+  "forgotPasswordLink": "Mot de passe oublié ?",
+  "forgotPasswordTitle": "Réinitialiser le mot de passe",
+  "forgotPasswordSubtitle": "Nous vous enverrons un code à 6 chiffres pour définir un nouveau mot de passe.",
+  "sendResetCode": "Envoyer le code",
+  "resetCodeTitle": "Vérifiez vos e-mails",
+  "backToLogin": "Retour à la connexion",
+  "resetPasswordTitle": "Nouveau mot de passe",
+  "resetPasswordSubtitle": "Choisissez un mot de passe que vous n'utilisez nulle part ailleurs.",
+  "newPasswordLabel": "Nouveau mot de passe",
+  "newPasswordHint": "Au moins {min} caractères.",
+  "confirmPasswordLabel": "Confirmer le nouveau mot de passe",
+  "submitNewPassword": "Mettre à jour",
+  "requestNewCode": "Demander un nouveau code",
+  "resetExpiredTitle": "Ce lien a expiré",
+  "resetExpiredBody": "Le code ou le lien de réinitialisation a expiré ou a déjà été utilisé. Demandez-en un nouveau pour continuer.",
+  "passwordUpdated": "Mot de passe mis à jour",
   "errors": {
     "identity": {
       "username_too_short": "Au moins 3 caractères.",
@@ -71,7 +87,12 @@
       "export_unavailable": "Export indisponible pour l'instant.",
       "code_invalid": "Saisissez le code à 6 chiffres reçu par e-mail.",
       "code_expired": "Ce code est erroné ou a expiré. Vérifiez-le ou demandez-en un nouveau.",
-      "code_attempts_exhausted": "Trop de codes erronés. Demandez un nouveau code."
+      "code_attempts_exhausted": "Trop de codes erronés. Demandez un nouveau code.",
+      "email_required": "Saisissez votre e-mail.",
+      "password_weak": "Ce mot de passe est trop faible. Utilisez au moins 6 caractères.",
+      "password_same": "Choisissez un mot de passe différent de l'actuel.",
+      "password_mismatch": "Les mots de passe ne correspondent pas.",
+      "reset_session_expired": "Votre session de réinitialisation a expiré. Demandez un nouveau code."
     },
     "platform": {
       "rate_limited": "Trop de tentatives. Patientez.",
