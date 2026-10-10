@@ -3,7 +3,10 @@ import { randomUUID } from "node:crypto";
 import type { PGliteInterface } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { callRpc } from "@/platform/rpc";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { registerDevice, signIn } from "@/features/identity/service";
+import { callRpc, type RpcClient } from "@/platform/rpc";
 import { validateUsername } from "@/platform/username";
 
 import { asSuperuser, asUser, createTestDb, createUser } from "./pglite";
@@ -213,6 +216,79 @@ describe("identity devices", () => {
     if (!result.ok) {
       expect(result.error.code).toBe("identity.not_found");
     }
+  });
+
+  it("gives a second account a new device when the cookie holds another account's id", async () => {
+    const a = await createUser(db, { username: "stale_a" });
+    const b = await createUser(db, { username: "stale_b" });
+    const staleId = randomUUID();
+
+    const first = await registerDevice(createRpcClient(db, a.id), staleId);
+    expect(first).toEqual({ ok: true, value: staleId });
+
+    // Without the retry the RPC alone rejects B with identity.not_found.
+    const raw = await callRpc<string>(createRpcClient(db, b.id), "identity_upsert_device", {
+      p_device_id: staleId,
+    });
+    expect(raw.ok).toBe(false);
+
+    const second = await registerDevice(createRpcClient(db, b.id), staleId);
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(second.value).not.toBe(staleId);
+
+    const rows = await asSuperuser<{ rows: { id: string; user_id: string }[] }>(
+      db,
+      `select id, user_id from public.devices where user_id in ($1, $2) order by user_id = $1 desc`,
+      [a.id, b.id],
+    );
+    expect(rows.rows).toEqual([
+      { id: staleId, user_id: a.id },
+      { id: second.value, user_id: b.id },
+    ]);
+  });
+
+  it("does not retry for errors other than not_found", async () => {
+    const calls: string[] = [];
+    const rpc = {
+      rpc: async (_fn: string, args: { p_device_id: string }) => {
+        calls.push(args.p_device_id);
+        return { data: null, error: { message: "platform.unauthenticated" } };
+      },
+    } as unknown as RpcClient;
+
+    const result = await registerDevice(rpc, randomUUID());
+    expect(result.ok).toBe(false);
+    expect(calls).toHaveLength(1);
+  });
+
+  it("password sign-in succeeds for B with A's stale device cookie", async () => {
+    const a = await createUser(db, { username: "signin_a" });
+    const b = await createUser(db, { username: "signin_b" });
+    const staleId = randomUUID();
+    await registerDevice(createRpcClient(db, a.id), staleId);
+
+    let signedOut = false;
+    const supabase = {
+      auth: {
+        signInWithPassword: async () => ({ error: null }),
+        signOut: async () => {
+          signedOut = true;
+          return { error: null };
+        },
+      },
+    } as unknown as SupabaseClient;
+
+    const freshId = randomUUID();
+    const result = await signIn(
+      supabase,
+      createRpcClient(db, b.id),
+      { email: "b@example.com", password: "pw" },
+      staleId,
+      () => freshId,
+    );
+    expect(result).toEqual({ ok: true, value: freshId });
+    expect(signedOut).toBe(false);
   });
 
   it("does not let a second user list the first user devices via RLS", async () => {

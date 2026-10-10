@@ -96,12 +96,45 @@ export async function signUp(
   return ok({ needsEmailConfirmation });
 }
 
+/**
+ * Registers the signed-in member's device and returns the id actually used.
+ * A device id left in the browser by another account makes the RPC answer
+ * `identity.not_found`; in that case a fresh id is generated and tried once.
+ */
+export async function registerDevice(
+  rpc: RpcClient,
+  deviceId: string | undefined,
+  deviceLabel: string | null = null,
+  newDeviceId: () => string = () => globalThis.crypto.randomUUID(),
+): Promise<Result<string>> {
+  const upsert = (id: string) =>
+    callRpc<string>(rpc, "identity_upsert_device", {
+      p_device_id: id,
+      p_device_label: deviceLabel,
+    });
+
+  const firstId = deviceId ?? newDeviceId();
+  const first = await upsert(firstId);
+  if (first.ok) {
+    return ok(firstId);
+  }
+  if (!deviceId || first.error.code !== "identity.not_found") {
+    return first;
+  }
+
+  const freshId = newDeviceId();
+  const retry = await upsert(freshId);
+  return retry.ok ? ok(freshId) : retry;
+}
+
+/** Returns the device id the session is registered under; the caller stores it in the cookie. */
 export async function signIn(
   supabase: SupabaseClient,
   rpc: RpcClient,
   input: SignInInput,
-  deviceId: string,
-): Promise<Result<void>> {
+  deviceId: string | undefined,
+  newDeviceId?: () => string,
+): Promise<Result<string>> {
   const { error } = await supabase.auth.signInWithPassword({
     email: input.email.trim(),
     password: input.password,
@@ -111,17 +144,17 @@ export async function signIn(
     return err("identity.credentials_rejected");
   }
 
-  const upsert = await callRpc<string>(rpc, "identity_upsert_device", {
-    p_device_id: deviceId,
-    p_device_label: input.deviceLabel ?? null,
-  });
+  const device = await registerDevice(
+    rpc,
+    deviceId,
+    input.deviceLabel ?? null,
+    newDeviceId,
+  );
 
-  if (!upsert.ok) {
+  if (!device.ok) {
     await supabase.auth.signOut();
-    return upsert;
   }
-
-  return ok(undefined);
+  return device;
 }
 
 export async function requestPasswordReset(
