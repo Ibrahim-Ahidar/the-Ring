@@ -189,7 +189,6 @@
 .sessionName {
   display: block;
   font-weight: var(--weight-medium);
-  unicode-bidi: plaintext;
 }
 
 .dangerRow,

@@ -28,5 +28,9 @@ export async function assertAppAccess(
     return deviceCheck;
   }
 
+  // Keeps "Last active" current; the RPC writes at most every 5 minutes.
+  // A failed touch must not lock the member out, so its result is ignored.
+  await callRpc<null>(rpc, "identity_touch_device", { p_device_id: deviceId });
+
   return ok(undefined);
 }
