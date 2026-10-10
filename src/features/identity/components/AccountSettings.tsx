@@ -2,8 +2,8 @@
 
 import { Camera, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { memo, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { memo, useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 
 import {
   AVATAR_MAX_MB,
@@ -11,20 +11,51 @@ import {
   checkAvatarFile,
   type AvatarFileProblem,
 } from "@/platform/avatars";
+import { ConfirmDialog } from "@/features/groups/components/ConfirmDialog";
 import { Avatar } from "@/shell/components/Avatar";
 import ui from "@/shell/styles/ui.module.css";
 import {
   changeUsernameAction,
   deleteAccountAction,
-  exportDataAction,
   removeAvatarAction,
   updateProfileAction,
   uploadAvatarAction,
 } from "../actions";
-import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-context";
 import styles from "../identity.module.css";
 import type { OwnProfile } from "../types";
-import { FormFeedback } from "./FormFeedback";
+
+const BIO_MAX = 160;
+const COOLDOWN_DAYS = 14;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+type Feedback = { kind: "error" | "success"; message: string };
+
+function CardFeedback({ feedback }: { feedback: Feedback | null }) {
+  if (!feedback) {
+    return null;
+  }
+  return feedback.kind === "error" ? (
+    <p className={styles.error} role="alert">
+      {feedback.message}
+    </p>
+  ) : (
+    <p className={styles.success} role="status">
+      {feedback.message}
+    </p>
+  );
+}
+
+function timeZoneOptions(current: string): string[] {
+  let zones: string[] = [];
+  try {
+    zones = (
+      Intl as unknown as { supportedValuesOf(key: string): string[] }
+    ).supportedValuesOf("timeZone");
+  } catch {
+    zones = [];
+  }
+  return zones.includes(current) ? zones : [current, ...zones];
+}
 
 type AccountSettingsProps = {
   profile: OwnProfile;
@@ -32,12 +63,26 @@ type AccountSettingsProps = {
 
 function AccountSettingsInner({ profile }: AccountSettingsProps) {
   const t = useTranslations("identity");
-  const { submitting, startSubmit, finishSubmit } = useIdentityForm();
+  const locale = useLocale();
   const [displayName, setDisplayName] = useState(profile.display_name ?? "");
   const [bio, setBio] = useState(profile.bio ?? "");
-  const [timezone, setTimezone] = useState(profile.timezone);
+  const [timezone, setTimezone] = useState(
+    profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+  );
   const [newUsername, setNewUsername] = useState(profile.username);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [profileBusy, setProfileBusy] = useState(false);
+  const [usernameBusy, setUsernameBusy] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [profileFeedback, setProfileFeedback] = useState<Feedback | null>(null);
+  const [usernameFeedback, setUsernameFeedback] = useState<Feedback | null>(null);
+  const [deleteFeedback, setDeleteFeedback] = useState<Feedback | null>(null);
+  const [changedAt, setChangedAt] = useState(profile.username_changed_at);
+  const zones = useMemo(() => {
+    const browser = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return timeZoneOptions(profile.timezone || browser);
+  }, [profile.timezone]);
   const router = useRouter();
   const [preview, setPreview] = useState<string | null>(null);
   const [removed, setRemoved] = useState(false);
@@ -64,26 +109,48 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
   const avatarSrc = preview ?? (removed ? null : profile.avatar_url);
   const hasAvatar = Boolean(avatarSrc);
 
+  function formatDate(date: Date): string {
+    return new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(date);
+  }
+
+  const nextChange = changedAt
+    ? new Date(new Date(changedAt).getTime() + COOLDOWN_DAYS * DAY_MS)
+    : null;
+  const coolingDown = nextChange !== null && nextChange.getTime() > Date.now();
+
   async function saveProfile(event: React.FormEvent) {
     event.preventDefault();
-    startSubmit();
+    setProfileBusy(true);
+    setProfileFeedback(null);
     const result = await updateProfileAction({ displayName, bio, timezone });
-    finishSubmit(
-      result.ok
-        ? { successMessage: t("savedProfile") }
-        : { errorCode: result.error.code },
-    );
+    setProfileBusy(false);
+    if (result.ok) {
+      setProfileFeedback({ kind: "success", message: t("savedProfile") });
+      router.refresh();
+    } else {
+      setProfileFeedback({ kind: "error", message: errorMessageFor(result.error.code) });
+    }
   }
 
   async function onUsernameChange(event: React.FormEvent) {
     event.preventDefault();
-    startSubmit();
+    setUsernameBusy(true);
+    setUsernameFeedback(null);
     const result = await changeUsernameAction(newUsername);
-    finishSubmit(
-      result.ok
-        ? { successMessage: t("savedProfile") }
-        : { errorCode: result.error.code },
-    );
+    setUsernameBusy(false);
+    if (result.ok) {
+      const now = new Date();
+      setChangedAt(now.toISOString());
+      setUsernameFeedback({
+        kind: "success",
+        message: t("usernameChanged", {
+          date: formatDate(new Date(now.getTime() + COOLDOWN_DAYS * DAY_MS)),
+        }),
+      });
+      router.refresh();
+    } else {
+      setUsernameFeedback({ kind: "error", message: errorMessageFor(result.error.code) });
+    }
   }
 
   function showAvatarProblem(problem: AvatarFileProblem, sizeBytes: number) {
@@ -150,22 +217,23 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
     return t.has(key) ? t(key) : t("errors.platform.unexpected");
   }
 
-  async function onExport() {
-    startSubmit();
-    const result = await exportDataAction();
-    finishSubmit(
-      result.ok
-        ? { successMessage: t("exportUnavailable") }
-        : { errorCode: result.error.code },
-    );
+  const deleteMatches = deleteConfirm === `@${profile.username}`;
+
+  function onDeleteSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (deleteMatches) {
+      setConfirmingDelete(true);
+    }
   }
 
-  async function onDelete(event: React.FormEvent) {
-    event.preventDefault();
-    startSubmit();
-    const result = await deleteAccountAction(deleteConfirm);
+  async function onDelete() {
+    setConfirmingDelete(false);
+    setDeleteBusy(true);
+    setDeleteFeedback(null);
+    const result = await deleteAccountAction(deleteConfirm.replace(/^@/, ""));
     if (!result.ok) {
-      finishSubmit({ errorCode: result.error.code });
+      setDeleteBusy(false);
+      setDeleteFeedback({ kind: "error", message: errorMessageFor(result.error.code) });
     }
   }
 
@@ -236,8 +304,6 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
         </div>
       </section>
 
-      <FormFeedback />
-
       <form className={ui.settingsCard} onSubmit={saveProfile}>
         <div className={ui.settingsCardBody}>
           <div className={ui.field}>
@@ -260,9 +326,14 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
               id="account-bio"
               className={ui.input}
               rows={3}
+              maxLength={BIO_MAX}
+              aria-describedby="account-bio-count"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
             />
+            <span id="account-bio-count" className={styles.avatarHint}>
+              {t("bioCount", { count: bio.length, max: BIO_MAX })}
+            </span>
           </div>
           <div className={ui.field}>
             <label className={ui.fieldLabel} htmlFor="account-timezone">
@@ -272,19 +343,27 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
               id="account-timezone"
               className={ui.input}
               dir="ltr"
+              list="account-timezone-list"
+              autoComplete="off"
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
             />
+            <datalist id="account-timezone-list">
+              {zones.map((zone) => (
+                <option key={zone} value={zone} />
+              ))}
+            </datalist>
           </div>
           <div className={styles.cardFoot}>
             <button
               className={`${ui.btn} ${ui.btnPrimary}`}
               type="submit"
-              disabled={submitting}
+              disabled={profileBusy}
             >
-              {submitting ? t("submitting") : t("saveProfile")}
+              {profileBusy ? t("submitting") : t("saveProfile")}
             </button>
           </div>
+          <CardFeedback feedback={profileFeedback} />
         </div>
       </form>
 
@@ -297,7 +376,9 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
           <h2 id="username-heading" className={ui.settingsCardTitle}>
             {t("changeUsername")}
           </h2>
-          <p className={ui.settingsCardDesc}>{t("usernameCooldownHint")}</p>
+          <p className={ui.settingsCardDesc}>{coolingDown && nextChange
+              ? t("usernameNextChange", { date: formatDate(nextChange) })
+              : t("usernameCooldownHint")}</p>
         </div>
         <div className={ui.settingsCardBody}>
           <div className={ui.field}>
@@ -320,18 +401,20 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
             <button
               className={`${ui.btn} ${ui.btnSecondary}`}
               type="submit"
-              disabled={submitting}
+              disabled={usernameBusy}
             >
-              {t("changeUsername")}
+              {usernameBusy ? t("submitting") : t("changeUsername")}
             </button>
           </div>
+          <CardFeedback feedback={usernameFeedback} />
         </div>
       </form>
 
       <section className={ui.settingsCard} aria-labelledby="export-heading">
         <div className={ui.settingsCardHead}>
           <h2 id="export-heading" className={ui.settingsCardTitle}>
-            {t("exportTitle")}
+            {t("exportTitle")}{" "}
+            <span className={`${ui.tag} ${ui.tagNeutral}`}>{t("comingSoon")}</span>
           </h2>
           <p className={ui.settingsCardDesc}>{t("exportHint")}</p>
         </div>
@@ -340,8 +423,7 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
             <button
               className={`${ui.btn} ${ui.btnSecondary}`}
               type="button"
-              disabled={submitting}
-              onClick={onExport}
+              disabled
             >
               {t("exportSubmit")}
             </button>
@@ -351,7 +433,7 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
 
       <form
         className={ui.settingsCard}
-        onSubmit={onDelete}
+        onSubmit={onDeleteSubmit}
         aria-labelledby="delete-heading"
       >
         <div className={ui.settingsCardHead}>
@@ -381,23 +463,27 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
             <button
               className={`${ui.btn} ${ui.btnDanger}`}
               type="submit"
-              disabled={submitting}
+              disabled={!deleteMatches || deleteBusy}
             >
               {t("deleteSubmit")}
             </button>
           </div>
+          <CardFeedback feedback={deleteFeedback} />
         </div>
       </form>
+      {confirmingDelete ? (
+        <ConfirmDialog
+          destructive
+          title={t("deleteConfirmTitle")}
+          body={t("deleteConfirmBody", { username: profile.username })}
+          confirmLabel={t("deleteSubmit")}
+          cancelLabel={t("cancel")}
+          onConfirm={onDelete}
+          onCancel={() => setConfirmingDelete(false)}
+        />
+      ) : null}
     </>
   );
 }
 
-function AccountSettingsRoot(props: AccountSettingsProps) {
-  return (
-    <IdentityFormProvider>
-      <AccountSettingsInner {...props} />
-    </IdentityFormProvider>
-  );
-}
-
-export const AccountSettings = memo(AccountSettingsRoot);
+export const AccountSettings = memo(AccountSettingsInner);
