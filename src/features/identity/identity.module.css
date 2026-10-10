@@ -103,6 +103,14 @@
   color: var(--color-text-muted);
 }
 
+/* Digits stay left-to-right in RTL locales (the input sets dir="ltr"). */
+.codeInput {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-lg);
+  letter-spacing: 0.4em;
+  text-align: center;
+}
+
 .authNoticeTitle {
   color: var(--color-text);
   font-size: var(--text-lg);
@@ -169,6 +177,35 @@
 .avatarUpload:has(input:focus-visible) label {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+}
+
+.avatarUpload label[aria-disabled="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.avatarPending {
+  opacity: 0.7;
+}
+
+.avatarHint {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.avatarProgress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.avatarProgress progress {
+  inline-size: 120px;
+  block-size: 6px;
+  accent-color: var(--color-accent);
 }
 
 .cardFoot {

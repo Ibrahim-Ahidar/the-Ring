@@ -68,14 +68,27 @@
     "messaging": {
       "not_allowed": "You cannot message this person.",
       "request_required": "They require a message request first.",
-      "not_found": "User or conversation not found."
+      "not_found": "User or conversation not found.",
+      "not_member": "You are not a member of this conversation."
     },
     "platform": {
       "unauthenticated": "Sign in to continue.",
-      "unexpected": "Something went wrong."
+      "unexpected": "Something went wrong.",
+      "rate_limited": "You're doing that too fast. Try again in a moment.",
+      "forbidden": "You don't have permission to do that.",
+      "conflict": "That conflicts with the current state. Refresh and try again."
     }
   },
+<<<<<<< HEAD
   "loadingOlder": "Loading older messages",
   "jumpToLatest": "Jump to latest",
   "newMessagesCount": "{count, plural, one {# new message} other {# new messages}}"
+=======
+  "composerDisabled": {
+    "blocked": "You can't send messages because one of you has blocked the other.",
+    "removed": "You can't send messages because you are no longer a member of this group.",
+    "restricted": "You don't have permission to send messages here."
+  },
+  "opening": "Opening chat…"
+>>>>>>> origin/agent/pulse-build
 }

@@ -3,7 +3,10 @@ import { randomUUID } from "node:crypto";
 import type { PGliteInterface } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { callRpc } from "@/platform/rpc";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { registerDevice, signIn } from "@/features/identity/service";
+import { callRpc, type RpcClient } from "@/platform/rpc";
 import { validateUsername } from "@/platform/username";
 
 import { asSuperuser, asUser, createTestDb, createUser } from "./pglite";
@@ -215,6 +218,79 @@ describe("identity devices", () => {
     }
   });
 
+  it("gives a second account a new device when the cookie holds another account's id", async () => {
+    const a = await createUser(db, { username: "stale_a" });
+    const b = await createUser(db, { username: "stale_b" });
+    const staleId = randomUUID();
+
+    const first = await registerDevice(createRpcClient(db, a.id), staleId);
+    expect(first).toEqual({ ok: true, value: staleId });
+
+    // Without the retry the RPC alone rejects B with identity.not_found.
+    const raw = await callRpc<string>(createRpcClient(db, b.id), "identity_upsert_device", {
+      p_device_id: staleId,
+    });
+    expect(raw.ok).toBe(false);
+
+    const second = await registerDevice(createRpcClient(db, b.id), staleId);
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(second.value).not.toBe(staleId);
+
+    const rows = await asSuperuser<{ rows: { id: string; user_id: string }[] }>(
+      db,
+      `select id, user_id from public.devices where user_id in ($1, $2) order by user_id = $1 desc`,
+      [a.id, b.id],
+    );
+    expect(rows.rows).toEqual([
+      { id: staleId, user_id: a.id },
+      { id: second.value, user_id: b.id },
+    ]);
+  });
+
+  it("does not retry for errors other than not_found", async () => {
+    const calls: string[] = [];
+    const rpc = {
+      rpc: async (_fn: string, args: { p_device_id: string }) => {
+        calls.push(args.p_device_id);
+        return { data: null, error: { message: "platform.unauthenticated" } };
+      },
+    } as unknown as RpcClient;
+
+    const result = await registerDevice(rpc, randomUUID());
+    expect(result.ok).toBe(false);
+    expect(calls).toHaveLength(1);
+  });
+
+  it("password sign-in succeeds for B with A's stale device cookie", async () => {
+    const a = await createUser(db, { username: "signin_a" });
+    const b = await createUser(db, { username: "signin_b" });
+    const staleId = randomUUID();
+    await registerDevice(createRpcClient(db, a.id), staleId);
+
+    let signedOut = false;
+    const supabase = {
+      auth: {
+        signInWithPassword: async () => ({ error: null }),
+        signOut: async () => {
+          signedOut = true;
+          return { error: null };
+        },
+      },
+    } as unknown as SupabaseClient;
+
+    const freshId = randomUUID();
+    const result = await signIn(
+      supabase,
+      createRpcClient(db, b.id),
+      { email: "b@example.com", password: "pw" },
+      staleId,
+      () => freshId,
+    );
+    expect(result).toEqual({ ok: true, value: freshId });
+    expect(signedOut).toBe(false);
+  });
+
   it("does not let a second user list the first user devices via RLS", async () => {
     const owner = await createUser(db, { username: "list_owner" });
     const other = await createUser(db, { username: "list_other" });
@@ -234,6 +310,115 @@ describe("identity devices", () => {
       [owner.id],
     );
     expect(rows.rows).toHaveLength(0);
+  });
+});
+
+describe("identity device revocation ends the auth session (#59)", () => {
+  async function signInSession(userId: string) {
+    const sessionId = randomUUID();
+    await asSuperuser(db, `insert into auth.sessions (id, user_id) values ($1, $2)`, [
+      sessionId,
+      userId,
+    ]);
+    await asSuperuser(
+      db,
+      `insert into auth.refresh_tokens (token, user_id, session_id) values ($1, $2, $3)`,
+      [randomUUID(), userId, sessionId],
+    );
+    return { sessionId, rpc: createRpcClient(db, userId, { session_id: sessionId }) };
+  }
+
+  async function setup(username: string) {
+    const user = await createUser(db, { username });
+    const a = await signInSession(user.id);
+    const b = await signInSession(user.id);
+    const deviceA = randomUUID();
+    const deviceB = randomUUID();
+    expect((await callRpc(a.rpc, "identity_upsert_device", { p_device_id: deviceA })).ok).toBe(true);
+    expect((await callRpc(b.rpc, "identity_upsert_device", { p_device_id: deviceB })).ok).toBe(true);
+    return { user, a, b, deviceA, deviceB };
+  }
+
+  it("stores the session id on the device row at sign-in", async () => {
+    const { b, deviceB } = await setup("rev_bind");
+    const row = await asSuperuser<{ rows: { session_id: string }[] }>(
+      db,
+      `select session_id from public.devices where id = $1`,
+      [deviceB],
+    );
+    expect(row.rows[0]?.session_id).toBe(b.sessionId);
+  });
+
+  it("refuses B's next request after A revokes B, and leaves A signed in", async () => {
+    const { a, b, deviceA, deviceB } = await setup("rev_next");
+    expect((await callRpc(b.rpc, "identity_assert_session_active")).ok).toBe(true);
+
+    expect((await callRpc(a.rpc, "identity_revoke_device", { p_device_id: deviceB })).ok).toBe(true);
+
+    const session = await callRpc(b.rpc, "identity_assert_session_active");
+    expect(session).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
+    const device = await callRpc(b.rpc, "identity_assert_device_active", { p_device_id: deviceB });
+    expect(device).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
+
+    expect((await callRpc(a.rpc, "identity_assert_session_active")).ok).toBe(true);
+    expect(
+      (await callRpc(a.rpc, "identity_assert_device_active", { p_device_id: deviceA })).ok,
+    ).toBe(true);
+  });
+
+  it("deletes B's auth session so its refresh token can no longer be used", async () => {
+    const { a, b, deviceB } = await setup("rev_refresh");
+    await callRpc(a.rpc, "identity_revoke_device", { p_device_id: deviceB });
+
+    const sessions = await asSuperuser<{ rows: unknown[] }>(
+      db,
+      `select 1 from auth.sessions where id = $1`,
+      [b.sessionId],
+    );
+    expect(sessions.rows).toHaveLength(0);
+    const tokens = await asSuperuser<{ rows: unknown[] }>(
+      db,
+      `select 1 from auth.refresh_tokens where session_id = $1`,
+      [b.sessionId],
+    );
+    expect(tokens.rows).toHaveLength(0);
+
+    const aTokens = await asSuperuser<{ rows: unknown[] }>(
+      db,
+      `select 1 from auth.refresh_tokens where session_id = $1`,
+      [a.sessionId],
+    );
+    expect(aTokens.rows).toHaveLength(1);
+  });
+
+  it("does not let the revoked session re-register itself", async () => {
+    const { a, b, deviceB } = await setup("rev_reupsert");
+    await callRpc(a.rpc, "identity_revoke_device", { p_device_id: deviceB });
+
+    const same = await callRpc(b.rpc, "identity_upsert_device", { p_device_id: deviceB });
+    expect(same).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
+    const fresh = await callRpc(b.rpc, "identity_upsert_device", { p_device_id: randomUUID() });
+    expect(fresh).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
+  });
+
+  it("lets the device back in after a fresh sign-in", async () => {
+    const { user, a, deviceB } = await setup("rev_fresh");
+    await callRpc(a.rpc, "identity_revoke_device", { p_device_id: deviceB });
+
+    const again = await signInSession(user.id);
+    expect((await callRpc(again.rpc, "identity_upsert_device", { p_device_id: deviceB })).ok).toBe(
+      true,
+    );
+    expect(
+      (await callRpc(again.rpc, "identity_assert_device_active", { p_device_id: deviceB })).ok,
+    ).toBe(true);
+  });
+
+  it("refuses an access token whose auth session no longer exists", async () => {
+    const { b } = await setup("rev_gone");
+    await asSuperuser(db, `delete from auth.sessions where id = $1`, [b.sessionId]);
+    const result = await callRpc(b.rpc, "identity_assert_session_active");
+    expect(result).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
   });
 });
 

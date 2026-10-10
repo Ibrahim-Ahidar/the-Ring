@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useLayoutEffect,
   useRef,
   type FormEvent,
   type KeyboardEvent,
@@ -23,18 +24,43 @@ import ui from "@/shell/styles/ui.module.css";
 import { useMessaging } from "../context/MessagingProvider";
 import styles from "../direct-messaging.module.css";
 
+export type ComposerDisabledReason = "blocked" | "removed" | "restricted";
+
 type Props = {
   conversationId: string;
+  /** Set when the user cannot post here; the composer shows the reason. */
+  disabledReason?: ComposerDisabledReason;
 };
 
-function MessageComposerInner({ conversationId }: Props) {
+/** Touch keyboards have no Shift+Enter, so Enter must insert a newline. */
+function isCoarsePointer(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(pointer: coarse)").matches
+  );
+}
+
+function MessageComposerInner({ conversationId, disabledReason }: Props) {
   const t = useTranslations("direct-messaging");
   const { state, sendMessage, setDraft } = useMessaging();
   const draft = state.drafts[conversationId] ?? "";
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastInputSignal = useRef(0);
   const tools = useMemo(() => getContributions("composerTool"), []);
-  const disabled = false;
+  const disabled = disabledReason !== undefined;
+  const canSend = !disabled && draft.trim().length > 0;
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Fallback auto-grow for browsers without `field-sizing: content`; capped by CSS max-height.
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) {
+      return;
+    }
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [draft]);
 
   const signalInput = useCallback(
     (text: string) => {
@@ -71,7 +97,7 @@ function MessageComposerInner({ conversationId }: Props) {
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const body = draft.trim();
-    if (!body) {
+    if (!body || disabled) {
       return;
     }
     const extras = getComposerSendExtras(conversationId);
@@ -81,10 +107,18 @@ function MessageComposerInner({ conversationId }: Props) {
       replyToId: extras?.replyToId,
     });
     emitComposerActivity({ kind: "input", conversationId, isEmpty: true });
+    inputRef.current?.focus();
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key !== "Enter" || event.shiftKey) {
+      return;
+    }
+    // Enter confirms an IME candidate (keyCode 229 on Android/older browsers); never send then.
+    if (event.nativeEvent.isComposing || event.keyCode === 229) {
+      return;
+    }
+    if (!isCoarsePointer()) {
       event.preventDefault();
       void onSubmit(event as unknown as FormEvent);
     }
@@ -110,20 +144,30 @@ function MessageComposerInner({ conversationId }: Props) {
           id={`composer-${conversationId}`}
           className={styles.composerInput}
           value={draft}
+          ref={inputRef}
           rows={1}
+          dir="auto"
+          disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={onKeyDown}
-          placeholder={t("composerPlaceholder")}
+          placeholder={disabled ? undefined : t("composerPlaceholder")}
+          aria-describedby={disabled ? `composer-reason-${conversationId}` : undefined}
         />
         <button
           type="submit"
           className={`${ui.iconBtn} ${ui.iconBtnAccent} ${styles.composerSend}`}
           aria-label={t("send")}
           title={t("send")}
+          disabled={!canSend}
         >
           <SendHorizontal size={24} className="flip-rtl" aria-hidden />
         </button>
       </div>
+      {disabledReason ? (
+        <p id={`composer-reason-${conversationId}`} className={ui.notice} role="status">
+          {t(`composerDisabled.${disabledReason}`)}
+        </p>
+      ) : null}
     </form>
   );
 }

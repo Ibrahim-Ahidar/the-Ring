@@ -13,13 +13,16 @@ import {
 import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-context";
 import styles from "../identity.module.css";
 import { FormFeedback } from "./FormFeedback";
+import { SignupCodeEntry } from "./SignupCodeEntry";
 
 function LoginFormInner() {
   const t = useTranslations("identity");
   const router = useRouter();
-  const { submitting, errorCode, startSubmit, finishSubmit } = useIdentityForm();
+  const { submitting, errorCode, startSubmit, finishSubmit, clearFeedback } =
+    useIdentityForm();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirming, setConfirming] = useState(false);
   const rejected = errorCode === "identity.credentials_rejected";
 
   async function onSubmit(event: React.FormEvent) {
@@ -27,6 +30,12 @@ function LoginFormInner() {
     startSubmit();
     const result = await signInAction({ email, password });
     if (!result.ok) {
+      // An unconfirmed account goes to the code screen, which sends a fresh code.
+      if (result.error.code === "identity.confirmation_required") {
+        finishSubmit({ successMessage: null });
+        setConfirming(true);
+        return;
+      }
       finishSubmit({ errorCode: result.error.code });
       return;
     }
@@ -43,6 +52,20 @@ function LoginFormInner() {
       return;
     }
     finishSubmit({ successMessage: t("resetSent") });
+  }
+
+  if (confirming) {
+    return (
+      <SignupCodeEntry
+        email={email}
+        intro={t("errors.identity.confirmation_required")}
+        resendOnMount
+        onBack={() => {
+          clearFeedback();
+          setConfirming(false);
+        }}
+      />
+    );
   }
 
   return (

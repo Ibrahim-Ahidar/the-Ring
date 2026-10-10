@@ -161,7 +161,9 @@ site_url = "http://localhost:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+# Only password reset / email change still use links; signup confirms with a 6-digit code.
+# Add the production `<origin>/auth/callback` in the hosted dashboard (Auth > URL Configuration).
+additional_redirect_urls = ["http://localhost:3000/auth/callback", "http://127.0.0.1:3000/auth/callback"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -197,6 +199,8 @@ password_requirements = ""
 
 [auth.rate_limit]
 # Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
+# The built-in mailer caps this at 2/hour and only delivers to team members; see
+# docs/operations/environment.md for the hosted SMTP setup.
 email_sent = 2
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
 sms_sent = 30
@@ -243,6 +247,12 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
+
+# Signup confirmation sends only the 6-digit code ({{ .Token }}), never a link.
+# Keep the hosted dashboard template (Auth > Email Templates > Confirm signup) in sync.
+[auth.email.template.confirmation]
+subject = "Your Pulse code"
+content_path = "./supabase/templates/confirmation.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]

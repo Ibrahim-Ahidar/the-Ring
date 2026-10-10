@@ -15,7 +15,7 @@ describe("RequestRequiredForm", () => {
   it("exposes an accessible note field in Arabic", () => {
     render(
       <NextIntlClientProvider locale="ar" messages={{ "message-requests": ar }}>
-        <RequestRequiredForm targetUserId="friend" onDone={() => undefined} />
+        <RequestRequiredForm targetUsername="friend" onDone={() => undefined} />
       </NextIntlClientProvider>,
     );
 

@@ -3,9 +3,14 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { readDeviceId, writeDeviceId } from "@/features/identity/device-cookie";
-import { asRpcClient, callRpc } from "@/platform/rpc";
+import { registerDevice } from "@/features/identity/service";
+import { asRpcClient } from "@/platform/rpc";
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 
+/**
+ * Link landing for password reset (and later email change). Signup no longer sends
+ * links: it confirms with a 6-digit code (`verifySignupCodeAction`, issue #52).
+ */
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -26,16 +31,18 @@ export async function GET(request: Request) {
   }
 
   // The link signs the member in, so it registers a device like password sign-in does.
-  const deviceId = (await readDeviceId()) ?? randomUUID();
-  const device = await callRpc<string>(asRpcClient(supabase), "identity_upsert_device", {
-    p_device_id: deviceId,
-    p_device_label: null,
-  });
+  // A stale cookie from another account is replaced by a fresh id (issue #50).
+  const device = await registerDevice(
+    asRpcClient(supabase),
+    await readDeviceId(),
+    null,
+    randomUUID,
+  );
   if (!device.ok) {
     await supabase.auth.signOut();
     return NextResponse.redirect(new URL("/login", url.origin));
   }
-  await writeDeviceId(deviceId);
+  await writeDeviceId(device.value);
 
   const target = next.startsWith("/") && !next.startsWith("//") ? next : "/login";
   return NextResponse.redirect(new URL(target, url.origin));

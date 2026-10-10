@@ -4,11 +4,12 @@ import { randomUUID } from "node:crypto";
 
 import { redirect } from "next/navigation";
 
-import { getSessionContext } from "@/platform/session";
+import { AVATARS_BUCKET, avatarObjectName } from "@/platform/avatars";
+import { getSessionContext, type SessionContext } from "@/platform/session";
 import { createSupabaseAdminClient } from "@/platform/supabase/admin";
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 import { asRpcClient } from "@/platform/rpc";
-import { err, type Result } from "@/platform/result";
+import { err, ok, type Result } from "@/platform/result";
 
 import {
   clearDeviceId,
@@ -62,16 +63,53 @@ export async function signInAction(input: {
   }
 
   const rpc = ctx?.rpc ?? asRpcClient(supabase);
-  let deviceId = await readDeviceId();
-  if (!deviceId) {
-    deviceId = randomUUID();
+  // A stale cookie from another account is replaced by a fresh id inside signIn.
+  const result = await identity.signIn(
+    supabase,
+    rpc,
+    input,
+    await readDeviceId(),
+    randomUUID,
+  );
+  if (!result.ok) {
+    return result;
+  }
+  await writeDeviceId(result.value);
+  return ok(undefined);
+}
+
+export async function verifySignupCodeAction(input: {
+  email: string;
+  token: string;
+  deviceLabel?: string;
+}): Promise<Result<void>> {
+  const supabase = await tryCreateSupabaseServerClient();
+  if (!supabase) {
+    return err("platform.auth_unavailable");
   }
 
-  const result = await identity.signIn(supabase, rpc, input, deviceId);
-  if (result.ok) {
-    await writeDeviceId(deviceId);
+  const result = await identity.verifySignupCode(
+    supabase,
+    asRpcClient(supabase),
+    input,
+    await readDeviceId(),
+    randomUUID,
+  );
+  if (!result.ok) {
+    return result;
   }
-  return result;
+  await writeDeviceId(result.value);
+  return ok(undefined);
+}
+
+export async function resendConfirmationAction(
+  email: string,
+): Promise<Result<void>> {
+  const supabase = await tryCreateSupabaseServerClient();
+  if (!supabase) {
+    return err("platform.auth_unavailable");
+  }
+  return identity.resendSignupCode(supabase, email);
 }
 
 export async function signOutAction(): Promise<Result<void>> {
@@ -161,22 +199,59 @@ export async function uploadAvatarAction(
           ? "webp"
           : "gif";
 
-  const objectPath = `avatars/${ctx.userId}/${randomUUID()}.${ext}`;
-  const admin = createSupabaseAdminClient();
+  const previous = await identity.getOwnProfile(ctx.rpc);
+  const previousPath = previous.ok ? (previous.value?.avatar_url ?? null) : null;
+
+  const objectName = `${ctx.userId}/${randomUUID()}.${ext}`;
+  const storagePath = `${AVATARS_BUCKET}/${objectName}`;
+  const bucket = ctx.supabase.storage.from(AVATARS_BUCKET);
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  const { error: uploadError } = await admin.storage
-    .from("attachments")
-    .upload(objectPath, buffer, {
-      contentType: file.type,
-      upsert: false,
-    });
+  const { error: uploadError } = await bucket.upload(objectName, buffer, {
+    contentType: file.type,
+    upsert: false,
+  });
 
   if (uploadError) {
     return err("identity.avatar_rejected");
   }
 
-  return identity.setAvatarPath(ctx.rpc, objectPath);
+  const saved = await identity.setAvatarPath(ctx.rpc, storagePath);
+  if (!saved.ok) {
+    await bucket.remove([objectName]);
+    return saved;
+  }
+
+  await removeOwnAvatarObject(ctx.supabase, ctx.userId, previousPath);
+  return saved;
+}
+
+export async function removeAvatarAction(): Promise<Result<void>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+
+  const cleared = await identity.clearAvatar(ctx.rpc);
+  if (!cleared.ok) {
+    return cleared;
+  }
+
+  await removeOwnAvatarObject(ctx.supabase, ctx.userId, cleared.value);
+  return ok(undefined);
+}
+
+/** Best-effort delete of a replaced photo; only touches the caller's own folder. */
+async function removeOwnAvatarObject(
+  supabase: SessionContext["supabase"],
+  userId: string,
+  storagePath: string | null,
+): Promise<void> {
+  const objectName = storagePath ? avatarObjectName(storagePath) : null;
+  if (!objectName || !objectName.startsWith(`${userId}/`)) {
+    return;
+  }
+  await supabase.storage.from(AVATARS_BUCKET).remove([objectName]);
 }
 
 export async function listSessionsAction(): Promise<Result<DeviceSession[]>> {

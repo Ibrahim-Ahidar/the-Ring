@@ -109,12 +109,13 @@ async function withJwtContext<T>(
   userId: string | null,
   role: "anon" | "authenticated",
   fn: (tx: PGliteInterface) => Promise<T>,
+  extraClaims: Record<string, unknown> = {},
 ): Promise<T> {
   await db.query("begin");
   try {
     await db.query(`set local role ${role}`);
     const claims = userId
-      ? JSON.stringify({ sub: userId, role: "authenticated" })
+      ? JSON.stringify({ ...extraClaims, sub: userId, role: "authenticated" })
       : JSON.stringify({ role: "anon" });
     await db.query(`select set_config('request.jwt.claims', $1, true)`, [claims]);
     const result = await fn(db);
@@ -131,11 +132,18 @@ export async function asUser<T>(
   userId: string,
   sql: string,
   params: QueryParams = [],
+  extraClaims: Record<string, unknown> = {},
 ): Promise<T> {
-  return withJwtContext(db, userId, "authenticated", async (tx) => {
-    const result = await tx.query(sql, params);
-    return result as T;
-  });
+  return withJwtContext(
+    db,
+    userId,
+    "authenticated",
+    async (tx) => {
+      const result = await tx.query(sql, params);
+      return result as T;
+    },
+    extraClaims,
+  );
 }
 
 export async function asAnon<T>(
