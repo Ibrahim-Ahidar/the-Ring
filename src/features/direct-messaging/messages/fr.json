@@ -66,11 +66,21 @@
     "messaging": {
       "not_allowed": "Vous ne pouvez pas contacter cette personne.",
       "request_required": "Une demande de message est requise.",
-      "not_found": "Utilisateur ou conversation introuvable."
+      "not_found": "Utilisateur ou conversation introuvable.",
+      "not_member": "Vous n'êtes pas membre de cette conversation."
     },
     "platform": {
       "unauthenticated": "Connectez-vous pour continuer.",
-      "unexpected": "Une erreur s'est produite."
+      "unexpected": "Une erreur s'est produite.",
+      "rate_limited": "Vous allez trop vite. Réessayez dans un instant.",
+      "forbidden": "Vous n'avez pas l'autorisation de faire cela.",
+      "conflict": "Cela entre en conflit avec l'état actuel. Actualisez et réessayez."
     }
-  }
+  },
+  "composerDisabled": {
+    "blocked": "Vous ne pouvez pas envoyer de messages car l'un de vous a bloqué l'autre.",
+    "removed": "Vous ne pouvez pas envoyer de messages car vous n'êtes plus membre de ce groupe.",
+    "restricted": "Vous n'avez pas l'autorisation d'envoyer des messages ici."
+  },
+  "opening": "Ouverture de la discussion…"
 }

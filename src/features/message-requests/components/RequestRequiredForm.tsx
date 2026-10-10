@@ -11,12 +11,12 @@ import { messageRequestErrorMessage } from "../error-message";
 const NOTE_MAX = 300;
 
 type Props = {
-  /** New-chat slot passes the target username in `targetUserId`. */
-  targetUserId: string;
+  /** Username (without @) of the person the request is addressed to. */
+  targetUsername: string;
   onDone: () => void;
 };
 
-function RequestRequiredFormInner({ targetUserId, onDone }: Props) {
+function RequestRequiredFormInner({ targetUsername, onDone }: Props) {
   const t = useTranslations("message-requests");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ function RequestRequiredFormInner({ targetUserId, onDone }: Props) {
     }
     setPending(true);
     const result = await createRequestAction({
-      username: targetUserId.trim(),
+      username: targetUsername.trim(),
       note: trimmed,
     });
     setPending(false);
@@ -67,7 +67,7 @@ function RequestRequiredFormInner({ targetUserId, onDone }: Props) {
       <div className={ui.settingsCardHead}>
         <h2 className={ui.settingsCardTitle}>{t("requestFormTitle")}</h2>
         <p className={ui.settingsCardDesc}>
-          {t("requestFormIntro", { username: targetUserId })}
+          {t("requestFormIntro", { username: targetUsername })}
         </p>
       </div>
       <div className={ui.settingsCardBody}>

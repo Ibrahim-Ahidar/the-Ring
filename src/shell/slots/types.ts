@@ -156,7 +156,7 @@ export type ListItemMenuContribution = {
 export type RequestRequiredContribution = {
   id: string;
   Component: ComponentType<{
-    targetUserId: string;
+    targetUsername: string;
     onDone: () => void;
   }>;
 };
