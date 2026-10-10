@@ -8,7 +8,7 @@ import { getSessionContext } from "@/platform/session";
 import { createSupabaseAdminClient } from "@/platform/supabase/admin";
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 import { asRpcClient } from "@/platform/rpc";
-import { err, type Result } from "@/platform/result";
+import { err, ok, type Result } from "@/platform/result";
 
 import {
   clearDeviceId,
@@ -62,16 +62,19 @@ export async function signInAction(input: {
   }
 
   const rpc = ctx?.rpc ?? asRpcClient(supabase);
-  let deviceId = await readDeviceId();
-  if (!deviceId) {
-    deviceId = randomUUID();
+  // A stale cookie from another account is replaced by a fresh id inside signIn.
+  const result = await identity.signIn(
+    supabase,
+    rpc,
+    input,
+    await readDeviceId(),
+    randomUUID,
+  );
+  if (!result.ok) {
+    return result;
   }
-
-  const result = await identity.signIn(supabase, rpc, input, deviceId);
-  if (result.ok) {
-    await writeDeviceId(deviceId);
-  }
-  return result;
+  await writeDeviceId(result.value);
+  return ok(undefined);
 }
 
 export async function signOutAction(): Promise<Result<void>> {
