@@ -402,6 +402,20 @@ export async function revokeSession(
   return ok(undefined);
 }
 
+/** Revokes every device except the current one; returns how many were revoked. */
+export async function revokeOtherSessions(
+  rpc: RpcClient,
+  currentDeviceId: string | undefined,
+): Promise<Result<number>> {
+  const result = await callRpc<number>(rpc, "identity_revoke_other_devices", {
+    p_current_device_id: currentDeviceId ?? null,
+  });
+  if (!result.ok) {
+    return result;
+  }
+  return ok(result.value ?? 0);
+}
+
 export async function touchDevice(
   rpc: RpcClient,
   deviceId: string,

@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AVATARS_BUCKET, avatarObjectName } from "@/platform/avatars";
@@ -16,6 +17,7 @@ import {
   readDeviceId,
   writeDeviceId,
 } from "./device-cookie";
+import { deviceLabelFromUserAgent } from "./device-label";
 import * as identity from "./service";
 import type { DeviceSession, OwnProfile, SignUpResult } from "./types";
 
@@ -54,7 +56,6 @@ export async function signUpAction(input: {
 export async function signInAction(input: {
   email: string;
   password: string;
-  deviceLabel?: string;
 }): Promise<Result<void>> {
   const ctx = await getSessionContext();
   const supabase = ctx?.supabase ?? (await tryCreateSupabaseServerClient());
@@ -63,11 +64,12 @@ export async function signInAction(input: {
   }
 
   const rpc = ctx?.rpc ?? asRpcClient(supabase);
+  const deviceLabel = deviceLabelFromUserAgent((await headers()).get("user-agent"));
   // A stale cookie from another account is replaced by a fresh id inside signIn.
   const result = await identity.signIn(
     supabase,
     rpc,
-    input,
+    { ...input, deviceLabel: deviceLabel ?? undefined },
     await readDeviceId(),
     randomUUID,
   );
@@ -270,6 +272,14 @@ export async function revokeSessionAction(
     return err("platform.unauthenticated");
   }
   return identity.revokeSession(ctx.rpc, deviceId);
+}
+
+export async function revokeOtherSessionsAction(): Promise<Result<number>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+  return identity.revokeOtherSessions(ctx.rpc, await readDeviceId());
 }
 
 export async function deleteAccountAction(

@@ -422,6 +422,104 @@ describe("identity device revocation ends the auth session (#59)", () => {
   });
 });
 
+describe("identity sign out other devices (#60)", () => {
+  async function signInSession(userId: string) {
+    const sessionId = randomUUID();
+    await asSuperuser(db, `insert into auth.sessions (id, user_id) values ($1, $2)`, [
+      sessionId,
+      userId,
+    ]);
+    const rpc = createRpcClient(db, userId, { session_id: sessionId });
+    const deviceId = randomUUID();
+    expect((await callRpc(rpc, "identity_upsert_device", { p_device_id: deviceId })).ok).toBe(true);
+    return { sessionId, rpc, deviceId };
+  }
+
+  it("revokes every other device and ends their sessions, keeping the caller signed in", async () => {
+    const user = await createUser(db, { username: "rev_all" });
+    const other = await createUser(db, { username: "rev_all_other" });
+    const a = await signInSession(user.id);
+    const b = await signInSession(user.id);
+    const c = await signInSession(user.id);
+    const stranger = await signInSession(other.id);
+    // A session that never registered a device is signed out too.
+    const bare = randomUUID();
+    await asSuperuser(db, `insert into auth.sessions (id, user_id) values ($1, $2)`, [
+      bare,
+      user.id,
+    ]);
+
+    const result = await callRpc<number>(a.rpc, "identity_revoke_other_devices", {
+      p_current_device_id: a.deviceId,
+    });
+    expect(result).toEqual({ ok: true, value: 2 });
+
+    for (const s of [b, c]) {
+      expect(await callRpc(s.rpc, "identity_assert_session_active")).toEqual({
+        ok: false,
+        error: { code: "identity.session_revoked" },
+      });
+    }
+    const sessions = await asSuperuser<{ rows: { id: string }[] }>(
+      db,
+      `select id from auth.sessions where user_id = $1`,
+      [user.id],
+    );
+    expect(sessions.rows.map((r) => r.id)).toEqual([a.sessionId]);
+
+    expect(
+      (await callRpc(a.rpc, "identity_assert_device_active", { p_device_id: a.deviceId })).ok,
+    ).toBe(true);
+    expect(
+      (await callRpc(stranger.rpc, "identity_assert_device_active", {
+        p_device_id: stranger.deviceId,
+      })).ok,
+    ).toBe(true);
+  });
+});
+
+describe("identity touch device (#60)", () => {
+  it("updates last_seen_at at most every 5 minutes and refuses revoked devices", async () => {
+    const user = await createUser(db, { username: "touch_dev" });
+    const rpc = createRpcClient(db, user.id);
+    const deviceId = randomUUID();
+    await callRpc(rpc, "identity_upsert_device", { p_device_id: deviceId });
+
+    const seen = async () =>
+      (
+        await asSuperuser<{ rows: { last_seen_at: Date }[] }>(
+          db,
+          `select last_seen_at from public.devices where id = $1`,
+          [deviceId],
+        )
+      ).rows[0]!.last_seen_at.getTime();
+
+    await asSuperuser(
+      db,
+      `update public.devices set last_seen_at = now() - interval '2 minutes' where id = $1`,
+      [deviceId],
+    );
+    const recent = await seen();
+    expect((await callRpc(rpc, "identity_touch_device", { p_device_id: deviceId })).ok).toBe(true);
+    expect(await seen()).toBe(recent);
+
+    await asSuperuser(
+      db,
+      `update public.devices set last_seen_at = now() - interval '10 minutes' where id = $1`,
+      [deviceId],
+    );
+    const stale = await seen();
+    expect((await callRpc(rpc, "identity_touch_device", { p_device_id: deviceId })).ok).toBe(true);
+    expect(await seen()).toBeGreaterThan(stale);
+
+    await callRpc(rpc, "identity_revoke_device", { p_device_id: deviceId });
+    expect(await callRpc(rpc, "identity_touch_device", { p_device_id: deviceId })).toEqual({
+      ok: false,
+      error: { code: "identity.session_revoked" },
+    });
+  });
+});
+
 describe("identity account deletion", () => {
   it("anonymizes profile, frees username, leaves messages, rejects wrong confirm", async () => {
     const user = await createUser(db, { username: "del_user" });
