@@ -171,6 +171,35 @@
   outline-offset: 2px;
 }
 
+.avatarUpload label[aria-disabled="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.avatarPending {
+  opacity: 0.7;
+}
+
+.avatarHint {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.avatarProgress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.avatarProgress progress {
+  inline-size: 120px;
+  block-size: 6px;
+  accent-color: var(--color-accent);
+}
+
 .cardFoot {
   display: flex;
   justify-content: flex-end;

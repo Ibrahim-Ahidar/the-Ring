@@ -245,6 +245,17 @@ export async function setAvatarPath(
   return ok(undefined);
 }
 
+/** Clears the caller's photo; returns the previous stored value (if any). */
+export async function clearAvatar(
+  rpc: RpcClient,
+): Promise<Result<string | null>> {
+  const result = await callRpc<string | null>(rpc, "identity_clear_avatar");
+  if (!result.ok) {
+    return result;
+  }
+  return ok(result.value ?? null);
+}
+
 export function validateAvatarUpload(
   mimeType: string,
   sizeBytes: number,
