@@ -74,5 +74,8 @@
       "unauthenticated": "Connectez-vous pour continuer.",
       "unexpected": "Une erreur s'est produite."
     }
-  }
+  },
+  "loadingOlder": "Chargement des messages plus anciens",
+  "jumpToLatest": "Aller au dernier message",
+  "newMessagesCount": "{count, plural, one {# nouveau message} other {# nouveaux messages}}"
 }

@@ -807,3 +807,44 @@
   font-size: var(--text-sm, 0.8125rem);
   font-weight: var(--weight-medium);
 }
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-accent);
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  vertical-align: middle;
+  animation: timeline-spin 0.8s linear infinite;
+}
+
+@keyframes timeline-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadOlder:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+
+/* Sticks to the bottom end corner of the scroll area; logical props keep it RTL-safe. */
+.jumpLatest {
+  position: sticky;
+  inset-block-end: var(--space-8);
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  width: fit-content;
+  margin-inline-start: auto;
+  padding: var(--space-4) var(--space-12);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-system);
+  box-shadow: var(--shadow-bubble);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}

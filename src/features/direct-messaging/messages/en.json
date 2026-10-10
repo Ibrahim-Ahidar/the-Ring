@@ -74,5 +74,8 @@
       "unauthenticated": "Sign in to continue.",
       "unexpected": "Something went wrong."
     }
-  }
+  },
+  "loadingOlder": "Loading older messages",
+  "jumpToLatest": "Jump to latest",
+  "newMessagesCount": "{count, plural, one {# new message} other {# new messages}}"
 }

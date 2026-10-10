@@ -74,5 +74,8 @@
       "unauthenticated": "سجّل الدخول للمتابعة.",
       "unexpected": "حدث خطأ ما."
     }
-  }
+  },
+  "loadingOlder": "جارٍ تحميل رسائل أقدم",
+  "jumpToLatest": "الانتقال إلى الأحدث",
+  "newMessagesCount": "{count, plural, one {رسالة جديدة} two {رسالتان جديدتان} few {# رسائل جديدة} many {# رسالة جديدة} other {# رسالة جديدة}}"
 }
