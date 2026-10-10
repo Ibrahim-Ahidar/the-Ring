@@ -1,5 +1,6 @@
 import { memo, type ReactNode } from "react";
 
+import { resolveAvatarSrc } from "@/platform/avatars";
 import ui from "@/shell/styles/ui.module.css";
 
 export type AvatarSize = "xs" | "sm" | "md" | "default" | "lg" | "xl";
@@ -9,7 +10,10 @@ type AvatarProps = {
   name: string | null | undefined;
   /** Stable id (user or conversation) that picks the fallback colour. */
   seed: string;
-  /** Only absolute http(s) URLs are rendered; storage paths fall back to initials. */
+  /**
+   * Absolute http(s) or blob: URL, or an `avatars/<uid>/<file>` storage path
+   * (resolved to the public avatars bucket). Anything else shows initials.
+   */
   src?: string | null;
   size?: AvatarSize;
   className?: string;
@@ -56,10 +60,6 @@ export function avatarColourIndex(seed: string): number {
   return Math.abs(hash) % COLOUR_CLASSES.length;
 }
 
-function isRenderableUrl(src: string | null | undefined): src is string {
-  return typeof src === "string" && /^https?:\/\//.test(src);
-}
-
 function AvatarInner({
   name,
   seed,
@@ -68,6 +68,7 @@ function AvatarInner({
   className,
   children,
 }: AvatarProps) {
+  const resolved = resolveAvatarSrc(src);
   const classes = [
     ui.avatar,
     SIZE_CLASS[size],
@@ -79,9 +80,9 @@ function AvatarInner({
 
   return (
     <span className={classes} aria-hidden="true">
-      {isRenderableUrl(src) ? (
+      {resolved ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="" />
+        <img src={resolved} alt="" />
       ) : (
         avatarInitials(name)
       )}
