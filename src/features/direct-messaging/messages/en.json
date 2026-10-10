@@ -79,16 +79,13 @@
       "conflict": "That conflicts with the current state. Refresh and try again."
     }
   },
-<<<<<<< HEAD
   "loadingOlder": "Loading older messages",
   "jumpToLatest": "Jump to latest",
-  "newMessagesCount": "{count, plural, one {# new message} other {# new messages}}"
-=======
+  "newMessagesCount": "{count, plural, one {# new message} other {# new messages}}",
   "composerDisabled": {
     "blocked": "You can't send messages because one of you has blocked the other.",
     "removed": "You can't send messages because you are no longer a member of this group.",
     "restricted": "You don't have permission to send messages here."
   },
   "opening": "Opening chat…"
->>>>>>> origin/agent/pulse-build
 }
