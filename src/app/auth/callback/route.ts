@@ -7,6 +7,10 @@ import { registerDevice } from "@/features/identity/service";
 import { asRpcClient } from "@/platform/rpc";
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 
+/**
+ * Link landing for password reset (and later email change). Signup no longer sends
+ * links: it confirms with a 6-digit code (`verifySignupCodeAction`, issue #52).
+ */
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");

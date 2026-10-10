@@ -103,6 +103,14 @@
   color: var(--color-text-muted);
 }
 
+/* Digits stay left-to-right in RTL locales (the input sets dir="ltr"). */
+.codeInput {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-lg);
+  letter-spacing: 0.4em;
+  text-align: center;
+}
+
 .authNoticeTitle {
   color: var(--color-text);
   font-size: var(--text-lg);

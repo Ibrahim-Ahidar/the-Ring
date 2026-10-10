@@ -21,6 +21,14 @@
   "loginLink": "تسجيل الدخول",
   "confirmEmailTitle": "أكّد بريدك",
   "confirmEmailBody": "أرسلنا رابط تأكيد. افتحه ثم سجّل الدخول.",
+  "codeSentBody": "إن كان هذا البريد صالحًا للاستخدام، فقد أرسلنا رمزًا من 6 أرقام إلى <addr>{email}</addr>.",
+  "codeLabel": "الرمز المكوّن من 6 أرقام",
+  "codeHint": "الصق الرمز من البريد أو اكتبه.",
+  "submitCode": "تأكيد",
+  "resendCode": "أرسل رمزًا جديدًا",
+  "resendCodeIn": "أرسل رمزًا جديدًا بعد {seconds} ث",
+  "codeResent": "أرسلنا رمزًا جديدًا.",
+  "changeEmail": "بريد خاطئ؟ ارجع",
   "accountTitle": "الحساب",
   "securityTitle": "الأمان",
   "bioLabel": "نبذة",
@@ -75,7 +83,10 @@
       "not_found": "العنصر غير موجود.",
       "session_revoked": "أُلغيت هذه الجلسة. سجّل الدخول مجددًا.",
       "username_mismatch": "اكتب اسم المستخدم نفسه للتأكيد.",
-      "export_unavailable": "التصدير غير متاح بعد."
+      "export_unavailable": "التصدير غير متاح بعد.",
+      "code_invalid": "أدخل الرمز المكوّن من 6 أرقام من البريد.",
+      "code_expired": "الرمز خاطئ أو منتهي الصلاحية. تحقّق منه أو اطلب رمزًا جديدًا.",
+      "code_attempts_exhausted": "محاولات خاطئة كثيرة. اطلب رمزًا جديدًا."
     },
     "platform": {
       "rate_limited": "محاولات كثيرة. انتظر قليلًا.",
