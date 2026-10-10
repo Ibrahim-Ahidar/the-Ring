@@ -3,6 +3,7 @@
 import { Fragment, memo, useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import { useFormatter, useNow, useTranslations } from "next-intl";
 
+import { useGroupMemberDirectory } from "@/features/groups/hooks/useGroupMemberNames";
 import type { TimelineMessage } from "@/platform/timeline";
 
 import { shouldGroupWithPrevious } from "../delivery";
@@ -83,7 +84,14 @@ function MessageTimelineInner({
     return [...merged].reverse();
   }, [currentUserId, pending, stored]);
 
+  const isGroup = conversationType === "group";
+  const members = useGroupMemberDirectory(conversationId, isGroup);
   const otherName = detail && detail.type === "direct" ? conversationTitle(detail, t) : null;
+  const nameOf = useCallback(
+    (senderId: string): string | null =>
+      isGroup ? (members.get(senderId)?.name ?? t("unknownSender")) : otherName,
+    [isGroup, members, otherName, t],
+  );
 
   const quotes = useMemo(() => {
     const byId = new Map<string, TimelineMessage>();
@@ -112,10 +120,10 @@ function MessageTimelineInner({
                 : quoted.type === "file"
                   ? t("quotedFile")
                   : t("replyQuote"));
-      result.set(message.id, { self, author: self ? t("you") : otherName, text });
+      result.set(message.id, { self, author: self ? t("you") : nameOf(quoted.sender_id), text });
     }
     return result;
-  }, [currentUserId, otherName, stored, t, timeline]);
+  }, [currentUserId, nameOf, stored, t, timeline]);
 
   const last = timeline[timeline.length - 1];
   const lastId = last?.id;
@@ -201,6 +209,8 @@ function MessageTimelineInner({
                 detail={detail}
                 pendingStatus={pendingEntry?.status}
                 grouped={grouped}
+                senderName={isGroup ? nameOf(message.sender_id) : null}
+                senderAvatarUrl={members.get(message.sender_id)?.avatarUrl ?? null}
                 quoteSelf={quote?.self}
                 quoteAuthor={quote?.author}
                 quoteText={quote?.text}

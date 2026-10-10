@@ -45,6 +45,8 @@
   "today": "Aujourd'hui",
   "yesterday": "Hier",
   "you": "Vous",
+  "messageFrom": "{name}, {time}",
+  "unknownSender": "Membre",
   "forwarded": "Transféré",
   "quotedPhoto": "Photo",
   "quotedVoice": "Message vocal",

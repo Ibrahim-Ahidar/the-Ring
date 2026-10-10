@@ -45,6 +45,8 @@
   "today": "Today",
   "yesterday": "Yesterday",
   "you": "You",
+  "messageFrom": "{name}, {time}",
+  "unknownSender": "Member",
   "forwarded": "Forwarded",
   "quotedPhoto": "Photo",
   "quotedVoice": "Voice message",

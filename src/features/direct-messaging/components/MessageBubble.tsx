@@ -5,6 +5,7 @@ import { memo, useMemo } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import type { TimelineMessage } from "@/platform/timeline";
+import { Avatar, avatarColourIndex } from "@/shell/components/Avatar";
 import { getContributions } from "@/shell/slots";
 
 import { outboundDeliveryStatus, type OutboundDelivery } from "../delivery";
@@ -21,6 +22,9 @@ type Props = {
   detail?: ConversationDetail;
   pendingStatus?: "pending" | "failed";
   grouped: boolean;
+  /** Sender display name; set only in groups so incoming runs are attributed. */
+  senderName?: string | null;
+  senderAvatarUrl?: string | null;
   quoteSelf?: boolean;
   quoteAuthor?: string | null;
   quoteText?: string;
@@ -65,6 +69,8 @@ function MessageBubbleInner({
   detail,
   pendingStatus,
   grouped,
+  senderName,
+  senderAvatarUrl,
   quoteSelf,
   quoteAuthor,
   quoteText,
@@ -92,14 +98,35 @@ function MessageBubbleInner({
     minute: "numeric",
   });
 
+  const showSender = !isMine && !grouped && Boolean(senderName);
+  const accessibleName = t("messageFrom", {
+    name: isMine ? t("you") : (senderName ?? t("unknownSender")),
+    time,
+  });
+
   return (
     <div
       className={styles.msg}
       data-mine={isMine ? "true" : "false"}
       data-first={grouped ? "false" : "true"}
     >
+      {showSender ? (
+        <span
+          className={styles.sender}
+          style={{ color: `var(--sender-${(avatarColourIndex(message.sender_id) % 4) + 1})` }}
+        >
+          <Avatar
+            name={senderName!}
+            seed={message.sender_id}
+            src={senderAvatarUrl}
+            size="sm"
+          />
+          {senderName}
+        </span>
+      ) : null}
       <article
         className={styles.bubble}
+        aria-label={accessibleName}
         tabIndex={-1}
         data-message-id={
           message.id.startsWith("pending-") ? message.client_id : message.id
