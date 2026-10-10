@@ -1,6 +1,15 @@
 "use client";
 
-import { Fragment, memo, useCallback, useLayoutEffect, useMemo, useRef } from "react";
+import {
+  Fragment,
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useFormatter, useNow, useTranslations } from "next-intl";
 
 import { useGroupMemberDirectory } from "@/features/groups/hooks/useGroupMemberNames";
@@ -69,6 +78,13 @@ function MessageTimelineInner({
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
   const scrolledConversation = useRef<string | null>(null);
+  const topRef = useRef<HTMLDivElement>(null);
+  const loadingRef = useRef(false);
+  const anchor = useRef<{ height: number; top: number; firstId: string | undefined } | null>(null);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [atBottom, setAtBottom] = useState(true);
+  const [seenLastId, setSeenLastId] = useState<string | undefined>(undefined);
+  const hasMore = Boolean(state.messagesHasMore[conversationId]);
 
   const timeline = useMemo(() => {
     const pendingMessages = pending.map((entry) => ({
@@ -142,13 +158,89 @@ function MessageTimelineInner({
     scrolledConversation.current = conversationId;
   }, [conversationId, lastId, lastIsMine]);
 
+  const firstId = timeline[0]?.id;
+
+  // Keep the message under the reader's eye in place after older pages are prepended.
+  useLayoutEffect(() => {
+    const node = scrollRef.current;
+    const saved = anchor.current;
+    if (!node || !saved || saved.firstId === firstId) {
+      return;
+    }
+    node.scrollTop = saved.top + (node.scrollHeight - saved.height);
+    anchor.current = null;
+  }, [firstId]);
+
+  const loadOlder = useCallback(async () => {
+    const node = scrollRef.current;
+    if (loadingRef.current || !node) {
+      return;
+    }
+    loadingRef.current = true;
+    setLoadingOlder(true);
+    anchor.current = { height: node.scrollHeight, top: node.scrollTop, firstId };
+    try {
+      await loadOlderMessages(conversationId);
+    } finally {
+      loadingRef.current = false;
+      setLoadingOlder(false);
+    }
+  }, [conversationId, firstId, loadOlderMessages]);
+
+  const loadOlderRef = useRef(loadOlder);
+  useEffect(() => {
+    loadOlderRef.current = loadOlder;
+  }, [loadOlder]);
+
+  useEffect(() => {
+    const target = topRef.current;
+    const root = scrollRef.current;
+    if (!hasMore || !target || !root || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          void loadOlderRef.current();
+        }
+      },
+      { root, rootMargin: "200px 0px 0px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMore, conversationId, loadingOlder]);
+
   const onScroll = useCallback(() => {
     const node = scrollRef.current;
     if (!node) {
       return;
     }
-    stickToBottom.current =
-      node.scrollHeight - node.scrollTop - node.clientHeight < STICK_THRESHOLD;
+    const near = node.scrollHeight - node.scrollTop - node.clientHeight < STICK_THRESHOLD;
+    stickToBottom.current = near;
+    setAtBottom(near);
+  }, []);
+
+  useEffect(() => {
+    if (atBottom) {
+      setSeenLastId(lastId);
+    }
+  }, [atBottom, lastId]);
+
+  const unreadBelow = useMemo(() => {
+    if (atBottom) {
+      return 0;
+    }
+    const from = seenLastId ? timeline.findIndex((m) => m.id === seenLastId) + 1 : 0;
+    return timeline.slice(from).filter((m) => m.sender_id !== currentUserId).length;
+  }, [atBottom, currentUserId, seenLastId, timeline]);
+
+  const jumpToLatest = useCallback(() => {
+    const node = scrollRef.current;
+    if (!node) {
+      return;
+    }
+    node.scrollTo?.({ top: node.scrollHeight, behavior: "smooth" });
+    stickToBottom.current = true;
   }, []);
 
   const dayLabel = (iso: string): string => {
@@ -175,14 +267,23 @@ function MessageTimelineInner({
       onScroll={onScroll}
     >
       <div className={styles.messagesInner}>
-        {state.messagesHasMore[conversationId] ? (
-          <button
-            type="button"
-            className={styles.loadOlder}
-            onClick={() => void loadOlderMessages(conversationId)}
-          >
-            {t("loadOlder")}
-          </button>
+        {hasMore ? (
+          <>
+            <div ref={topRef} aria-hidden="true" />
+            <button
+              type="button"
+              className={styles.loadOlder}
+              disabled={loadingOlder}
+              aria-busy={loadingOlder}
+              onClick={() => void loadOlder()}
+            >
+              {loadingOlder ? (
+                <span className={styles.spinner} role="status" aria-label={t("loadingOlder")} />
+              ) : (
+                t("loadOlder")
+              )}
+            </button>
+          </>
         ) : null}
         {timeline.length === 0 ? <p className={styles.systemNote}>{t("emptyThread")}</p> : null}
         {timeline.map((message, index) => {
@@ -220,6 +321,12 @@ function MessageTimelineInner({
           );
         })}
       </div>
+      {!atBottom ? (
+        <button type="button" className={styles.jumpLatest} onClick={jumpToLatest}>
+          <span aria-hidden="true">↓</span>
+          {unreadBelow > 0 ? t("newMessagesCount", { count: unreadBelow }) : t("jumpToLatest")}
+        </button>
+      ) : null}
     </div>
   );
 }
