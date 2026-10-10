@@ -1,9 +1,13 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
+import { Bell, CheckCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import ui from "@/shell/styles/ui.module.css";
+
 import { useNotifications } from "../context/NotificationsContext";
+import type { NotificationRow } from "../types";
 import { NotificationRowItem } from "./NotificationRowItem";
 import styles from "./notifications.module.css";
 
@@ -12,6 +16,15 @@ function NotificationsInboxInner() {
   const { state, reload, loadMore, markOneRead, markAllRead } =
     useNotifications();
   const [focusedIndex, setFocusedIndex] = useState(0);
+
+  const groups = useMemo(() => {
+    const unread: NotificationRow[] = [];
+    const read: NotificationRow[] = [];
+    for (const row of state.items) {
+      (row.readAt ? read : unread).push(row);
+    }
+    return { unread, read };
+  }, [state.items]);
 
   const handleActivate = useCallback(
     (id: string) => {
@@ -40,7 +53,7 @@ function NotificationsInboxInner() {
 
   if (state.loading) {
     return (
-      <p className={styles.loading} role="status">
+      <p className={ui.emptyInline} role="status">
         {t("loading")}
       </p>
     );
@@ -50,18 +63,30 @@ function NotificationsInboxInner() {
     return (
       <div className={styles.errorBox} role="alert">
         <p>{t("error")}</p>
-        <div className={styles.actionsRow}>
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={() => void reload()}
-          >
-            {t("retry")}
-          </button>
-        </div>
+        <button
+          type="button"
+          className={`${ui.btn} ${ui.btnPrimary}`}
+          onClick={() => void reload()}
+        >
+          {t("retry")}
+        </button>
       </div>
     );
   }
+
+  const renderList = (rows: NotificationRow[], offset: number) => (
+    <ul className={ui.list} aria-label={t("listLabel")} onKeyDown={handleListKeyDown}>
+      {rows.map((row, index) => (
+        <NotificationRowItem
+          key={row.id}
+          row={row}
+          tabIndex={offset + index === focusedIndex ? 0 : -1}
+          onFocus={() => setFocusedIndex(offset + index)}
+          onActivate={handleActivate}
+        />
+      ))}
+    </ul>
+  );
 
   return (
     <div className={styles.panel}>
@@ -72,9 +97,10 @@ function NotificationsInboxInner() {
         {state.unreadCount > 0 ? (
           <button
             type="button"
-            className={styles.secondaryButton}
+            className={`${ui.btn} ${ui.btnSm} ${ui.btnGhost}`}
             onClick={() => void markAllRead()}
           >
+            <CheckCheck size={16} aria-hidden />
             {t("markAllRead")}
           </button>
         ) : null}
@@ -82,31 +108,40 @@ function NotificationsInboxInner() {
 
       {state.items.length === 0 ? (
         <div className={styles.empty}>
-          <h2>{t("emptyTitle")}</h2>
-          <p>{t("emptyBody")}</p>
+          <span className={ui.emptyStateArt}>
+            <Bell size={48} aria-hidden />
+          </span>
+          <h2 className={styles.emptyTitle}>{t("emptyTitle")}</h2>
+          <p className={ui.emptyStateText}>{t("emptyBody")}</p>
         </div>
       ) : (
-        <ul
-          className={styles.list}
-          aria-label={t("listLabel")}
-          onKeyDown={handleListKeyDown}
-        >
-          {state.items.map((row, index) => (
-            <NotificationRowItem
-              key={row.id}
-              row={row}
-              tabIndex={index === focusedIndex ? 0 : -1}
-              onFocus={() => setFocusedIndex(index)}
-              onActivate={handleActivate}
-            />
-          ))}
-        </ul>
+        <>
+          {groups.unread.length > 0 ? (
+            <section aria-labelledby="notifications-new">
+              <h2 id="notifications-new" className={ui.sectionLabel}>
+                {t("sectionNew")}
+              </h2>
+              {renderList(groups.unread, 0)}
+            </section>
+          ) : null}
+          {groups.read.length > 0 ? (
+            <section aria-labelledby="notifications-earlier">
+              <h2
+                id="notifications-earlier"
+                className={`${ui.sectionLabel} ${ui.sectionLabelMuted}`}
+              >
+                {t("sectionEarlier")}
+              </h2>
+              {renderList(groups.read, groups.unread.length)}
+            </section>
+          ) : null}
+        </>
       )}
 
       {state.nextCursor ? (
         <button
           type="button"
-          className={styles.secondaryButton}
+          className={`${ui.btn} ${ui.btnSecondary} ${styles.loadMore}`}
           disabled={state.loadingMore}
           onClick={() => void loadMore()}
         >

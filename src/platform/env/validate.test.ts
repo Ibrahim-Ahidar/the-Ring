@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { REQUIRED_ENV_KEYS, validateEnv } from "./validate";
+import { REQUIRED_ENV_KEYS, isHttpUrl, validateEnv } from "./validate";
 
 describe("validateEnv", () => {
   it("returns no missing keys when all required variables are set", () => {
@@ -38,5 +38,28 @@ describe("validateEnv", () => {
 
     const missing = validateEnv(source);
     expect(missing).toContain(key);
+  });
+
+  it.each([
+    ["NEXT_PUBLIC_APP_URL", "localhost:3000"],
+    ["NEXT_PUBLIC_SUPABASE_URL", "not-a-url"],
+    ["NEXT_PUBLIC_SUPABASE_URL", "ftp://project.supabase.co"],
+  ] as const)("reports %s when it is not an HTTP(S) URL", (key, value) => {
+    const source: Record<string, string | undefined> = {
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+      NEXT_PUBLIC_SUPABASE_URL: "http://localhost:54321",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
+      [key]: value,
+    };
+
+    expect(validateEnv(source)).toContain(key);
+  });
+
+  it.each([
+    "http://localhost:54321",
+    "https://project-ref.supabase.co",
+  ])("recognizes a valid HTTP(S) URL", (value) => {
+    expect(isHttpUrl(value)).toBe(true);
   });
 });

@@ -4,19 +4,27 @@ import Link from "next/link";
 import { memo, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import ui from "@/shell/styles/ui.module.css";
 import { signUpAction } from "../actions";
 import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-context";
 import styles from "../identity.module.css";
-import { FormFeedback } from "./FormFeedback";
+import { FormFeedback, useErrorMessage } from "./FormFeedback";
+
+function isUsernameError(code: string): boolean {
+  return code.startsWith("identity.username_");
+}
 
 function SignupFormInner() {
   const t = useTranslations("identity");
-  const { submitting, startSubmit, finishSubmit } = useIdentityForm();
+  const { submitting, errorCode, startSubmit, finishSubmit } = useIdentityForm();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
+  const usernameError = useErrorMessage(
+    errorCode && isUsernameError(errorCode) ? errorCode : null,
+  );
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -41,83 +49,110 @@ function SignupFormInner() {
 
   if (awaitingConfirm) {
     return (
-      <div className={styles.stack}>
-        <h2 className={styles.label}>{t("confirmEmailTitle")}</h2>
-        <p className={styles.hint}>{t("confirmEmailBody")}</p>
-        <p className={styles.linkRow}>
-          <Link href="/login">{t("loginLink")}</Link>
-        </p>
+      <div className={styles.authNotice} role="status">
+        <h2 className={styles.authNoticeTitle}>{t("confirmEmailTitle")}</h2>
+        <p>{t("confirmEmailBody")}</p>
+        <Link
+          className={`${ui.btn} ${ui.btnPrimary} ${ui.btnBlock}`}
+          href="/login"
+        >
+          {t("loginLink")}
+        </Link>
       </div>
     );
   }
 
   return (
-    <form className={styles.stack} onSubmit={onSubmit} noValidate>
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="signup-email">
-          {t("emailLabel")}
-        </label>
-        <input
-          id="signup-email"
-          className={styles.input}
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+    <form className={styles.authFormBody} onSubmit={onSubmit} noValidate>
+      <div className={styles.authFields}>
+        <div className={ui.field}>
+          <label className={ui.fieldLabel} htmlFor="signup-display">
+            {t("displayNameLabel")}
+          </label>
+          <input
+            id="signup-display"
+            className={ui.input}
+            type="text"
+            autoComplete="name"
+            aria-describedby="signup-display-hint"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+          <span id="signup-display-hint" className={ui.fieldHint}>
+            {t("displayNameHint")}
+          </span>
+        </div>
+        <div className={ui.field}>
+          <label className={ui.fieldLabel} htmlFor="signup-username">
+            {t("usernameLabel")}
+          </label>
+          <div className={ui.inputPrefix} data-invalid={usernameError ? "true" : undefined}>
+            <span aria-hidden>@</span>
+            <input
+              id="signup-username"
+              type="text"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              required
+              aria-invalid={usernameError ? true : undefined}
+              aria-describedby={
+                usernameError ? "signup-username-error" : "signup-username-hint"
+              }
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+          {usernameError ? (
+            <span id="signup-username-error" className={ui.fieldError} role="alert">
+              {usernameError}
+            </span>
+          ) : (
+            <span id="signup-username-hint" className={ui.fieldHint}>
+              {t("usernameHint")}
+            </span>
+          )}
+        </div>
+        <div className={ui.field}>
+          <label className={ui.fieldLabel} htmlFor="signup-email">
+            {t("emailLabel")}
+          </label>
+          <input
+            id="signup-email"
+            className={ui.input}
+            type="email"
+            autoComplete="email"
+            dir="ltr"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div className={ui.field}>
+          <label className={ui.fieldLabel} htmlFor="signup-password">
+            {t("passwordLabel")}
+          </label>
+          <input
+            id="signup-password"
+            className={ui.input}
+            type="password"
+            autoComplete="new-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
       </div>
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="signup-password">
-          {t("passwordLabel")}
-        </label>
-        <input
-          id="signup-password"
-          className={styles.input}
-          type="password"
-          autoComplete="new-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="signup-username">
-          {t("usernameLabel")}
-        </label>
-        <input
-          id="signup-username"
-          className={styles.input}
-          type="text"
-          autoComplete="username"
-          required
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="signup-display">
-          {t("displayNameLabel")}
-        </label>
-        <input
-          id="signup-display"
-          className={styles.input}
-          type="text"
-          autoComplete="name"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-        />
-        <p className={styles.hint}>{t("displayNameHint")}</p>
-      </div>
-      <FormFeedback />
-      <div className={styles.actions}>
-        <button className={styles.button} type="submit" disabled={submitting}>
-          {submitting ? t("submitting") : t("submitSignup")}
-        </button>
-      </div>
-      <p className={styles.linkRow}>
-        {t("hasAccount")}{" "}
-        <Link href="/login">{t("loginLink")}</Link>
+      <FormFeedback exclude={isUsernameError} />
+      <button
+        className={`${ui.btn} ${ui.btnPrimary} ${ui.btnBlock}`}
+        type="submit"
+        disabled={submitting}
+      >
+        {submitting ? t("submitting") : t("submitSignup")}
+      </button>
+      <p className={styles.authSwitch}>
+        {t("hasAccount")} <Link href="/login">{t("loginLink")}</Link>
       </p>
     </form>
   );

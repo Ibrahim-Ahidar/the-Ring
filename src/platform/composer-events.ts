@@ -23,6 +23,11 @@ export function onComposerActivity(listener: Listener): () => void {
   };
 }
 
+/** DOM id of the slot above the composer bar where tools may portal a banner (reply preview). */
+export function composerAboveId(conversationId: string): string {
+  return `composer-above-${conversationId}`;
+}
+
 export type ComposerSendExtras = {
   replyToId?: string | null;
 };

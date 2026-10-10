@@ -1,8 +1,10 @@
 "use client";
 
+import { LogOut, Monitor } from "lucide-react";
 import { memo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
+import ui from "@/shell/styles/ui.module.css";
 import { revokeSessionAction, signOutAction } from "../actions";
 import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-context";
 import styles from "../identity.module.css";
@@ -51,53 +53,65 @@ function SecuritySettingsInner({
   }
 
   return (
-    <div className={styles.stack}>
-      <section aria-labelledby="sessions-heading">
-        <h2 id="sessions-heading" className={styles.label}>
-          {t("sessionsTitle")}
-        </h2>
-        <p className={styles.hint}>{t("sessionsHint")}</p>
+    <>
+      <section className={ui.settingsCard} aria-labelledby="sessions-heading">
+        <div className={ui.settingsCardHead}>
+          <h2 id="sessions-heading" className={ui.settingsCardTitle}>
+            {t("sessionsTitle")}
+          </h2>
+          <p className={ui.settingsCardDesc}>{t("sessionsHint")}</p>
+        </div>
         <ul className={styles.sessionList}>
           {activeSessions.map((session) => {
             const isCurrent = session.id === currentDeviceId;
             return (
-              <li key={session.id} className={styles.sessionItem}>
-                <div>
-                  <strong>
+              <li key={session.id} className={ui.setting}>
+                <Monitor size={24} aria-hidden />
+                <span className={ui.settingBody}>
+                  <span className={styles.sessionName}>
                     {session.device_label ??
                       (isCurrent ? t("currentSession") : session.id.slice(0, 8))}
-                  </strong>
-                  <p className={styles.hint}>
+                  </span>
+                  <span className={ui.settingDesc}>
                     {t("lastSeen", {
                       when: formatWhen(session.last_seen_at, locale),
                     })}
-                  </p>
-                </div>
-                {!isCurrent ? (
+                  </span>
+                </span>
+                {isCurrent ? (
+                  session.device_label ? (
+                    <span className={ui.tag}>{t("currentSession")}</span>
+                  ) : null
+                ) : (
                   <button
                     type="button"
-                    className={styles.buttonSecondary}
+                    className={`${ui.btn} ${ui.btnSecondary} ${ui.btnSm}`}
                     disabled={submitting}
                     onClick={() => revoke(session.id)}
                   >
                     {t("revokeSession")}
                   </button>
-                ) : null}
+                )}
               </li>
             );
           })}
         </ul>
       </section>
+
       <FormFeedback />
-      <button
-        type="button"
-        className={styles.buttonSecondary}
-        disabled={submitting}
-        onClick={signOut}
-      >
-        {t("signOut")}
-      </button>
-    </div>
+
+      <div className={ui.settingsCard}>
+        <button
+          type="button"
+          className={`${ui.setting} ${styles.dangerRow}`}
+          disabled={submitting}
+          onClick={signOut}
+        >
+          <LogOut size={24} className="flip-rtl" aria-hidden />
+          <span className={ui.settingBody}>{t("signOut")}</span>
+        </button>
+      </div>
+    </>
   );
 }
 

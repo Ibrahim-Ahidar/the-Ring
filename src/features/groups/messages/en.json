@@ -1,0 +1,85 @@
+{
+  "title": "Groups",
+  "newTitle": "New group",
+  "adminTitle": "Group settings",
+  "membersTab": "Members",
+  "createSubmit": "Create group",
+  "openChat": "Open chat",
+  "backToGroups": "Back to groups",
+  "nameLabel": "Group name",
+  "descriptionLabel": "Description (optional)",
+  "avatarLabel": "Group avatar (optional)",
+  "emptyGroups": "You are not in any groups yet.",
+  "createLink": "Create a group",
+  "inviteLabel": "Invite by username",
+  "inviteSubmit": "Send invite",
+  "joinCodeLabel": "Join with invite code",
+  "joinSubmit": "Join group",
+  "createLinkSubmit": "Create invite link",
+  "linkCreated": "Invite link created",
+  "copyCode": "Copy code",
+  "leaveGroup": "Leave group",
+  "transferOwnership": "Transfer ownership",
+  "removeMember": "Remove member",
+  "promoteAdmin": "Make admin",
+  "demoteMember": "Remove admin role",
+  "restrictMessaging": "Restrict messaging",
+  "allowMessaging": "Allow messaging",
+  "reportsTitle": "Message reports",
+  "reportsEmpty": "No open reports for this group.",
+  "markReviewed": "Mark reviewed",
+  "roles": {
+    "owner": "Owner",
+    "admin": "Admin",
+    "member": "Member"
+  },
+  "system": {
+    "fallback": "Group update",
+    "unknownMember": "A member",
+    "events": {
+      "joined": "{name} joined the group",
+      "left": "{name} left the group",
+      "removed": "{name} was removed from the group",
+      "promoted": "{name} was promoted to admin",
+      "demoted": "{name} is no longer an admin"
+    }
+  },
+  "confirm": {
+    "removeTitle": "Remove this member?",
+    "removeBody": "They will lose access to the group.",
+    "leaveTitle": "Leave this group?",
+    "leaveBody": "You will stop receiving messages from this group.",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "actions": {
+    "retry": "Retry",
+    "save": "Save changes"
+  },
+  "states": {
+    "loading": "Loading…",
+    "saving": "Saving…"
+  },
+  "errors": {
+    "generic": "Something went wrong. Try again.",
+    "groups": {
+      "not_allowed": "This person cannot be invited to groups.",
+      "owner_must_transfer": "Transfer ownership before leaving.",
+      "member_limit": "This group already has the maximum number of members.",
+      "forbidden": "You do not have permission for this action.",
+      "not_member": "You are not a member of this group.",
+      "not_found": "Group not found.",
+      "name_required": "Enter a group name.",
+      "name_too_long": "Group name is too long.",
+      "description_too_long": "Description is too long.",
+      "avatar_rejected": "Choose a supported image within the size limit.",
+      "user_not_found": "Member not found.",
+      "cannot_target_owner": "You cannot change the owner this way.",
+      "invite_link_invalid": "Invite code is not valid.",
+      "invite_link_revoked": "This invite link was revoked.",
+      "invite_link_expired": "This invite link has expired.",
+      "invite_link_exhausted": "This invite link has reached its use limit.",
+      "invite_link_not_found": "Invite link not found."
+    }
+  }
+}

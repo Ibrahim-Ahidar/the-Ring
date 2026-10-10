@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in · The Ring</title>
+  <link rel="stylesheet" href="../css/ring.css">
+  <script src="../assets/preview.js"></script>
+  <script src="../assets/icons.js"></script>
+</head>
+<body>
+<div class="auth">
+  <header class="auth__top">
+    <a class="brand" href="login.html"><svg class="icon"><use href="#logo"/></svg><span>The Ring</span></a>
+    <select class="select" aria-label="Language">
+      <option>English</option>
+      <option lang="ar">العربية</option>
+      <option>Français</option>
+    </select>
+  </header>
+
+  <main class="auth__main">
+    <div class="auth-card">
+      <form class="auth-card__form" action="chats.html">
+        <div>
+          <h1 class="auth-card__title">Welcome back</h1>
+          <p class="auth-card__subtitle">Log in to pick up your conversations.</p>
+        </div>
+
+        <div class="auth-card__fields">
+          <label class="field">
+            <span class="field__label">Email</span>
+            <input class="input" type="email" placeholder="you@example.com" autocomplete="email" required>
+          </label>
+          <label class="field">
+            <span class="field__label">Password</span>
+            <input class="input" type="password" placeholder="••••••••" autocomplete="current-password" required>
+          </label>
+          <div class="auth-card__row">
+            <label class="auth-card__row"><input type="checkbox" checked> Keep me signed in</label>
+            <a href="#forgot">Forgot password?</a>
+          </div>
+        </div>
+
+        <button class="btn btn--primary btn--block" type="submit">Log in</button>
+        <p class="auth-card__switch">New to The Ring? <a href="signup.html">Create an account</a></p>
+      </form>
+
+      <div class="auth-card__art" aria-hidden="true">
+        <svg class="icon auth-card__ring"><use href="#logo"/></svg>
+        <div class="auth-card__bubbles">
+          <div class="msg msg--in msg--first"><div class="bubble"><span class="bubble__text">What's your username?</span><span class="bubble__meta">09:41</span></div></div>
+          <div class="msg msg--out msg--first"><div class="bubble"><span class="bubble__text">@amina — find me there 💬</span><span class="bubble__meta">09:42</span></div></div>
+        </div>
+        <p class="auth-card__quote">One username. Every conversation, in one ring.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="auth__legal">By continuing you agree to the <a href="#terms">Terms</a> and <a href="#privacy">Privacy Policy</a>.</footer>
+</div>
+</body>
+</html>

@@ -6,6 +6,7 @@ import {
   listRecentSearches,
 } from "@/features/discovery-contacts/service";
 import { getSessionContext } from "@/platform/session";
+import { SinglePane } from "@/shell/components/SinglePane";
 
 export default async function ContactsPage() {
   const session = await getSessionContext();
@@ -24,9 +25,8 @@ export default async function ContactsPage() {
   const favorites = favoritesResult.ok ? favoritesResult.value : [];
 
   return (
-    <div className="route-frame">
-      <h1 className="route-frame-title">{t("contacts")}</h1>
+    <SinglePane title={t("contacts")}>
       <ContactsPageView initialRecents={recents} initialFavorites={favorites} />
-    </div>
+    </SinglePane>
   );
 }

@@ -5,9 +5,11 @@ import Link from "next/link";
 import { memo, useCallback } from "react";
 import { useTranslations } from "next-intl";
 
+import { Avatar } from "@/shell/components/Avatar";
+import ui from "@/shell/styles/ui.module.css";
+
 import { useDiscovery } from "../context/DiscoveryContext";
 import styles from "../discovery-contacts.module.css";
-import { UserAvatar } from "./UserAvatar";
 
 function RecentSearchesInner() {
   const t = useTranslations("discovery-contacts");
@@ -25,43 +27,47 @@ function RecentSearchesInner() {
   }
 
   return (
-    <section className={styles.section} aria-labelledby="discovery-recents-heading">
-      <h2 id="discovery-recents-heading" className={styles.sectionTitle}>
-        {t("recents.title")}
-      </h2>
-      <ul className={styles.list}>
-        {state.recents.map((item) => (
-          <li key={item.id} className={styles.card}>
-            <Link
-              href={`/app/profile/${item.username}`}
-              className={styles.cardLink}
-            >
-              <UserAvatar avatarUrl={item.avatarUrl} />
-              <div className={styles.cardText}>
-                <p className={styles.displayName}>
-                  {item.displayName ?? item.username}
-                </p>
-                <p className={styles.username}>@{item.username}</p>
-              </div>
-            </Link>
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={onClearOne(item.id)}
-              aria-label={t("recents.removeOne", { username: item.username })}
-            >
-              <X size={18} aria-hidden="true" />
-            </button>
-          </li>
-        ))}
+    <section aria-labelledby="discovery-recents-heading">
+      <div className={styles.sectionHead}>
+        <h2
+          id="discovery-recents-heading"
+          className={`${ui.sectionLabel} ${ui.sectionLabelMuted}`}
+        >
+          {t("recents.title")}
+        </h2>
+        <button
+          type="button"
+          className={ui.linkBtn}
+          onClick={() => void clearAllRecents()}
+        >
+          {t("recents.clearAll")}
+        </button>
+      </div>
+      <ul className={ui.list}>
+        {state.recents.map((item) => {
+          const name = item.displayName ?? item.username;
+          return (
+            <li key={item.id} className={styles.recentRow}>
+              <Link href={`/app/profile/${item.username}`} className={ui.memberRow}>
+                <Avatar name={name} seed={item.username} src={item.avatarUrl} size="md" />
+                <span className={ui.memberRowBody}>
+                  <span className={`${ui.memberRowName} bidi-auto`}>{name}</span>
+                  <span className={`${ui.memberRowAbout} handle`}>@{item.username}</span>
+                </span>
+              </Link>
+              <button
+                type="button"
+                className={`${ui.iconBtn} ${ui.iconBtnSm}`}
+                onClick={onClearOne(item.id)}
+                aria-label={t("recents.removeOne", { username: item.username })}
+                title={t("recents.removeOne", { username: item.username })}
+              >
+                <X size={16} aria-hidden />
+              </button>
+            </li>
+          );
+        })}
       </ul>
-      <button
-        type="button"
-        className={styles.textButton}
-        onClick={() => void clearAllRecents()}
-      >
-        {t("recents.clearAll")}
-      </button>
     </section>
   );
 }

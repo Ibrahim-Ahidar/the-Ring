@@ -4,9 +4,9 @@ import { memo, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
+import ui from "@/shell/styles/ui.module.css";
 
 import { useNotificationsUnreadBadge } from "../context/NotificationsContext";
-import styles from "./notifications.module.css";
 
 function NotificationNavBadgeInner() {
   const t = useTranslations("notifications");
@@ -35,8 +35,9 @@ function NotificationNavBadgeInner() {
   }
 
   return (
-    <span className={styles.badge} aria-hidden>
-      {t("unreadBadge", { count })}
+    <span className={ui.badge}>
+      <span aria-hidden>{t("unreadBadge", { count })}</span>
+      <span className="sr-only">{t("unreadCount", { count })}</span>
     </span>
   );
 }

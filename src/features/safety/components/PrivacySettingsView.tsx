@@ -1,7 +1,9 @@
 "use client";
 
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
+
+import ui from "@/shell/styles/ui.module.css";
 
 import { useSafety } from "../context/safety-context";
 import { privacyErrorKey } from "../error-message";
@@ -17,7 +19,12 @@ import styles from "./PrivacySettings.module.css";
 import { BlockedMembersSection } from "./BlockedMembersSection";
 import { MyReportsSection } from "./MyReportsSection";
 
-export const PrivacySettingsView = memo(function PrivacySettingsView() {
+type Props = {
+  /** Rendered before the page heading (the settings mobile back arrow). */
+  leading?: ReactNode;
+};
+
+export const PrivacySettingsView = memo(function PrivacySettingsView({ leading }: Props) {
   const t = useTranslations("safety");
   const locale = useLocale();
   const { state, savePrivacyField } = useSafety();
@@ -41,7 +48,10 @@ export const PrivacySettingsView = memo(function PrivacySettingsView() {
 
   return (
     <div className={styles.page} dir={dir}>
-      <h1 className={styles.title}>{t("pageTitle")}</h1>
+      <div className={ui.settingsTitleRow}>
+        {leading}
+        <h1 className={ui.pageTitle}>{t("pageTitle")}</h1>
+      </div>
 
       {privacyError ? (
         <p className={styles.errorBanner} role="alert">
@@ -49,21 +59,23 @@ export const PrivacySettingsView = memo(function PrivacySettingsView() {
         </p>
       ) : null}
 
-      <section className={styles.section} aria-labelledby="discovery-heading">
-        <h2 id="discovery-heading" className={styles.sectionTitle}>
-          {t("sections.discovery")}
-        </h2>
+      <section className={ui.settingsCard} aria-labelledby="discovery-heading">
+        <div className={ui.settingsCardHead}>
+          <h2 id="discovery-heading" className={ui.settingsCardTitle}>
+            {t("sections.discovery")}
+          </h2>
+        </div>
         <ToggleControl
           label={t("settings.discoverable")}
           checked={privacy.discoverable}
           disabled={savingField === "discoverable"}
           onChange={(value) => onToggle("discoverable", value)}
         />
-        <label className={styles.row} htmlFor="profile-visibility">
-          <span className={styles.rowLabel}>{t("settings.profileVisibility")}</span>
+        <label className={ui.setting} htmlFor="profile-visibility">
+          <span className={ui.settingBody}>{t("settings.profileVisibility")}</span>
           <select
             id="profile-visibility"
-            className={styles.select}
+            className={`${ui.input} ${styles.select}`}
             value={privacy.profileVisibility}
             disabled={savingField === "profileVisibility"}
             onChange={(event) =>
@@ -81,10 +93,12 @@ export const PrivacySettingsView = memo(function PrivacySettingsView() {
         </label>
       </section>
 
-      <section className={styles.section} aria-labelledby="presence-heading">
-        <h2 id="presence-heading" className={styles.sectionTitle}>
-          {t("sections.presence")}
-        </h2>
+      <section className={ui.settingsCard} aria-labelledby="presence-heading">
+        <div className={ui.settingsCardHead}>
+          <h2 id="presence-heading" className={ui.settingsCardTitle}>
+            {t("sections.presence")}
+          </h2>
+        </div>
         <ToggleControl
           label={t("settings.showOnline")}
           checked={privacy.showOnline}
@@ -105,15 +119,17 @@ export const PrivacySettingsView = memo(function PrivacySettingsView() {
         />
       </section>
 
-      <section className={styles.section} aria-labelledby="messaging-heading">
-        <h2 id="messaging-heading" className={styles.sectionTitle}>
-          {t("sections.messaging")}
-        </h2>
-        <label className={styles.row} htmlFor="who-can-message">
-          <span className={styles.rowLabel}>{t("settings.whoCanMessage")}</span>
+      <section className={ui.settingsCard} aria-labelledby="messaging-heading">
+        <div className={ui.settingsCardHead}>
+          <h2 id="messaging-heading" className={ui.settingsCardTitle}>
+            {t("sections.messaging")}
+          </h2>
+        </div>
+        <label className={ui.setting} htmlFor="who-can-message">
+          <span className={ui.settingBody}>{t("settings.whoCanMessage")}</span>
           <select
             id="who-can-message"
-            className={styles.select}
+            className={`${ui.input} ${styles.select}`}
             value={privacy.whoCanMessage}
             disabled={savingField === "whoCanMessage"}
             onChange={(event) =>
@@ -131,15 +147,17 @@ export const PrivacySettingsView = memo(function PrivacySettingsView() {
         </label>
       </section>
 
-      <section className={styles.section} aria-labelledby="groups-heading">
-        <h2 id="groups-heading" className={styles.sectionTitle}>
-          {t("sections.groups")}
-        </h2>
-        <label className={styles.row} htmlFor="who-can-add">
-          <span className={styles.rowLabel}>{t("settings.whoCanAddToGroups")}</span>
+      <section className={ui.settingsCard} aria-labelledby="groups-heading">
+        <div className={ui.settingsCardHead}>
+          <h2 id="groups-heading" className={ui.settingsCardTitle}>
+            {t("sections.groups")}
+          </h2>
+        </div>
+        <label className={ui.setting} htmlFor="who-can-add">
+          <span className={ui.settingBody}>{t("settings.whoCanAddToGroups")}</span>
           <select
             id="who-can-add"
-            className={styles.select}
+            className={`${ui.input} ${styles.select}`}
             value={privacy.whoCanAddToGroups}
             disabled={savingField === "whoCanAddToGroups"}
             onChange={(event) =>

@@ -1,9 +1,11 @@
 "use client";
 
-import { FolderPlus } from "lucide-react";
+import { Archive, FolderPlus } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { memo, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
+
+import ui from "@/shell/styles/ui.module.css";
 
 import { requestFolderDialog } from "../organization-events";
 import type { ChatFolder } from "../types";
@@ -48,54 +50,56 @@ export const FolderStrip = memo(function FolderStrip({ folders }: Props) {
     [folders],
   );
 
+  const showFolderHint =
+    activeFolderId != null && sorted.some((f) => f.id === activeFolderId);
+
   return (
-    <div className={styles.strip} role="toolbar" aria-label={t("folderToolbar")}>
-      <button
-        type="button"
-        className={styles.stripChip}
-        data-active={!activeFolderId && !archived ? "true" : "false"}
-        onClick={() => navigate({ folder: null, archived: false })}
-      >
-        {t("allChats")}
-      </button>
-      <button
-        type="button"
-        className={styles.stripChip}
-        data-active={archived ? "true" : "false"}
-        onClick={() => navigate({ archived: true })}
-      >
-        {t("archivedChats")}
-      </button>
-      {sorted.map((folder) => (
+    <div className={styles.strip}>
+      <div className={ui.chips} role="toolbar" aria-label={t("folderToolbar")}>
         <button
-          key={folder.id}
           type="button"
-          className={styles.stripChip}
-          data-active={activeFolderId === folder.id ? "true" : "false"}
-          onClick={() => navigate({ folder: folder.id })}
+          className={ui.chip}
+          aria-pressed={!activeFolderId && !archived}
+          onClick={() => navigate({ folder: null, archived: false })}
         >
-          {folder.name}
+          {t("allChats")}
         </button>
-      ))}
-      <div className={styles.stripActions}>
+        {sorted.map((folder) => (
+          <button
+            key={folder.id}
+            type="button"
+            className={ui.chip}
+            aria-pressed={activeFolderId === folder.id}
+            onClick={() => navigate({ folder: folder.id })}
+          >
+            {folder.name}
+          </button>
+        ))}
         <button
           type="button"
-          className={styles.stripChip}
+          className={ui.chip}
+          aria-pressed={archived}
+          onClick={() => navigate({ archived: true })}
+        >
+          <Archive size={16} aria-hidden />
+          {t("archivedChats")}
+        </button>
+        <button
+          type="button"
+          className={`${ui.chip} ${ui.chipIcon}`}
           aria-label={t("createFolder")}
+          title={t("newFolder")}
           onClick={() => requestFolderDialog({ kind: "create" })}
         >
           <FolderPlus size={16} aria-hidden />
-          <span>{t("newFolder")}</span>
         </button>
       </div>
-      {activeFolderId && sorted.some((f) => f.id === activeFolderId) ? (
-        <p className={styles.emptyFolder} id="folder-empty-hint">
+      {showFolderHint ? (
+        <p className={styles.hint} id="folder-empty-hint">
           {t("folderEmptyHint")}
         </p>
       ) : null}
-      {folders.length === 0 ? (
-        <p className={styles.emptyFolder}>{t("noFoldersYet")}</p>
-      ) : null}
+      {folders.length === 0 ? <p className={styles.hint}>{t("noFoldersYet")}</p> : null}
     </div>
   );
 });

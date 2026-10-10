@@ -2,7 +2,11 @@
 
 import { memo, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { Bell, Heart, MessageCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+
+import { Avatar } from "@/shell/components/Avatar";
+import ui from "@/shell/styles/ui.module.css";
 
 import type { NotificationRow } from "../types";
 import styles from "./notifications.module.css";
@@ -55,8 +59,9 @@ function NotificationRowItemInner({
     return null;
   }, [row.actorUsername, row.conversationId]);
 
+  const actor = row.actorUsername ?? t("unknownActor");
+
   const title = useMemo(() => {
-    const actor = row.actorUsername ?? t("unknownActor");
     if (row.type === "message.created") {
       return t("types.messageCreated", { actor });
     }
@@ -64,7 +69,14 @@ function NotificationRowItemInner({
       return t("types.reactionCreated", { actor });
     }
     return t("types.default", { actor });
-  }, [row.actorUsername, row.type, t]);
+  }, [actor, row.type, t]);
+
+  const KindIcon =
+    row.type === "message.created"
+      ? MessageCircle
+      : row.type === "reaction.created"
+        ? Heart
+        : Bell;
 
   const timeLabel = useMemo(
     () => formatRelativeTime(row.createdAt, locale),
@@ -88,20 +100,31 @@ function NotificationRowItemInner({
     [handleClick],
   );
 
+  const unread = !row.readAt;
+
   return (
-    <li className={styles.item}>
+    <li>
       <button
         type="button"
-        className={styles.itemButton}
-        data-unread={row.readAt ? "false" : "true"}
+        className={styles.item}
+        data-unread={unread ? "true" : "false"}
         tabIndex={tabIndex}
         onFocus={onFocus}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         aria-label={t("itemAria", { title, time: timeLabel })}
       >
-        <span className={styles.itemTitle}>{title}</span>
-        <span className={styles.itemMeta}>{timeLabel}</span>
+        <span className={styles.itemIcon}>
+          <Avatar name={actor} seed={row.actorUsername ?? row.id} size="md" />
+          <span className={styles.itemKind} aria-hidden>
+            <KindIcon size={12} strokeWidth={2.5} />
+          </span>
+        </span>
+        <span className={styles.itemBody}>
+          <span className={`${styles.itemTitle} bidi-auto`}>{title}</span>
+          <span className={styles.itemMeta}>{timeLabel}</span>
+        </span>
+        {unread ? <span className={ui.dot} aria-hidden /> : null}
       </button>
     </li>
   );

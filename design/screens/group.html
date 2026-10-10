@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design Team · The Ring</title>
+  <link rel="stylesheet" href="../css/ring.css">
+  <script src="../assets/preview.js"></script>
+  <script src="../assets/icons.js"></script>
+</head>
+<body>
+<div class="app" data-view="conversation" data-drawer="open">
+
+  <aside class="sidebar" aria-label="Chats">
+    <header class="sidebar__header">
+      <a class="sidebar__profile" href="settings.html" aria-label="Profile and settings" title="Profile and settings"><span class="avatar avatar--sm avatar--c3">AK</span></a>
+      <h1 class="sidebar__title">Chats</h1>
+    </header>
+    <div class="sidebar__tools">
+      <label class="search">
+        <svg class="icon icon--sm"><use href="#i-search"/></svg>
+        <input type="search" placeholder="Search or start a new chat" aria-label="Search chats">
+      </label>
+      <div class="chips" role="toolbar" aria-label="Folders">
+        <button class="chip" aria-pressed="false">All</button>
+        <button class="chip" aria-pressed="false">Unread <span class="chip__count">4</span></button>
+        <button class="chip" aria-pressed="false">Favourites</button>
+        <button class="chip" aria-pressed="true">Groups <span class="chip__count">3</span></button>
+        <button class="chip" aria-pressed="false">Work</button>
+      </div>
+    </div>
+    <div class="sidebar__body scroll">
+      <ul class="chat-list" role="list">
+        <li>
+          <a class="chat-row" href="group.html" aria-current="true">
+            <span class="avatar avatar--c3">DT</span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Design Team</span><time class="chat-row__time">12:30</time></span>
+              <span class="chat-row__bottom"><span class="chat-row__preview"><span>Karim: I pushed the new tokens to the branch</span></span></span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a class="chat-row" href="group.html">
+            <span class="avatar avatar--c5">WH</span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Weekend Hikers</span><time class="chat-row__time">Yesterday</time></span>
+              <span class="chat-row__bottom">
+                <span class="chat-row__preview"><span>Nadia:</span><svg class="icon"><use href="#i-image"/></svg><span>Photo</span></span>
+                <span class="chat-row__meta"><svg class="icon" aria-label="Muted"><use href="#i-bell-off"/></svg><span class="badge badge--muted">12</span></span>
+              </span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a class="chat-row" href="group.html">
+            <span class="avatar avatar--c4">PL</span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Product Launch</span><time class="chat-row__time">28/09/2026</time></span>
+              <span class="chat-row__bottom"><span class="chat-row__preview"><span>You: Agenda is in the pinned message</span></span></span>
+            </span>
+          </a>
+        </li>
+      </ul>
+      <p class="notice">Groups can have up to 256 members. <a href="#">Learn about roles</a></p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="conversation" aria-label="Design Team">
+      <header class="conv-header">
+        <a class="icon-btn conv-header__back" href="group.html" aria-label="Back to groups"><svg class="icon icon--flip"><use href="#i-back"/></svg></a>
+        <span class="avatar avatar--md avatar--c3">DT</span>
+        <a class="conv-header__info" href="group.html">
+          <h2 class="conv-header__title">Design Team</h2>
+          <p class="conv-header__subtitle">Karim, Nadia, Sofia, Lina, You</p>
+        </a>
+        <div class="conv-header__actions">
+          <button class="icon-btn" aria-label="Search in group"><svg class="icon"><use href="#i-search"/></svg></button>
+          <button class="icon-btn" aria-label="Group menu" aria-haspopup="menu"><svg class="icon"><use href="#i-more"/></svg></button>
+        </div>
+      </header>
+
+      <div class="messages" role="log">
+        <div class="messages__inner">
+          <div class="system-note system-note--neutral">Karim created the group "Design Team"</div>
+          <div class="system-note system-note--neutral">Karim added you</div>
+
+          <div class="day-divider">Today</div>
+
+          <div class="msg msg--in msg--first">
+            <span class="avatar avatar--sm avatar--c2 msg__avatar">KS</span>
+            <div class="bubble">
+              <span class="bubble__sender bubble__sender--2">Karim Saidi</span>
+              <span class="bubble__text">Morning team! Quick update on the redesign 👇</span>
+              <span class="bubble__meta">09:12</span>
+            </div>
+          </div>
+          <div class="msg msg--in">
+            <span class="msg__avatar"></span>
+            <div class="bubble bubble--media">
+              <div class="media-row">
+                <span class="bubble__media bubble__media--b" role="img" aria-label="Screenshot 1"></span>
+                <span class="bubble__media bubble__media--c" role="img" aria-label="Screenshot 2"><span class="media-more">+3</span></span>
+              </div>
+              <span class="bubble__meta bubble__meta--overlay">09:13</span>
+            </div>
+          </div>
+
+          <div class="msg msg--in msg--first msg--has-reactions">
+            <span class="avatar avatar--sm avatar--c5 msg__avatar">NR</span>
+            <div class="bubble">
+              <span class="bubble__sender bubble__sender--1">Nadia Rami</span>
+              <span class="bubble__text">These look great. <span class="mark">@Amina</span> can you check the dark mode contrast?</span>
+              <span class="bubble__meta">09:20</span>
+              <span class="reactions" aria-label="Reactions">👀 👍 <span class="reactions__count">4</span></span>
+            </div>
+          </div>
+
+          <div class="unread-divider">2 unread messages</div>
+
+          <div class="msg msg--in msg--first">
+            <span class="avatar avatar--sm avatar--c6 msg__avatar">SM</span>
+            <div class="bubble">
+              <span class="bubble__sender bubble__sender--3">Sofia Martin</span>
+              <span class="bubble__forwarded"><svg class="icon icon--xs"><use href="#i-forward"/></svg>Forwarded</span>
+              <span class="bubble__text">Reminder: tokens freeze is Thursday at noon.</span>
+              <span class="bubble__meta">11:02</span>
+            </div>
+          </div>
+
+          <div class="msg msg--in msg--first">
+            <span class="avatar avatar--sm avatar--c2 msg__avatar">KS</span>
+            <div class="bubble">
+              <span class="bubble__sender bubble__sender--2">Karim Saidi</span>
+              <div class="bubble__file">
+                <span class="file-icon file-icon--zip">ZIP</span>
+                <div class="bubble__file-body">
+                  <div class="bubble__file-name">ring-tokens-v3.zip</div>
+                  <div class="bubble__file-meta">ZIP · 840 KB</div>
+                </div>
+                <button class="icon-btn" aria-label="Download"><svg class="icon icon--sm"><use href="#i-download"/></svg></button>
+              </div>
+              <span class="bubble__text">I pushed the new tokens to the branch</span>
+              <span class="bubble__meta">12:30</span>
+              <div class="bubble-actions" aria-label="Message actions">
+                <button class="icon-btn" aria-label="React"><svg class="icon"><use href="#i-smile"/></svg></button>
+                <button class="icon-btn" aria-label="Reply"><svg class="icon icon--flip"><use href="#i-reply"/></svg></button>
+                <button class="icon-btn" aria-label="More actions"><svg class="icon"><use href="#i-chevron-down"/></svg></button>
+              </div>
+            </div>
+          </div>
+          <div class="msg msg--in">
+            <span class="msg__avatar"></span>
+            <div class="reaction-picker" role="toolbar" aria-label="Pick a reaction">
+              <button aria-label="Thumbs up">👍</button><button aria-label="Heart" aria-pressed="true">❤️</button><button aria-label="Laugh">😂</button><button aria-label="Wow">😮</button><button aria-label="Sad">😢</button><button aria-label="Pray">🙏</button>
+              <button aria-label="More reactions" class="icon-btn"><svg class="icon icon--sm"><use href="#i-plus"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="composer">
+        <div class="composer__reply">
+          <span class="bubble__quote bubble__quote--2">
+            <span class="bubble__quote-author">Karim Saidi</span>
+            <span class="bubble__quote-text">I pushed the new tokens to the branch</span>
+          </span>
+          <button class="icon-btn" aria-label="Cancel reply"><svg class="icon icon--sm"><use href="#i-close"/></svg></button>
+        </div>
+        <div class="composer__bar">
+          <button class="icon-btn" aria-label="Emoji"><svg class="icon"><use href="#i-smile"/></svg></button>
+          <button class="icon-btn" aria-label="Attach"><svg class="icon"><use href="#i-attach"/></svg></button>
+          <textarea class="composer__input" rows="1" aria-label="Message Design Team">Checking contrast now, will report back</textarea>
+          <button class="icon-btn icon-btn--accent composer__send" aria-label="Send"><svg class="icon icon--sm icon--flip"><use href="#i-send"/></svg></button>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <aside class="drawer" aria-label="Group info">
+    <header class="drawer__header">
+      <a class="icon-btn" href="#" aria-label="Close group info"><svg class="icon"><use href="#i-close"/></svg></a>
+      <h2 class="drawer__title">Group info</h2>
+      <button class="icon-btn" aria-label="Edit group"><svg class="icon icon--sm"><use href="#i-edit"/></svg></button>
+    </header>
+    <div class="drawer__body">
+      <div class="profile-hero">
+        <span class="avatar avatar--xl avatar--c3">DT</span>
+        <h3 class="profile-hero__name">Design Team</h3>
+        <p class="profile-hero__handle">Group · 5 members</p>
+      </div>
+
+      <section class="info-section">
+        <div class="info-section__head">Description</div>
+        <p class="info-section__text">Everything about The Ring's visual system — tokens, components, and reviews. Be kind, ship often.</p>
+      </section>
+
+      <section class="info-section">
+        <div class="info-section__head">5 members <button class="icon-btn" aria-label="Search members"><svg class="icon icon--sm"><use href="#i-search"/></svg></button></div>
+        <a class="list-row" href="#add"><span class="avatar avatar--md avatar--accent"><svg class="icon icon--sm"><use href="#i-user-plus"/></svg></span><span class="list-row__body"><span class="list-row__title">Add member</span></span></a>
+        <a class="list-row" href="#invite"><span class="avatar avatar--md avatar--accent"><svg class="icon icon--sm"><use href="#i-link"/></svg></span><span class="list-row__body"><span class="list-row__title">Invite via link</span></span></a>
+        <div class="member-row"><span class="avatar avatar--md avatar--c3">AK</span><div class="member-row__body"><div class="member-row__name">You</div><div class="member-row__about">Making things feel nice</div></div><span class="tag">Admin</span></div>
+        <div class="member-row"><span class="avatar avatar--md avatar--c2">KS</span><div class="member-row__body"><div class="member-row__name">Karim Saidi</div><div class="member-row__about">@karim · Design lead</div></div><span class="tag">Owner</span></div>
+        <div class="member-row"><span class="avatar avatar--md avatar--c5">NR</span><div class="member-row__body"><div class="member-row__name">Nadia Rami</div><div class="member-row__about">@nadia.r</div></div><span class="tag">Admin</span></div>
+        <div class="member-row"><span class="avatar avatar--md avatar--c6">SM</span><div class="member-row__body"><div class="member-row__name">Sofia Martin</div><div class="member-row__about">@sofia</div></div></div>
+        <div class="member-row"><span class="avatar avatar--md avatar--c1">LH</span><div class="member-row__body"><div class="member-row__name">Lina Haddad</div><div class="member-row__about">@lina.h</div></div></div>
+      </section>
+
+      <section class="info-section">
+        <div class="list-row"><svg class="icon"><use href="#i-bell"/></svg><span class="list-row__body"><span class="list-row__title">Mute notifications</span></span><span class="switch" role="switch" aria-checked="false" aria-label="Mute notifications"></span></div>
+        <button class="list-row list-row--danger"><svg class="icon icon--flip"><use href="#i-logout"/></svg><span class="list-row__body"><span class="list-row__title">Leave group</span></span></button>
+        <button class="list-row list-row--danger"><svg class="icon"><use href="#i-flag"/></svg><span class="list-row__body"><span class="list-row__title">Report group</span></span></button>
+      </section>
+    </div>
+  </aside>
+</div>
+</body>
+</html>

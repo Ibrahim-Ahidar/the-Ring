@@ -21,6 +21,9 @@ import {
   type ForwardDialogRequest,
 } from "../message-actions-events";
 import styles from "../message-actions.module.css";
+import ui from "@/shell/styles/ui.module.css";
+
+const SCRIM = `${ui.scrim} ${ui.scrimCenter} ${ui.scrimSheet}`;
 
 type DialogState =
   | { kind: "edit"; request: EditDialogRequest }
@@ -131,34 +134,34 @@ function EditDialog({
   };
 
   return (
-    <div className={styles.modalBackdrop} onClick={onClose} role="presentation">
+    <div className={SCRIM} onClick={onClose} role="presentation">
       <div
         ref={trapRef}
-        className={styles.modal}
+        className={ui.dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby="edit-dialog-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 id="edit-dialog-title" className={styles.modalTitle}>
+        <h2 id="edit-dialog-title" className={ui.dialogTitle}>
           {t("edit.title")}
         </h2>
-        <label className="visually-hidden" htmlFor="edit-message-body">
+        <label className="sr-only" htmlFor="edit-message-body">
           {t("edit.label")}
         </label>
         <textarea
           id="edit-message-body"
-          className={styles.modalInput}
+          className={ui.input}
           rows={4}
           value={body}
           onChange={(event) => setBody(event.target.value)}
         />
-        {error ? <p className={styles.errorBanner}>{error}</p> : null}
-        <div className={styles.modalActions}>
-          <button type="button" className={styles.button} onClick={onClose} disabled={busy}>
+        {error ? <p className={ui.errorText} role="alert">{error}</p> : null}
+        <div className={ui.dialogActions}>
+          <button type="button" className={`${ui.btn} ${ui.btnSecondary}`} onClick={onClose} disabled={busy}>
             {t("actions.cancel")}
           </button>
-          <button type="button" className={styles.button} onClick={submit} disabled={busy}>
+          <button type="button" className={`${ui.btn} ${ui.btnPrimary}`} onClick={submit} disabled={busy}>
             {t("edit.save")}
           </button>
         </div>
@@ -211,29 +214,29 @@ function DeleteDialog({
   };
 
   return (
-    <div className={styles.modalBackdrop} onClick={onClose} role="presentation">
+    <div className={SCRIM} onClick={onClose} role="presentation">
       <div
         ref={trapRef}
-        className={styles.modal}
+        className={ui.dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-dialog-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 id="delete-dialog-title" className={styles.modalTitle}>
+        <h2 id="delete-dialog-title" className={ui.dialogTitle}>
           {isEveryone ? t("delete.everyoneTitle") : t("delete.meTitle")}
         </h2>
-        <p className={styles.modalBody}>
+        <p className={ui.dialogText}>
           {isEveryone ? t("delete.everyoneBody") : t("delete.meBody")}
         </p>
-        {error ? <p className={styles.errorBanner}>{error}</p> : null}
-        <div className={styles.modalActions}>
-          <button type="button" className={styles.button} onClick={onClose} disabled={busy}>
+        {error ? <p className={ui.errorText} role="alert">{error}</p> : null}
+        <div className={ui.dialogActions}>
+          <button type="button" className={`${ui.btn} ${ui.btnSecondary}`} onClick={onClose} disabled={busy}>
             {t("actions.cancel")}
           </button>
           <button
             type="button"
-            className={`${styles.button} ${styles.buttonDanger}`}
+            className={`${ui.btn} ${ui.btnDanger}`}
             onClick={submit}
             disabled={busy}
           >
@@ -286,24 +289,24 @@ function ForwardDialog({
   };
 
   return (
-    <div className={styles.modalBackdrop} onClick={onClose} role="presentation">
+    <div className={SCRIM} onClick={onClose} role="presentation">
       <div
         ref={trapRef}
-        className={styles.modal}
+        className={ui.dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby="forward-dialog-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 id="forward-dialog-title" className={styles.modalTitle}>
+        <h2 id="forward-dialog-title" className={ui.dialogTitle}>
           {t("forward.title")}
         </h2>
-        <label className="visually-hidden" htmlFor="forward-target">
+        <label className="sr-only" htmlFor="forward-target">
           {t("forward.label")}
         </label>
         <select
           id="forward-target"
-          className={styles.modalSelect}
+          className={ui.input}
           value={targetId}
           onChange={(event) => setTargetId(event.target.value)}
         >
@@ -317,12 +320,12 @@ function ForwardDialog({
             </option>
           ))}
         </select>
-        {error ? <p className={styles.errorBanner}>{error}</p> : null}
-        <div className={styles.modalActions}>
-          <button type="button" className={styles.button} onClick={onClose} disabled={busy}>
+        {error ? <p className={ui.errorText} role="alert">{error}</p> : null}
+        <div className={ui.dialogActions}>
+          <button type="button" className={`${ui.btn} ${ui.btnSecondary}`} onClick={onClose} disabled={busy}>
             {t("actions.cancel")}
           </button>
-          <button type="button" className={styles.button} onClick={submit} disabled={busy}>
+          <button type="button" className={`${ui.btn} ${ui.btnPrimary}`} onClick={submit} disabled={busy}>
             {t("forward.confirm")}
           </button>
         </div>

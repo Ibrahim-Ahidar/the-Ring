@@ -1,6 +1,10 @@
 {
   "loginTitle": "Log in",
   "signupTitle": "Create account",
+  "loginSubtitle": "Log in to pick up your conversations.",
+  "signupSubtitle": "Pick a username. It's how people find you.",
+  "legalNotice": "By continuing you agree to the <terms>Terms</terms> and <privacy>Privacy Policy</privacy>.",
+  "usernameHint": "3–20 characters: letters, numbers and underscores, starting with a letter.",
   "emailLabel": "Email",
   "passwordLabel": "Password",
   "usernameLabel": "Username",
@@ -61,6 +65,7 @@
     "platform": {
       "rate_limited": "Too many attempts. Wait a moment and try again.",
       "unauthenticated": "Sign in to continue.",
+      "auth_unavailable": "Authentication is not configured. Add valid Supabase settings and try again.",
       "unexpected": "Something went wrong. Try again."
     }
   }

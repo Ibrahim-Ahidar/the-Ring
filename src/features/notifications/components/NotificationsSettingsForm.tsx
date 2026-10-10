@@ -1,7 +1,9 @@
 "use client";
 
-import { memo, useCallback, useState, useTransition } from "react";
+import { memo, useCallback, useId, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+
+import ui from "@/shell/styles/ui.module.css";
 
 import { updateNotificationPreferencesAction } from "../actions";
 import type { NotificationPreferences } from "../types";
@@ -11,8 +13,15 @@ type Props = {
   initial: NotificationPreferences;
 };
 
+const ROWS = [
+  { key: "inAppEnabled", label: "settings.inApp", hint: "settings.inAppHint" },
+  { key: "pushEnabled", label: "settings.push", hint: "settings.pushHint" },
+  { key: "mentionsOnly", label: "settings.mentionsOnly", hint: "settings.mentionsOnlyHint" },
+] as const;
+
 function NotificationsSettingsFormInner({ initial }: Props) {
   const t = useTranslations("notifications");
+  const idBase = useId();
   const [prefs, setPrefs] = useState(initial);
   const [saved, setSaved] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
@@ -34,77 +43,54 @@ function NotificationsSettingsFormInner({ initial }: Props) {
 
   return (
     <form
-      className={styles.settingsForm}
+      className={ui.settingsCard}
       onSubmit={(event) => {
         event.preventDefault();
         submit();
       }}
     >
-      <label className={styles.field}>
-        <input
-          type="checkbox"
-          checked={prefs.inAppEnabled}
-          onChange={(event) =>
-            setPrefs((prev) => ({
-              ...prev,
-              inAppEnabled: event.target.checked,
-            }))
-          }
-        />
-        <span className={styles.fieldLabel}>
-          <span>{t("settings.inApp")}</span>
-          <p className={styles.fieldHint}>{t("settings.inAppHint")}</p>
-        </span>
-      </label>
+      {ROWS.map(({ key, label, hint }) => {
+        const labelId = `${idBase}-${key}`;
+        const hintId = `${labelId}-hint`;
+        return (
+          <div key={key} className={ui.setting}>
+            <span className={ui.settingBody}>
+              <span id={labelId}>{t(label)}</span>
+              <span id={hintId} className={ui.settingDesc}>
+                {t(hint)}
+              </span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              className={ui.switch}
+              aria-checked={prefs[key]}
+              aria-labelledby={labelId}
+              aria-describedby={hintId}
+              onClick={() => {
+                setSaved(false);
+                setPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
+              }}
+            />
+          </div>
+        );
+      })}
 
-      <label className={styles.field}>
-        <input
-          type="checkbox"
-          checked={prefs.pushEnabled}
-          onChange={(event) =>
-            setPrefs((prev) => ({
-              ...prev,
-              pushEnabled: event.target.checked,
-            }))
-          }
-        />
-        <span className={styles.fieldLabel}>
-          <span>{t("settings.push")}</span>
-          <p className={styles.fieldHint}>{t("settings.pushHint")}</p>
-        </span>
-      </label>
-
-      <label className={styles.field}>
-        <input
-          type="checkbox"
-          checked={prefs.mentionsOnly}
-          onChange={(event) =>
-            setPrefs((prev) => ({
-              ...prev,
-              mentionsOnly: event.target.checked,
-            }))
-          }
-        />
-        <span className={styles.fieldLabel}>
-          <span>{t("settings.mentionsOnly")}</span>
-          <p className={styles.fieldHint}>{t("settings.mentionsOnlyHint")}</p>
-        </span>
-      </label>
-
-      {errorCode ? (
-        <p role="alert">{t("settings.saveError")}</p>
-      ) : null}
-      {saved ? (
-        <p role="status">{t("settings.saved")}</p>
-      ) : null}
-
-      <button
-        type="submit"
-        className={styles.primaryButton}
-        disabled={pending}
-      >
-        {pending ? t("settings.saving") : t("settings.save")}
-      </button>
+      <div className={styles.formFoot}>
+        {errorCode ? (
+          <p className={ui.errorText} role="alert">
+            {t("settings.saveError")}
+          </p>
+        ) : null}
+        {saved ? (
+          <p className={styles.saved} role="status">
+            {t("settings.saved")}
+          </p>
+        ) : null}
+        <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={pending}>
+          {pending ? t("settings.saving") : t("settings.save")}
+        </button>
+      </div>
     </form>
   );
 }

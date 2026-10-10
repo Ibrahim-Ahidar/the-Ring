@@ -1,0 +1,85 @@
+{
+  "title": "Groupes",
+  "newTitle": "Nouveau groupe",
+  "adminTitle": "Paramètres du groupe",
+  "membersTab": "Membres",
+  "createSubmit": "Créer le groupe",
+  "openChat": "Ouvrir la discussion",
+  "backToGroups": "Retour aux groupes",
+  "nameLabel": "Nom du groupe",
+  "descriptionLabel": "Description (facultatif)",
+  "avatarLabel": "Avatar du groupe (facultatif)",
+  "emptyGroups": "Vous n'êtes dans aucun groupe pour l'instant.",
+  "createLink": "Créer un groupe",
+  "inviteLabel": "Inviter par nom d'utilisateur",
+  "inviteSubmit": "Envoyer l'invitation",
+  "joinCodeLabel": "Rejoindre avec un code",
+  "joinSubmit": "Rejoindre le groupe",
+  "createLinkSubmit": "Créer un lien d'invitation",
+  "linkCreated": "Lien d'invitation créé",
+  "copyCode": "Copier le code",
+  "leaveGroup": "Quitter le groupe",
+  "transferOwnership": "Transférer la propriété",
+  "removeMember": "Retirer le membre",
+  "promoteAdmin": "Nommer admin",
+  "demoteMember": "Retirer le rôle admin",
+  "restrictMessaging": "Restreindre la messagerie",
+  "allowMessaging": "Autoriser la messagerie",
+  "reportsTitle": "Signalements de messages",
+  "reportsEmpty": "Aucun signalement ouvert pour ce groupe.",
+  "markReviewed": "Marquer comme traité",
+  "roles": {
+    "owner": "Propriétaire",
+    "admin": "Admin",
+    "member": "Membre"
+  },
+  "system": {
+    "fallback": "Mise à jour du groupe",
+    "unknownMember": "Un membre",
+    "events": {
+      "joined": "{name} a rejoint le groupe",
+      "left": "{name} a quitté le groupe",
+      "removed": "{name} a été retiré du groupe",
+      "promoted": "{name} a été promu admin",
+      "demoted": "{name} n'est plus admin"
+    }
+  },
+  "confirm": {
+    "removeTitle": "Retirer ce membre ?",
+    "removeBody": "Il perdra l'accès au groupe.",
+    "leaveTitle": "Quitter ce groupe ?",
+    "leaveBody": "Vous ne recevrez plus les messages du groupe.",
+    "confirm": "Confirmer",
+    "cancel": "Annuler"
+  },
+  "actions": {
+    "retry": "Réessayer",
+    "save": "Enregistrer"
+  },
+  "states": {
+    "loading": "Chargement…",
+    "saving": "Enregistrement…"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite. Réessayez.",
+    "groups": {
+      "not_allowed": "Cette personne ne peut pas être invitée dans des groupes.",
+      "owner_must_transfer": "Transférez la propriété avant de quitter.",
+      "member_limit": "Ce groupe a déjà le nombre maximum de membres.",
+      "forbidden": "Vous n'avez pas la permission pour cette action.",
+      "not_member": "Vous n'êtes pas membre de ce groupe.",
+      "not_found": "Groupe introuvable.",
+      "name_required": "Saisissez un nom de groupe.",
+      "name_too_long": "Le nom du groupe est trop long.",
+      "description_too_long": "La description est trop longue.",
+      "avatar_rejected": "Choisissez une image prise en charge dans la limite de taille.",
+      "user_not_found": "Membre introuvable.",
+      "cannot_target_owner": "Vous ne pouvez pas modifier le propriétaire ainsi.",
+      "invite_link_invalid": "Code d'invitation invalide.",
+      "invite_link_revoked": "Ce lien d'invitation a été révoqué.",
+      "invite_link_expired": "Ce lien d'invitation a expiré.",
+      "invite_link_exhausted": "Ce lien d'invitation a atteint sa limite d'utilisation.",
+      "invite_link_not_found": "Lien d'invitation introuvable."
+    }
+  }
+}

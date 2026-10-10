@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Message requests · The Ring</title>
+  <link rel="stylesheet" href="../css/ring.css">
+  <script src="../assets/preview.js"></script>
+  <script src="../assets/icons.js"></script>
+</head>
+<body>
+<div class="app" data-view="conversation">
+
+  <aside class="sidebar" aria-label="Message requests">
+    <header class="sidebar__header">
+      <a class="icon-btn" href="chats.html" aria-label="Back to chats"><svg class="icon icon--flip"><use href="#i-back"/></svg></a>
+      <h1 class="sidebar__title">Message requests</h1>
+    </header>
+    <div class="sidebar__body scroll">
+      <p class="notice">People you haven't chatted with yet. They won't know you've seen their message until you accept.</p>
+      <a class="chat-row" href="requests.html" aria-current="true">
+        <span class="avatar avatar--c4">MB</span>
+        <span class="chat-row__body">
+          <span class="chat-row__top"><span class="chat-row__name">Marco Bianchi</span><time class="chat-row__time chat-row__time--unread">10:24</time></span>
+          <span class="chat-row__bottom"><span class="chat-row__preview"><span>Hi! I saw your talk on design tokens…</span></span><span class="chat-row__meta"><span class="badge">2</span></span></span>
+        </span>
+      </a>
+      <a class="chat-row" href="requests.html">
+        <span class="avatar avatar--c2">JO</span>
+        <span class="chat-row__body">
+          <span class="chat-row__top"><span class="chat-row__name">@jules.o</span><time class="chat-row__time">Yesterday</time></span>
+          <span class="chat-row__bottom"><span class="chat-row__preview"><span>Are you the one organising the meetup?</span></span></span>
+        </span>
+      </a>
+      <a class="chat-row" href="requests.html">
+        <span class="avatar avatar--icon"><svg class="icon"><use href="#i-contacts"/></svg></span>
+        <span class="chat-row__body">
+          <span class="chat-row__top"><span class="chat-row__name">@promo_deals_4u</span><time class="chat-row__time">Monday</time></span>
+          <span class="chat-row__bottom"><span class="chat-row__preview"><span class="tag tag--neutral">Possible spam</span></span></span>
+        </span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="conversation" aria-label="Request from Marco Bianchi">
+      <header class="conv-header">
+        <a class="icon-btn conv-header__back" href="requests.html" aria-label="Back to requests"><svg class="icon icon--flip"><use href="#i-back"/></svg></a>
+        <span class="avatar avatar--md avatar--c4">MB</span>
+        <div class="conv-header__info">
+          <h2 class="conv-header__title">Marco Bianchi</h2>
+          <p class="conv-header__subtitle">@marco.b · not in your contacts</p>
+        </div>
+      </header>
+
+      <div class="messages" role="log">
+        <div class="messages__inner">
+          <div class="system-note"><svg class="icon"><use href="#i-shield"/></svg>Marco can't see your online status or read receipts until you accept.</div>
+          <div class="day-divider">Today</div>
+          <div class="msg msg--in msg--first">
+            <div class="bubble">
+              <span class="bubble__text">Hi! I saw your talk on design tokens at the meetup last week.</span>
+              <span class="bubble__meta">10:23</span>
+            </div>
+          </div>
+          <div class="msg msg--in">
+            <div class="bubble">
+              <span class="bubble__text">Would you be open to a quick chat about how you handle RTL layouts? 🙏</span>
+              <span class="bubble__meta">10:24</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="request-bar">
+        <p><strong>Marco Bianchi</strong> wants to send you messages.</p>
+        <p class="muted">Accept to reply and move this chat to your inbox.</p>
+        <div class="request-bar__actions">
+          <button class="btn btn--danger"><svg class="icon icon--sm"><use href="#i-ban"/></svg>Block</button>
+          <button class="btn btn--secondary"><svg class="icon icon--sm"><use href="#i-trash"/></svg>Delete</button>
+          <button class="btn btn--primary"><svg class="icon icon--sm"><use href="#i-check"/></svg>Accept</button>
+        </div>
+      </footer>
+    </section>
+  </main>
+</div>
+</body>
+</html>

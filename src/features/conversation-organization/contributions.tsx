@@ -1,4 +1,4 @@
-import { MoreHorizontal } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 
 import type { FeatureContributions } from "@/shell/slots/types";
 
@@ -17,7 +17,7 @@ export const contributions: FeatureContributions = {
       id: "conversation-organization-menu",
       order: 10,
       labelKey: "menuOpen",
-      icon: MoreHorizontal,
+      icon: MoreVertical,
       isAvailable: () => true,
       run: (ctx) => {
         requestOrganizationMenu(ctx);

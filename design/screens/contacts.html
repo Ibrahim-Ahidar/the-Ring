@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contacts · The Ring</title>
+  <link rel="stylesheet" href="../css/ring.css">
+  <script src="../assets/preview.js"></script>
+  <script src="../assets/icons.js"></script>
+</head>
+<body>
+<div class="app" data-view="list">
+
+  <aside class="sidebar" aria-label="Contacts">
+    <header class="sidebar__header">
+      <a class="icon-btn" href="chats.html" aria-label="Back to chats"><svg class="icon icon--flip"><use href="#i-back"/></svg></a>
+      <h1 class="sidebar__title">Contacts</h1>
+      <div class="sidebar__actions">
+        <a class="icon-btn icon-btn--accent" href="search.html" aria-label="Find by username"><svg class="icon icon--sm"><use href="#i-user-plus"/></svg></a>
+      </div>
+    </header>
+    <div class="sidebar__tools">
+      <label class="search">
+        <svg class="icon icon--sm"><use href="#i-search"/></svg>
+        <input type="search" placeholder="Search contacts" aria-label="Search contacts">
+      </label>
+    </div>
+    <div class="sidebar__body scroll">
+      <h2 class="section-label">Favourites</h2>
+      <a class="member-row" href="#"><span class="avatar avatar--c1">LH<span class="avatar__presence"></span></span><span class="member-row__body"><span class="member-row__name">Lina Haddad</span><span class="member-row__about">@lina.h · online</span></span><svg class="icon icon--sm muted"><use href="#i-star"/></svg></a>
+      <a class="member-row" href="#" aria-current="true"><span class="avatar avatar--c6">SM<span class="avatar__presence"></span></span><span class="member-row__body"><span class="member-row__name">Sofia Martin</span><span class="member-row__about">@sofia · online</span></span><svg class="icon icon--sm muted"><use href="#i-star"/></svg></a>
+      <a class="member-row" href="#"><span class="avatar avatar--c2">KS</span><span class="member-row__body"><span class="member-row__name">Karim Saidi</span><span class="member-row__about">@karim · last seen 2h ago</span></span><svg class="icon icon--sm muted"><use href="#i-star"/></svg></a>
+
+      <h2 class="section-label section-label--muted">A</h2>
+      <a class="member-row" href="#"><span class="avatar avatar--c2">AT</span><span class="member-row__body"><span class="member-row__name">Amine Tazi</span><span class="member-row__about">@amine.t</span></span></a>
+      <h2 class="section-label section-label--muted">E</h2>
+      <a class="member-row" href="#"><span class="avatar avatar--c1">EC</span><span class="member-row__body"><span class="member-row__name">Elena Costa</span><span class="member-row__about">@elena · Hola 👋</span></span></a>
+      <h2 class="section-label section-label--muted">H</h2>
+      <a class="member-row" href="#"><span class="avatar avatar--c2">HL</span><span class="member-row__body"><span class="member-row__name">Hugo Laurent</span><span class="member-row__about">@hugo.l</span></span></a>
+      <h2 class="section-label section-label--muted">M</h2>
+      <a class="member-row" href="#"><span class="avatar avatar--c5">MD</span><span class="member-row__body"><span class="member-row__name">Marc Dupont</span><span class="member-row__about">@marc.d · Busy</span></span></a>
+      <h2 class="section-label section-label--muted">N</h2>
+      <a class="member-row" href="#"><span class="avatar avatar--c5">NR</span><span class="member-row__body"><span class="member-row__name">Nadia Rami</span><span class="member-row__about">@nadia.r</span></span></a>
+      <h2 class="section-label section-label--muted">R</h2>
+      <a class="member-row" href="#"><span class="avatar avatar--c4">RF</span><span class="member-row__body"><span class="member-row__name">Rania Fassi</span><span class="member-row__about">@rania</span></span></a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="settings-page" aria-label="Contact profile">
+      <div class="settings-page__inner">
+        <div class="settings-card">
+          <div class="profile-hero">
+            <span class="avatar avatar--xl avatar--c6">SM</span>
+            <h2 class="profile-hero__name">Sofia Martin</h2>
+            <p class="profile-hero__handle">@sofia</p>
+            <p class="conv-header__subtitle--online">online</p>
+            <div class="profile-actions">
+              <a class="btn btn--primary" href="chat.html"><svg class="icon icon--sm"><use href="#i-message"/></svg>Message</a>
+              <button class="btn btn--secondary"><svg class="icon icon--sm"><use href="#i-star"/></svg>Remove favourite</button>
+            </div>
+          </div>
+          <div class="setting">
+            <svg class="icon"><use href="#i-contacts"/></svg>
+            <span class="setting__body"><span>About</span><span class="setting__desc">Frontend engineer · Lisbon → Paris</span></span>
+          </div>
+          <a class="setting" href="#groups">
+            <svg class="icon"><use href="#i-groups"/></svg>
+            <span class="setting__body"><span>Groups in common</span><span class="setting__desc">Design Team</span></span>
+            <svg class="icon icon--sm icon--flip muted"><use href="#i-chevron"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</div>
+</body>
+</html>

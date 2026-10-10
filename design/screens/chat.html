@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lina Haddad · The Ring</title>
+  <link rel="stylesheet" href="../css/ring.css">
+  <script src="../assets/preview.js"></script>
+  <script src="../assets/icons.js"></script>
+</head>
+<body>
+<div class="app" data-view="conversation">
+
+  <aside class="sidebar" aria-label="Chats">
+    <header class="sidebar__header">
+      <a class="sidebar__profile" href="settings.html" aria-label="Profile and settings" title="Profile and settings"><span class="avatar avatar--sm avatar--c3">AK</span></a>
+      <h1 class="sidebar__title">Chats</h1>
+    </header>
+    <div class="sidebar__tools">
+      <label class="search">
+        <svg class="icon icon--sm"><use href="#i-search"/></svg>
+        <input type="search" placeholder="Search or start a new chat" aria-label="Search chats">
+      </label>
+      <div class="chips" role="toolbar" aria-label="Folders">
+        <button class="chip" aria-pressed="true">All</button>
+        <button class="chip" aria-pressed="false">Unread <span class="chip__count">4</span></button>
+        <button class="chip" aria-pressed="false">Favourites</button>
+        <button class="chip" aria-pressed="false">Groups <span class="chip__count">3</span></button>
+        <button class="chip" aria-pressed="false">Work</button>
+      </div>
+    </div>
+    <div class="sidebar__body scroll">
+      <ul class="chat-list" role="list">
+        <li>
+          <a class="chat-row" href="chat.html" aria-current="true">
+            <span class="avatar avatar--c1">LH<span class="avatar__presence"></span></span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Lina Haddad</span><time class="chat-row__time">12:45</time></span>
+              <span class="chat-row__bottom">
+                <span class="chat-row__preview chat-row__preview--typing"><span>typing…</span></span>
+                <span class="chat-row__meta"><svg class="icon" aria-label="Pinned"><use href="#i-pin"/></svg></span>
+              </span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a class="chat-row" href="group.html">
+            <span class="avatar avatar--c3">DT</span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Design Team</span><time class="chat-row__time chat-row__time--unread">12:30</time></span>
+              <span class="chat-row__bottom">
+                <span class="chat-row__preview"><span>Karim: I pushed the new tokens to the branch</span></span>
+                <span class="chat-row__meta"><svg class="icon" aria-label="Pinned"><use href="#i-pin"/></svg><span class="badge">3</span></span>
+              </span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a class="chat-row" href="chat.html">
+            <span class="avatar avatar--c6">SM<span class="avatar__presence"></span></span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Sofia Martin</span><time class="chat-row__time chat-row__time--unread">11:58</time></span>
+              <span class="chat-row__bottom">
+                <span class="chat-row__preview"><span>Can we move the review to Friday?</span></span>
+                <span class="chat-row__meta"><span class="badge">1</span></span>
+              </span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a class="chat-row" href="group.html">
+            <span class="avatar avatar--c5">WH</span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Weekend Hikers</span><time class="chat-row__time">Yesterday</time></span>
+              <span class="chat-row__bottom">
+                <span class="chat-row__preview"><span>Nadia:</span><svg class="icon"><use href="#i-image"/></svg><span>Photo</span></span>
+                <span class="chat-row__meta"><svg class="icon" aria-label="Muted"><use href="#i-bell-off"/></svg><span class="badge badge--muted">12</span></span>
+              </span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a class="chat-row" href="chat.html">
+            <span class="avatar avatar--c2">HL</span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Hugo Laurent</span><time class="chat-row__time">Yesterday</time></span>
+              <span class="chat-row__bottom">
+                <span class="chat-row__preview"><svg class="icon ticks ticks--read"><use href="#i-check-check"/></svg><svg class="icon"><use href="#i-mic"/></svg><span>0:42</span></span>
+              </span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a class="chat-row" href="chat.html">
+            <span class="avatar avatar--c4">RF</span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Rania Fassi</span><time class="chat-row__time">Tuesday</time></span>
+              <span class="chat-row__bottom"><span class="chat-row__preview"><span>Merci ! À demain alors 🙌</span></span></span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a class="chat-row" href="chat.html">
+            <span class="avatar avatar--c2">AT</span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Amine Tazi</span><time class="chat-row__time">Monday</time></span>
+              <span class="chat-row__bottom"><span class="chat-row__preview"><svg class="icon ticks ticks--read"><use href="#i-check-check"/></svg><svg class="icon"><use href="#i-file"/></svg><span>brief-v2.pdf</span></span></span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a class="chat-row" href="chat.html">
+            <span class="avatar avatar--c1">EC</span>
+            <span class="chat-row__body">
+              <span class="chat-row__top"><span class="chat-row__name">Elena Costa</span><time class="chat-row__time">03/10/2026</time></span>
+              <span class="chat-row__bottom"><span class="chat-row__preview"><span>You reacted ❤️ to "Happy birthday!"</span></span></span>
+            </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="conversation" aria-label="Conversation with Lina Haddad">
+      <header class="conv-header">
+        <a class="icon-btn conv-header__back" href="chats.html" aria-label="Back to chats"><svg class="icon icon--flip"><use href="#i-back"/></svg></a>
+        <span class="avatar avatar--md avatar--c1">LH</span>
+        <a class="conv-header__info" href="chat-info.html">
+          <h2 class="conv-header__title">Lina Haddad</h2>
+          <p class="conv-header__subtitle conv-header__subtitle--online">typing…</p>
+        </a>
+        <div class="conv-header__actions">
+          <button class="icon-btn" aria-label="Search in conversation" title="Search"><svg class="icon"><use href="#i-search"/></svg></button>
+          <button class="icon-btn" aria-label="Conversation menu" aria-haspopup="menu"><svg class="icon"><use href="#i-more"/></svg></button>
+        </div>
+      </header>
+
+      <div class="pinned-bar">
+        <svg class="icon icon--sm"><use href="#i-pin"/></svg>
+        <div class="pinned-bar__body">
+          <div class="pinned-bar__label">Pinned message</div>
+          <div class="truncate">Team sync moved to 6 PM — same room as last week</div>
+        </div>
+        <button class="icon-btn" aria-label="Unpin"><svg class="icon icon--sm"><use href="#i-close"/></svg></button>
+      </div>
+
+      <div class="messages" role="log" aria-live="polite">
+        <div class="messages__inner">
+          <div class="system-note system-note--neutral"><svg class="icon"><use href="#i-lock"/></svg>You started a conversation with @lina.h</div>
+
+          <div class="day-divider">Yesterday</div>
+
+          <div class="msg msg--in msg--first">
+            <div class="bubble">
+              <span class="bubble__text">Hey! Did you get a chance to look at the new chat layout?</span>
+              <span class="bubble__meta">18:02</span>
+            </div>
+          </div>
+
+          <div class="msg msg--out msg--first">
+            <div class="bubble">
+              <span class="bubble__text">Yes! The sidebar feels much cleaner now.</span>
+              <span class="bubble__meta">18:05 <svg class="icon ticks--read" aria-label="Read"><use href="#i-check-check"/></svg></span>
+            </div>
+          </div>
+          <div class="msg msg--out">
+            <div class="bubble">
+              <span class="bubble__text">I'm still tweaking the bubble spacing though</span>
+              <span class="bubble__meta">18:05 <svg class="icon ticks--read" aria-label="Read"><use href="#i-check-check"/></svg></span>
+            </div>
+          </div>
+
+          <div class="msg msg--in msg--first msg--has-reactions">
+            <div class="bubble">
+              <span class="bubble__text">Love it. Can you send me the mockups when they're ready?</span>
+              <span class="bubble__meta">18:07</span>
+              <span class="reactions" aria-label="Reactions: thumbs up, 1">👍</span>
+            </div>
+          </div>
+
+          <div class="day-divider">Today</div>
+
+          <div class="msg msg--out msg--first">
+            <div class="bubble bubble--media">
+              <span class="bubble__media bubble__media--a" role="img" aria-label="Mockup preview"></span>
+              <div class="bubble__caption"><span class="bubble__text">Here's the first pass 👇</span><span class="bubble__meta">12:31 <svg class="icon ticks--read" aria-label="Read"><use href="#i-check-check"/></svg></span></div>
+            </div>
+          </div>
+
+          <div class="msg msg--out">
+            <div class="bubble">
+              <div class="bubble__file">
+                <span class="file-icon">PDF</span>
+                <div class="bubble__file-body">
+                  <div class="bubble__file-name">brief-v2.pdf</div>
+                  <div class="bubble__file-meta">12 pages · 2.4 MB</div>
+                </div>
+                <button class="icon-btn" aria-label="Download brief-v2.pdf"><svg class="icon icon--sm"><use href="#i-download"/></svg></button>
+              </div>
+              <span class="bubble__meta">12:32 <svg class="icon ticks--read" aria-label="Read"><use href="#i-check-check"/></svg></span>
+            </div>
+          </div>
+
+          <div class="msg msg--in msg--first msg--has-reactions">
+            <div class="bubble">
+              <span class="bubble__quote bubble__quote--self">
+                <span class="bubble__quote-author">You</span>
+                <span class="bubble__quote-text">I'm still tweaking the bubble spacing though</span>
+              </span>
+              <span class="bubble__text">Spacing looks perfect on mobile too. Ship it!</span>
+              <span class="bubble__meta">12:40</span>
+              <span class="reactions" aria-label="Reactions: fire 2, heart 1">🔥❤️ <span class="reactions__count">3</span></span>
+            </div>
+          </div>
+
+          <div class="msg msg--in">
+            <div class="bubble">
+              <div class="voice">
+                <span class="avatar avatar--md avatar--c1">LH</span>
+                <button class="voice__play" aria-label="Play voice message"><svg class="icon"><use href="#i-play"/></svg></button>
+                <div class="voice__track">
+                  <div class="voice__wave" aria-hidden="true">
+                    <span class="is-played" style="height:30%"></span><span class="is-played" style="height:55%"></span><span class="is-played" style="height:80%"></span><span class="is-played" style="height:45%"></span><span class="is-played" style="height:65%"></span><span class="is-played" style="height:90%"></span><span class="is-played" style="height:50%"></span><span style="height:35%"></span><span style="height:70%"></span><span style="height:100%"></span><span style="height:60%"></span><span style="height:40%"></span><span style="height:75%"></span><span style="height:55%"></span><span style="height:30%"></span><span style="height:45%"></span><span style="height:85%"></span><span style="height:60%"></span><span style="height:35%"></span><span style="height:50%"></span><span style="height:25%"></span><span style="height:40%"></span><span style="height:65%"></span><span style="height:30%"></span>
+                  </div>
+                  <span class="voice__time">0:14 / 0:42</span>
+                </div>
+              </div>
+              <span class="bubble__meta">12:41</span>
+            </div>
+          </div>
+
+          <div class="msg msg--out msg--first">
+            <div class="bubble bubble--edited">
+              <a class="link-preview" href="#">
+                <div class="link-preview__image"></div>
+                <div class="link-preview__body">
+                  <div class="link-preview__title">Design notes — spacing &amp; rhythm</div>
+                  <div class="link-preview__domain">example.com</div>
+                </div>
+              </a>
+              <span class="bubble__text">Reference for the 8/12/16/24 scale: <a href="#">https://example.com/design-notes</a></span>
+              <span class="bubble__meta">Edited · 12:44 <svg class="icon" aria-label="Delivered"><use href="#i-check-check"/></svg></span>
+            </div>
+          </div>
+
+          <div class="msg msg--in msg--first">
+            <div class="bubble">
+              <span class="bubble__deleted"><svg class="icon icon--xs"><use href="#i-ban"/></svg><span class="bubble__text">This message was deleted</span></span>
+              <span class="bubble__meta">12:44</span>
+            </div>
+          </div>
+
+          <div class="msg msg--out msg--first">
+            <div class="bubble">
+              <span class="bubble__text">Sounds good, see you at 6 ✨</span>
+              <span class="bubble__meta">12:45 <svg class="icon" aria-label="Sent"><use href="#i-check"/></svg></span>
+            </div>
+          </div>
+
+          <div class="msg msg--in msg--first">
+            <div class="bubble"><span class="typing" aria-label="Lina is typing"><span></span><span></span><span></span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="composer">
+        <div class="composer__bar">
+          <button class="icon-btn" aria-label="Emoji"><svg class="icon"><use href="#i-smile"/></svg></button>
+          <button class="icon-btn" aria-label="Attach"><svg class="icon"><use href="#i-attach"/></svg></button>
+          <textarea class="composer__input" rows="1" placeholder="Type a message" aria-label="Message Lina Haddad"></textarea>
+          <button class="icon-btn composer__send" aria-label="Record voice message"><svg class="icon"><use href="#i-mic"/></svg></button>
+        </div>
+      </footer>
+    </section>
+  </main>
+</div>
+</body>
+</html>

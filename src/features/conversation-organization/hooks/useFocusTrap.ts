@@ -5,8 +5,8 @@ import { useEffect, useRef } from "react";
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
-export function useFocusTrap(active: boolean) {
-  const containerRef = useRef<HTMLDivElement>(null);
+export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(active: boolean) {
+  const containerRef = useRef<T>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {

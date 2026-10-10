@@ -13,7 +13,19 @@
     "contacts": "Contacts",
     "notifications": "Notifications",
     "settings": "Paramètres",
-    "back": "Retour"
+    "back": "Retour",
+    "backToChats": "Retour aux discussions",
+    "profileAndSettings": "Profil et paramètres"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "more": "Plus",
+    "chooseSection": "Choisissez une rubrique à gauche pour modifier vos paramètres.",
+    "accountDesc": "Profil, nom d'utilisateur, photo, suppression du compte",
+    "privacyDesc": "Vu pour la dernière fois, confirmations de lecture, qui peut vous écrire, bloqués",
+    "securityDesc": "Sessions actives, déconnexion",
+    "notificationsDesc": "Dans l'app, push, mentions uniquement",
+    "appearanceDesc": "Thème clair, sombre ou système"
   },
   "skipLink": "Aller au contenu",
   "routes": {

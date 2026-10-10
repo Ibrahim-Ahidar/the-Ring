@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notifications · The Ring</title>
+  <link rel="stylesheet" href="../css/ring.css">
+  <script src="../assets/preview.js"></script>
+  <script src="../assets/icons.js"></script>
+</head>
+<body>
+<div class="app" data-view="list">
+
+  <aside class="sidebar" aria-label="Notifications">
+    <header class="sidebar__header">
+      <a class="icon-btn" href="chats.html" aria-label="Back to chats"><svg class="icon icon--flip"><use href="#i-back"/></svg></a>
+      <h1 class="sidebar__title">Notifications</h1>
+      <div class="sidebar__actions">
+        <button class="btn btn--ghost btn--sm">Mark all read</button>
+      </div>
+    </header>
+    <div class="sidebar__tools">
+      <div class="chips" role="toolbar" aria-label="Filter">
+        <button class="chip" aria-pressed="true">All</button>
+        <button class="chip" aria-pressed="false">Unread <span class="chip__count">2</span></button>
+        <button class="chip" aria-pressed="false">Mentions</button>
+        <button class="chip" aria-pressed="false">Requests</button>
+      </div>
+    </div>
+    <div class="sidebar__body scroll">
+      <h2 class="section-label section-label--muted">New</h2>
+      <a class="notif" href="group.html">
+        <span class="notif__icon"><span class="avatar avatar--c5">NR</span><span class="notif__kind"><svg class="icon"><use href="#i-at"/></svg></span></span>
+        <span class="notif__body">
+          <span class="notif__text"><strong>Nadia Rami</strong> mentioned you in <strong>Design Team</strong>: "can you check the dark mode contrast?"</span>
+          <span class="notif__time">9 min ago</span>
+        </span>
+        <span class="dot" aria-label="Unread"></span>
+      </a>
+      <a class="notif" href="requests.html">
+        <span class="notif__icon"><span class="avatar avatar--c4">MB</span><span class="notif__kind"><svg class="icon"><use href="#i-inbox"/></svg></span></span>
+        <span class="notif__body">
+          <span class="notif__text"><strong>Marco Bianchi</strong> sent you a message request</span>
+          <span class="notif__time">2 h ago</span>
+          <span class="notif__actions"><span class="btn btn--primary btn--sm">Review</span></span>
+        </span>
+        <span class="dot" aria-label="Unread"></span>
+      </a>
+
+      <h2 class="section-label section-label--muted">Earlier</h2>
+      <a class="notif" href="chat.html">
+        <span class="notif__icon"><span class="avatar avatar--c1">LH</span><span class="notif__kind"><svg class="icon"><use href="#i-heart"/></svg></span></span>
+        <span class="notif__body">
+          <span class="notif__text"><strong>Lina Haddad</strong> reacted 🔥 to "Here's the first pass"</span>
+          <span class="notif__time">Yesterday</span>
+        </span>
+      </a>
+      <a class="notif" href="group.html">
+        <span class="notif__icon"><span class="avatar avatar--c2">KS</span><span class="notif__kind"><svg class="icon"><use href="#i-groups"/></svg></span></span>
+        <span class="notif__body">
+          <span class="notif__text"><strong>Karim Saidi</strong> added you to <strong>Design Team</strong></span>
+          <span class="notif__time">Monday</span>
+        </span>
+      </a>
+      <a class="notif" href="group.html">
+        <span class="notif__icon"><span class="avatar avatar--c4">PL</span><span class="notif__kind"><svg class="icon"><use href="#i-star"/></svg></span></span>
+        <span class="notif__body">
+          <span class="notif__text">You're now an <strong>admin</strong> of <strong>Product Launch</strong></span>
+          <span class="notif__time">28/09/2026</span>
+        </span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="settings-page" aria-label="Notification preferences">
+      <div class="settings-page__inner">
+        <h2 class="sidebar__title">Notification preferences</h2>
+        <div class="settings-card">
+          <div class="settings-card__head">
+            <h3 class="settings-card__title">Messages</h3>
+            <p class="settings-card__desc">What shows up in your notification inbox.</p>
+          </div>
+          <div class="setting"><span class="setting__body">Direct messages<span class="setting__desc">New messages in one-to-one chats</span></span><span class="switch" role="switch" aria-checked="true" aria-label="Direct messages"></span></div>
+          <div class="setting"><span class="setting__body">Group messages<span class="setting__desc">Muted groups never notify</span></span><span class="switch" role="switch" aria-checked="true" aria-label="Group messages"></span></div>
+          <div class="setting"><span class="setting__body">Mentions only in groups<span class="setting__desc">Only notify when someone @mentions you</span></span><span class="switch" role="switch" aria-checked="false" aria-label="Mentions only"></span></div>
+          <div class="setting"><span class="setting__body">Reactions<span class="setting__desc">When someone reacts to your message</span></span><span class="switch" role="switch" aria-checked="true" aria-label="Reactions"></span></div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card__head">
+            <h3 class="settings-card__title">Activity</h3>
+          </div>
+          <div class="setting"><span class="setting__body">Message requests</span><span class="switch" role="switch" aria-checked="true" aria-label="Message requests"></span></div>
+          <div class="setting"><span class="setting__body">Added to a group</span><span class="switch" role="switch" aria-checked="true" aria-label="Added to a group"></span></div>
+          <div class="setting"><span class="setting__body">Role changes</span><span class="switch" role="switch" aria-checked="false" aria-label="Role changes"></span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</div>
+</body>
+</html>

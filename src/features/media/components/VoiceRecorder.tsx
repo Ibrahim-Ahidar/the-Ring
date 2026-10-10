@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 import { AUDIO_MAX_DURATION_MS } from "@/platform/media";
 
 import { clampRecordingMs } from "../clamp-recording-ms";
+import ui from "@/shell/styles/ui.module.css";
+
 import styles from "../media.module.css";
 
 type Props = {
@@ -75,16 +77,22 @@ function VoiceRecorderInner({ disabled, onBlob }: Props) {
 
   return (
     <div className={styles.toolRow}>
+      {recording ? <span className={styles.recordingDot} aria-hidden /> : null}
       <button
         type="button"
-        className={styles.iconButton}
+        className={ui.iconBtn}
         disabled={disabled}
         onClick={() => (recording ? stopRecording() : void startRecording())}
         aria-label={recording ? t("stopRecording") : t("startRecording")}
+        title={recording ? t("stopRecording") : t("startRecording")}
       >
-        {recording ? <Square size={18} /> : <Mic size={18} />}
+        {recording ? <Square size={20} aria-hidden /> : <Mic size={24} aria-hidden />}
       </button>
-      {errorKey ? <span role="alert">{t(errorKey)}</span> : null}
+      {errorKey ? (
+        <span className={styles.recorderError} role="alert">
+          {t(errorKey)}
+        </span>
+      ) : null}
     </div>
   );
 }

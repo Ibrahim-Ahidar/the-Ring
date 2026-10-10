@@ -11,6 +11,8 @@
   "emptyBody": "عندما يحدث شيء يهمك، سيظهر هنا.",
   "listLabel": "قائمة الإشعارات",
   "markAllRead": "تعليم الكل كمقروء",
+  "sectionNew": "جديدة",
+  "sectionEarlier": "سابقة",
   "unknownActor": "شخص ما",
   "itemAria": "{title}، {time}",
   "unreadCount": "{count, plural, =0 {لا إشعارات غير مقروءة} one {إشعار واحد غير مقروء} two {إشعاران غير مقروءان} few {# إشعارات غير مقروءة} many {# إشعارًا غير مقروء} other {# إشعار غير مقروء}}",

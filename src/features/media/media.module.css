@@ -1,17 +1,9 @@
+/* ---------- Composer tool ---------- */
+
 .toolRow {
   display: flex;
-  gap: var(--space-8);
   align-items: center;
-}
-
-.iconButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-8);
-  border: none;
-  background: transparent;
-  cursor: pointer;
+  gap: var(--space-4);
 }
 
 .hiddenInput {
@@ -22,107 +14,248 @@
   clip: rect(0 0 0 0);
 }
 
+.recordingDot {
+  width: 10px;
+  height: 10px;
+  margin-inline: var(--space-4);
+  border-radius: 50%;
+  background: var(--color-danger);
+}
+
+.recorderError {
+  color: var(--color-danger);
+  font-size: var(--text-xs);
+}
+
+/* ---------- Image bubble ---------- */
+
+/* Pulls the image close to the bubble edge (bubble padding is 6/8/8/9). */
 .imageFrame {
   display: block;
-  max-width: min(100%, 320px);
-  border-radius: var(--space-8);
+  width: 330px;
+  max-width: calc(100% + 11px);
+  margin-block: -3px var(--space-4);
+  margin-inline: -6px -5px;
   overflow: hidden;
-  background: var(--color-surface-muted, #eee);
+  border-radius: 6px;
+  background: var(--color-quote);
+}
+
+.imageFrame:not([style]) {
+  aspect-ratio: 4 / 3;
 }
 
 .imageFrame img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
 }
 
-.fileCard {
+.missing {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* ---------- File bubble ---------- */
+
+.file {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  max-width: 280px;
+  align-items: center;
+  gap: var(--space-12);
+  width: 320px;
+  max-width: calc(100% + 9px);
+  margin-block: -3px var(--space-4);
+  margin-inline: -5px -4px;
+  padding: var(--space-12);
+  border-radius: 6px;
+  background: var(--color-quote);
+}
+
+.fileIcon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 36px;
+  height: 44px;
+  border-radius: 4px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+}
+
+.fileIcon[data-kind="doc"] {
+  background: #3e7bfa;
+}
+
+.fileIcon[data-kind="zip"] {
+  background: #8b6cf6;
+}
+
+.fileIcon[data-kind="other"] {
+  background: var(--color-icon);
+}
+
+.fileBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  unicode-bidi: plaintext;
 }
 
 .fileMeta {
-  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+/* ---------- Voice bubble ---------- */
+
+.voice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  width: min(300px, 62vw);
+  padding-block-start: var(--space-4);
+}
+
+.voicePlay {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-icon);
+  cursor: pointer;
+}
+
+.voicePlay:hover:not(:disabled) {
+  background: var(--color-hover);
+}
+
+.voicePlay:disabled {
+  color: var(--color-text-disabled);
+  cursor: progress;
+}
+
+.voiceTrack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.voiceWave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 26px;
+}
+
+.voiceWave span {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 2px;
+  background: var(--color-text-disabled);
+}
+
+.voiceWave span[data-played="true"] {
+  background: var(--color-read);
+}
+
+.voiceLine {
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-text-disabled);
+}
+
+.voiceLine span {
+  display: block;
+  height: 100%;
+  background: var(--color-read);
+}
+
+.voiceTime {
+  color: var(--color-bubble-meta);
+  font-size: var(--text-xs);
+}
+
+/* ---------- Upload progress ---------- */
+
+.upload {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 200px;
+  padding-block: var(--space-8);
 }
 
 .progress {
   height: 4px;
-  background: var(--color-border, #ccc);
-  border-radius: 999px;
   overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-quote);
 }
 
 .progressBar {
   height: 100%;
-  background: var(--color-accent, #2563eb);
-  transition: width 120ms linear;
+  background: var(--color-accent);
+  transition: width var(--motion-fast) linear;
+}
+
+.uploadFailed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+
+/* ---------- Shared media page ---------- */
+
+.sharedPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-4);
+}
+
+.tile {
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-quote);
+  cursor: pointer;
+}
+
+.tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .progressBar {
     transition: none;
   }
-}
-
-.audioRoot {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  min-width: 200px;
-}
-
-.waveform {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 32px;
-}
-
-.waveBar {
-  flex: 1;
-  min-width: 2px;
-  background: var(--color-accent, #2563eb);
-  border-radius: 2px;
-}
-
-.sharedPage {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
-  padding: var(--space-16);
-}
-
-.tabRow {
-  display: flex;
-  gap: var(--space-8);
-  flex-wrap: wrap;
-}
-
-.tabLink {
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--space-8);
-  text-decoration: none;
-}
-
-.tabLink[data-active="true"] {
-  background: var(--color-surface-muted, #eee);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: var(--space-12);
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-}
-
-.empty {
-  padding: var(--space-24);
-  text-align: center;
 }

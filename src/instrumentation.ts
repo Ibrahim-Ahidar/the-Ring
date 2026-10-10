@@ -7,8 +7,10 @@ export async function register() {
 
   const missing = validateEnv(process.env);
   if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variable(s): ${missing.join(", ")}`,
+    console.warn(
+      `[Pulse] Supabase is disabled because environment configuration is missing or invalid: ${missing.join(
+        ", ",
+      )}`,
     );
   }
 }

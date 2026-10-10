@@ -1,188 +1,59 @@
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background: color-mix(in srgb, var(--color-bg) 40%, transparent);
-  z-index: 40;
-}
-
-.sheet {
-  position: fixed;
-  inset-inline: 0;
-  inset-block-end: 0;
-  max-height: min(85vh, 32rem);
-  overflow: auto;
-  background: var(--color-surface);
-  border-start-start-radius: var(--space-16);
-  border-start-end-radius: var(--space-16);
-  padding: var(--space-16);
-  z-index: 41;
-  box-shadow: 0 -4px 24px color-mix(in srgb, var(--color-fg) 12%, transparent);
-}
-
-@media (min-width: 640px) {
-  .sheet {
-    inset-inline: auto;
-    inset-block: 50% auto;
-    inset-inline-end: var(--space-24);
-    transform: translateY(-50%);
-    width: min(22rem, calc(100vw - var(--space-48)));
-    max-height: min(80vh, 28rem);
-    border-radius: var(--space-12);
-    box-shadow: 0 8px 32px color-mix(in srgb, var(--color-fg) 16%, transparent);
-  }
-}
-
-.sheetTitle {
-  margin: 0 0 var(--space-12);
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
-.menuList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-}
-
-.menuButton {
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
-  width: 100%;
-  padding: var(--space-12);
-  border: none;
-  border-radius: var(--space-8);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-}
-
-.menuButton:hover {
-  background: color-mix(in srgb, var(--color-fg) 6%, transparent);
-}
-
-.menuButtonDestructive {
-  color: var(--color-danger, #c0392b);
-}
-
-.menuSection {
-  margin-block-start: var(--space-12);
-  padding-block-start: var(--space-12);
-  border-block-start: 1px solid color-mix(in srgb, var(--color-fg) 12%, transparent);
-}
-
-.muteSubmenu {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  padding-inline-start: var(--space-8);
-}
-
-.errorBanner {
-  margin: 0 0 var(--space-12);
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--space-8);
-  background: color-mix(in srgb, var(--color-danger, #c0392b) 12%, transparent);
-  color: var(--color-danger, #c0392b);
-  font-size: 0.875rem;
-}
+/* ---------- Folder strip (sidebar) ---------- */
 
 .strip {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-8);
-  padding-block: var(--space-8);
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.stripChip {
-  padding: var(--space-8) var(--space-12);
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--color-fg) 16%, transparent);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  white-space: nowrap;
+.hint {
+  padding-inline: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
 }
 
-.stripChip[data-active="true"] {
-  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
-  border-color: var(--color-accent);
+/* ---------- Conversation menu ---------- */
+
+.sheet {
+  width: min(320px, 100%);
+  max-height: 80dvh;
+  overflow-y: auto;
 }
 
-.stripActions {
-  display: flex;
-  gap: var(--space-8);
-  margin-inline-start: auto;
+.sheetTitle {
+  padding: var(--space-8) var(--space-16) var(--space-12);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
 }
 
-.emptyFolder {
+.sheetError {
+  padding: 0 var(--space-16) var(--space-8);
+}
+
+.menuList {
   margin: 0;
-  padding: var(--space-8) var(--space-12);
-  font-size: 0.875rem;
-  color: color-mix(in srgb, var(--color-fg) 65%, transparent);
+  padding: 0;
+  list-style: none;
 }
 
-.modal {
-  position: fixed;
-  inset-inline: var(--space-16);
-  inset-block-start: 50%;
-  transform: translateY(-50%);
-  max-width: 22rem;
-  margin-inline: auto;
-  padding: var(--space-16);
-  background: var(--color-surface);
-  border-radius: var(--space-12);
-  z-index: 42;
-  box-shadow: 0 8px 32px color-mix(in srgb, var(--color-fg) 16%, transparent);
+.grow {
+  flex: 1;
 }
 
-.fieldLabel {
-  display: block;
-  margin-block-end: var(--space-8);
-  font-size: 0.875rem;
+.disclosure {
+  transition: transform var(--motion-fast) var(--motion-ease);
 }
 
-.textInput {
-  width: 100%;
-  padding: var(--space-8) var(--space-12);
-  border: 1px solid color-mix(in srgb, var(--color-fg) 20%, transparent);
-  border-radius: var(--space-8);
-  font: inherit;
-  box-sizing: border-box;
+.disclosure[data-open="true"] {
+  transform: rotate(180deg);
 }
 
-.modalActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-8);
-  margin-block-start: var(--space-16);
-}
-
-.button {
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--space-8);
-  border: 1px solid color-mix(in srgb, var(--color-fg) 20%, transparent);
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-}
-
-.buttonPrimary {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-accent-fg, #fff);
+.muteSubmenu {
+  padding-inline-start: var(--space-24);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sheet,
-  .modal {
+  .disclosure {
     transition: none;
   }
 }

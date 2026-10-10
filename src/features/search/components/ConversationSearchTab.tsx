@@ -10,7 +10,10 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import { ChevronDown, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+import ui from "@/shell/styles/ui.module.css";
 
 import { searchConversationAction } from "../actions";
 import { searchErrorKey } from "../error-message";
@@ -31,7 +34,7 @@ function messageHref(conversationId: string, messageId: string): string {
 function ConversationSearchTabInner({ conversationId }: Props) {
   const t = useTranslations("search");
   const fieldId = useId();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
@@ -107,54 +110,71 @@ function ConversationSearchTabInner({ conversationId }: Props) {
     <div>
       <button
         type="button"
-        className={styles.tabButton}
-        data-active={open ? "true" : "false"}
+        className={ui.listRow}
         aria-expanded={open}
         aria-controls={`${fieldId}-panel`}
         onClick={() => setOpen((value) => !value)}
       >
-        {t("threadTabLabel")}
+        <Search size={24} aria-hidden />
+        <span className={ui.listRowBody}>
+          <span className={ui.listRowTitle}>{t("threadFieldLabel")}</span>
+        </span>
+        <span className={ui.listRowTrail}>
+          <ChevronDown
+            size={16}
+            className={styles.chevron}
+            data-open={open ? "true" : "false"}
+            aria-hidden
+          />
+        </span>
       </button>
       {open ? (
         <div id={`${fieldId}-panel`} className={styles.panel}>
-          <form onSubmit={onSubmit}>
-            <div className={styles.searchField}>
-              <label htmlFor={fieldId}>{t("threadFieldLabel")}</label>
+          <form role="search" onSubmit={onSubmit}>
+            <div className={ui.search}>
+              <button type="submit" className={ui.iconBtn} aria-label={t("submit")}>
+                <Search size={16} aria-hidden />
+              </button>
+              <label className="sr-only" htmlFor={fieldId}>
+                {t("threadFieldLabel")}
+              </label>
               <input
                 id={fieldId}
-                className={styles.searchInput}
                 type="search"
                 value={query}
                 autoComplete="off"
+                placeholder={t("threadFieldLabel")}
                 onChange={(event) => onQueryChange(event.target.value)}
               />
             </div>
-            <button type="submit" className={styles.searchButton}>
-              {t("submit")}
-            </button>
           </form>
-          {loading ? <p>{t("loading")}</p> : null}
+          {loading ? (
+            <p className={ui.emptyInline} role="status">
+              {t("loading")}
+            </p>
+          ) : null}
           {errorCode ? (
-            <p className={styles.error} role="alert">
+            <p className={ui.errorText} role="alert">
               {t(searchErrorKey(errorCode))}
             </p>
           ) : null}
-          {showEmpty ? <p className={styles.empty}>{t("empty")}</p> : null}
+          {showEmpty ? <p className={ui.emptyInline}>{t("empty")}</p> : null}
           {messages.length > 0 ? (
-            <ul className={styles.list}>
+            <ul className={ui.list}>
               {messages.map((hit) => (
                 <li key={hit.messageId}>
                   <Link
                     href={messageHref(hit.conversationId, hit.messageId)}
-                    className={styles.rowLink}
+                    className={ui.memberRow}
                   >
-                    <p className={styles.snippet}>
+                    <span className={`${ui.memberRowBody} ${styles.snippet}`}>
                       <SnippetHighlight
                         snippet={hit.snippet}
                         matchStart={hit.matchStart}
                         queryLength={trimmed.length}
+                        markClassName={ui.mark}
                       />
-                    </p>
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -163,7 +183,7 @@ function ConversationSearchTabInner({ conversationId }: Props) {
           {hasMore ? (
             <button
               type="button"
-              className={styles.searchButton}
+              className={`${ui.btn} ${ui.btnSm} ${ui.btnSecondary} ${styles.loadMore}`}
               disabled={loading}
               onClick={() => void runSearch(query, nextCursor)}
             >

@@ -55,7 +55,7 @@ afterAll(async () => {
 describe("openDirect", () => {
   it("creates one conversation and returns the same on second call", async () => {
     const alice = await createTestUser({ username: "dm_alice" });
-    const bob = await createTestUser({ username: "dm_bob" });
+    await createTestUser({ username: "dm_bob" });
     const aliceRpc = createRpcClient(db, alice.id);
 
     const first = await openDirect(aliceRpc, { username: "dm_bob" });
@@ -189,7 +189,7 @@ describe("sendText and listMessages", () => {
 
   it("is idempotent on sender and client id", async () => {
     const a = await createTestUser({ username: "idem_a" });
-    const b = await createTestUser({ username: "idem_b" });
+    await createTestUser({ username: "idem_b" });
     const aRpc = createRpcClient(db, a.id);
     const opened = await openDirect(aRpc, { username: "idem_b" });
     if (!opened.ok) throw new Error("open failed");
@@ -220,7 +220,7 @@ describe("sendText and listMessages", () => {
 
   it("rejects restricted members", async () => {
     const a = await createTestUser({ username: "rest_a" });
-    const b = await createTestUser({ username: "rest_b" });
+    await createTestUser({ username: "rest_b" });
     const aRpc = createRpcClient(db, a.id);
     const opened = await openDirect(aRpc, { username: "rest_b" });
     if (!opened.ok) throw new Error("open failed");
@@ -295,7 +295,7 @@ describe("markRead and unread counts", () => {
 
   it("does not count own messages as unread", async () => {
     const a = await createTestUser({ username: "own_a" });
-    const b = await createTestUser({ username: "own_b" });
+    await createTestUser({ username: "own_b" });
     const aRpc = createRpcClient(db, a.id);
     const opened = await openDirect(aRpc, { username: "own_b" });
     if (!opened.ok) throw new Error("open failed");
@@ -433,7 +433,7 @@ describe("list filters and access control", () => {
 
   it("denies getConversation to a third user", async () => {
     const a = await createTestUser({ username: "gc_a" });
-    const b = await createTestUser({ username: "gc_b" });
+    await createTestUser({ username: "gc_b" });
     const c = await createTestUser({ username: "gc_c" });
     const aRpc = createRpcClient(db, a.id);
     const cRpc = createRpcClient(db, c.id);
@@ -589,7 +589,7 @@ describe("notify and rate limit", () => {
 
   it("returns platform.rate_limited when over send limit", async () => {
     const a = await createTestUser({ username: "rl_a" });
-    const b = await createTestUser({ username: "rl_b" });
+    await createTestUser({ username: "rl_b" });
     const aRpc = createRpcClient(db, a.id);
     const opened = await openDirect(aRpc, { username: "rl_b" });
     if (!opened.ok) throw new Error("open failed");

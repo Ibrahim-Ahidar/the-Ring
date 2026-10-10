@@ -11,6 +11,8 @@
   "emptyBody": "When something needs your attention, it will show up here.",
   "listLabel": "Notification list",
   "markAllRead": "Mark all as read",
+  "sectionNew": "New",
+  "sectionEarlier": "Earlier",
   "unknownActor": "Someone",
   "itemAria": "{title}, {time}",
   "unreadCount": "{count, plural, =0 {No unread notifications} one {# unread notification} other {# unread notifications}}",

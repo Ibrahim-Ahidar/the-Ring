@@ -2,6 +2,8 @@
   "pageTitle": "Recherche",
   "fieldLabel": "Rechercher dans Pulse",
   "submit": "Rechercher",
+  "clear": "Effacer la recherche",
+  "exactUsernameHint": "Les personnes n'apparaissent que si vous saisissez leur nom d'utilisateur exact.",
   "loading": "Recherche…",
   "empty": "Aucun résultat pour cette requête.",
   "loadMore": "Charger plus de messages",

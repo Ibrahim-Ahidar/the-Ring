@@ -2,6 +2,8 @@
   "pageTitle": "Search",
   "fieldLabel": "Search Pulse",
   "submit": "Search",
+  "clear": "Clear search",
+  "exactUsernameHint": "People only appear when you type their exact username.",
   "loading": "Searching…",
   "empty": "No results for this query.",
   "loadMore": "Load more messages",

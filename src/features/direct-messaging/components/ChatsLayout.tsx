@@ -1,49 +1,50 @@
 "use client";
 
-import Link from "next/link";
-import { memo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { memo } from "react";
 import { useTranslations } from "next-intl";
 
+import { PaneLayout } from "@/shell/components/PaneLayout";
+
 import { useMessaging } from "../context/MessagingProvider";
-import type { ConversationDetail } from "../types";
-import { ConversationList } from "./ConversationList";
+import type { ChatsViewer, ConversationDetail } from "../types";
+import { ChatsSidebar } from "./ChatsSidebar";
+import { ChatsWelcome } from "./ChatsWelcome";
+import { ConversationDrawer } from "./ConversationDrawer";
 import { ThreadPanel } from "./ThreadPanel";
-import styles from "../direct-messaging.module.css";
 
 type Props = {
   userId: string;
+  viewer: ChatsViewer | null;
   activeConversationId?: string;
   threadDetail?: ConversationDetail;
 };
 
-function ChatsLayoutInner({
-  userId,
-  activeConversationId,
-  threadDetail,
-}: Props) {
+function ChatsLayoutInner({ userId, viewer, activeConversationId, threadDetail }: Props) {
   const t = useTranslations("direct-messaging");
+  const searchParams = useSearchParams();
   const { state } = useMessaging();
   const liveDetail =
     activeConversationId && threadDetail
-      ? state.detailsByConversation[activeConversationId] ?? threadDetail
+      ? (state.detailsByConversation[activeConversationId] ?? threadDetail)
       : undefined;
-  const showMobileThread = Boolean(activeConversationId && liveDetail);
+  const showThread = Boolean(activeConversationId && liveDetail);
+  const drawerOpen = showThread && searchParams.get("info") === "1";
 
   return (
-    <div
-      className={styles.layout}
-      data-mobile-thread={showMobileThread ? "true" : "false"}
+    <PaneLayout
+      view={drawerOpen ? "drawer" : showThread ? "main" : "list"}
+      sidebar={<ChatsSidebar viewer={viewer} activeConversationId={activeConversationId} />}
+      sidebarLabel={t("listLabel")}
+      drawer={
+        drawerOpen && activeConversationId && liveDetail ? (
+          <ConversationDrawer conversationId={activeConversationId} detail={liveDetail} />
+        ) : undefined
+      }
+      drawerLabel={
+        liveDetail?.type === "group" ? t("groupInfo") : t("contactInfo")
+      }
     >
-      <section className={styles.listPane} aria-label={t("listLabel")}>
-        <div className={styles.listHeader}>
-          <h1 className={styles.threadTitle}>{t("title")}</h1>
-          <Link href="/app/chats/new">{t("newChat")}</Link>
-        </div>
-        <div id="conversation-folders" />
-        <Suspense fallback={null}>
-          <ConversationList activeConversationId={activeConversationId} />
-        </Suspense>
-      </section>
       {activeConversationId && liveDetail ? (
         <ThreadPanel
           conversationId={activeConversationId}
@@ -51,13 +52,9 @@ function ChatsLayoutInner({
           currentUserId={userId}
         />
       ) : (
-        <section className={styles.threadPane} aria-label={t("threadLabel")}>
-          <div className={styles.empty}>
-            <p>{t("selectConversation")}</p>
-          </div>
-        </section>
+        <ChatsWelcome />
       )}
-    </div>
+    </PaneLayout>
   );
 }
 

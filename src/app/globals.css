@@ -1,4 +1,5 @@
 @import "../shell/styles/tokens.css";
+@import "../shell/styles/shell.css";
 
 *,
 *::before,
@@ -13,23 +14,58 @@ body {
 }
 
 body {
-  font-family:
-    Inter,
-    "Noto Naskh Arabic",
-    system-ui,
-    sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: 1.45;
   background: var(--color-bg);
   color: var(--color-text);
-  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure {
+  margin: 0;
 }
 
 a {
   color: var(--color-accent);
 }
 
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
 :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+}
+
+/* Lucide icons default to 24px; keep them from shrinking inside flex rows. */
+svg.lucide {
+  flex-shrink: 0;
+}
+
+/* Icons that point backward or forward mirror in RTL. */
+[dir="rtl"] .flip-rtl {
+  transform: scaleX(-1);
 }
 
 .sr-only {
@@ -57,4 +93,27 @@ a {
   background: var(--color-panel);
   color: var(--color-text);
   z-index: 100;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+/* Text takes the direction of its own content (mixed Arabic / Latin). */
+.bidi-auto {
+  unicode-bidi: plaintext;
+}
+
+/* Usernames stay LTR inside RTL text ("@lina", never "lina@"). */
+.handle {
+  direction: ltr;
+  unicode-bidi: isolate;
 }

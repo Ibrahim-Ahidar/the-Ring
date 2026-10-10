@@ -1,6 +1,10 @@
 {
   "loginTitle": "Connexion",
   "signupTitle": "Créer un compte",
+  "loginSubtitle": "Connectez-vous pour reprendre vos conversations.",
+  "signupSubtitle": "Choisissez un nom d’utilisateur : c’est ainsi qu’on vous trouve.",
+  "legalNotice": "En continuant, vous acceptez les <terms>Conditions</terms> et la <privacy>Politique de confidentialité</privacy>.",
+  "usernameHint": "3 à 20 caractères : lettres, chiffres et tirets bas, en commençant par une lettre.",
   "emailLabel": "E-mail",
   "passwordLabel": "Mot de passe",
   "usernameLabel": "Nom d'utilisateur",
@@ -61,6 +65,7 @@
     "platform": {
       "rate_limited": "Trop de tentatives. Patientez.",
       "unauthenticated": "Connectez-vous pour continuer.",
+      "auth_unavailable": "L’authentification n’est pas configurée. Ajoutez des paramètres Supabase valides, puis réessayez.",
       "unexpected": "Une erreur est survenue."
     }
   }

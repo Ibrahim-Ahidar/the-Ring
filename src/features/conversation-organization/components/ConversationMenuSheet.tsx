@@ -5,6 +5,7 @@ import {
   ArchiveRestore,
   Bell,
   BellOff,
+  ChevronDown,
   FolderInput,
   FolderMinus,
   Pin,
@@ -14,6 +15,7 @@ import { memo, useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import type { ListItemMenuContext } from "@/shell/slots/types";
+import ui from "@/shell/styles/ui.module.css";
 
 import {
   archiveConversationAction,
@@ -70,11 +72,24 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
   );
 
   return (
-    <>
-      <div className={styles.backdrop} onClick={onClose} role="presentation" />
+    <div
+      className={`${ui.scrim} ${ui.scrimCenter} ${ui.scrimSheet}`}
+      role="presentation"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          onClose();
+        }
+      }}
+    >
       <div
         ref={trapRef}
-        className={styles.sheet}
+        className={`${ui.menu} ${styles.sheet}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="org-menu-title"
@@ -82,19 +97,23 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
         <h2 id="org-menu-title" className={styles.sheetTitle}>
           {t("menuTitle")}
         </h2>
-        {error ? <p className={styles.errorBanner}>{error}</p> : null}
+        {error ? (
+          <p className={`${ui.errorText} ${styles.sheetError}`} role="alert">
+            {error}
+          </p>
+        ) : null}
         <ul className={styles.menuList}>
           {archived ? (
             <li>
               <button
                 type="button"
-                className={styles.menuButton}
+                className={ui.menuItem}
                 disabled={busy}
                 onClick={() =>
                   void run(() => unarchiveConversationAction(ctx.conversationId))
                 }
               >
-                <ArchiveRestore size={18} aria-hidden />
+                <ArchiveRestore aria-hidden />
                 {t("unarchive")}
               </button>
             </li>
@@ -103,7 +122,7 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
               <li>
                 <button
                   type="button"
-                  className={styles.menuButton}
+                  className={ui.menuItem}
                   disabled={busy}
                   onClick={() =>
                     void run(() =>
@@ -113,11 +132,7 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
                     )
                   }
                 >
-                  {pinned ? (
-                    <PinOff size={18} aria-hidden />
-                  ) : (
-                    <Pin size={18} aria-hidden />
-                  )}
+                  {pinned ? <PinOff aria-hidden /> : <Pin aria-hidden />}
                   {pinned ? t("unpin") : t("pin")}
                 </button>
               </li>
@@ -125,26 +140,32 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
                 {muted ? (
                   <button
                     type="button"
-                    className={styles.menuButton}
+                    className={ui.menuItem}
                     disabled={busy}
                     onClick={() =>
                       void run(() => unmuteConversationAction(ctx.conversationId))
                     }
                   >
-                    <Bell size={18} aria-hidden />
+                    <Bell aria-hidden />
                     {t("unmute")}
                   </button>
                 ) : (
                   <>
                     <button
                       type="button"
-                      className={styles.menuButton}
+                      className={ui.menuItem}
                       disabled={busy}
                       aria-expanded={showMute}
                       onClick={() => setShowMute((v) => !v)}
                     >
-                      <BellOff size={18} aria-hidden />
-                      {t("mute")}
+                      <BellOff aria-hidden />
+                      <span className={styles.grow}>{t("mute")}</span>
+                      <ChevronDown
+                        size={16}
+                        className={styles.disclosure}
+                        data-open={showMute ? "true" : "false"}
+                        aria-hidden
+                      />
                     </button>
                     {showMute ? (
                       <div className={styles.muteSubmenu}>
@@ -152,7 +173,7 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
                           <button
                             key={key}
                             type="button"
-                            className={styles.menuButton}
+                            className={ui.menuItem}
                             disabled={busy}
                             onClick={() =>
                               void run(() =>
@@ -174,13 +195,13 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
               <li>
                 <button
                   type="button"
-                  className={`${styles.menuButton} ${styles.menuButtonDestructive}`}
+                  className={`${ui.menuItem} ${ui.menuItemDanger}`}
                   disabled={busy}
                   onClick={() =>
                     void run(() => archiveConversationAction(ctx.conversationId))
                   }
                 >
-                  <Archive size={18} aria-hidden />
+                  <Archive aria-hidden />
                   {t("archive")}
                 </button>
               </li>
@@ -188,14 +209,17 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
           )}
         </ul>
         {!archived && folders.length > 0 ? (
-          <div className={styles.menuSection}>
-            <p className={styles.fieldLabel}>{t("folderSection")}</p>
+          <>
+            <hr className={ui.menuSep} />
+            <p className={`${ui.sectionLabel} ${ui.sectionLabelMuted}`}>
+              {t("folderSection")}
+            </p>
             <ul className={styles.menuList}>
               {folders.map((folder) => (
                 <li key={folder.id}>
                   <button
                     type="button"
-                    className={styles.menuButton}
+                    className={ui.menuItem}
                     disabled={busy}
                     onClick={() =>
                       void run(() =>
@@ -206,7 +230,7 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
                       )
                     }
                   >
-                    <FolderInput size={18} aria-hidden />
+                    <FolderInput aria-hidden />
                     {t("moveToFolder", { name: folder.name })}
                   </button>
                 </li>
@@ -214,25 +238,29 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
               <li>
                 <button
                   type="button"
-                  className={styles.menuButton}
+                  className={ui.menuItem}
                   disabled={busy}
                   onClick={() =>
                     void run(() => removeFromFolderAction(ctx.conversationId))
                   }
                 >
-                  <FolderMinus size={18} aria-hidden />
+                  <FolderMinus aria-hidden />
                   {t("removeFromFolder")}
                 </button>
               </li>
             </ul>
-          </div>
+          </>
         ) : null}
-        <div className={styles.modalActions}>
-          <button type="button" className={styles.button} onClick={onClose} disabled={busy}>
-            {t("close")}
-          </button>
-        </div>
+        <hr className={ui.menuSep} />
+        <button
+          type="button"
+          className={ui.menuItem}
+          onClick={onClose}
+          disabled={busy}
+        >
+          {t("close")}
+        </button>
       </div>
-    </>
+    </div>
   );
 });

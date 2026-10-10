@@ -1,144 +1,172 @@
-.quickBar {
-  position: fixed;
-  inset-inline-end: var(--space-16);
-  bottom: var(--space-16);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8);
-  z-index: 40;
-  max-width: min(100vw - var(--space-24), 320px);
+/* ---------- Theme cards ---------- */
+
+.themeCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-12);
 }
 
-.quickGroup {
+.themeCard {
   display: flex;
+  flex-direction: column;
   gap: var(--space-8);
   padding: var(--space-8);
-  background: var(--color-panel);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
-}
-
-.segmentButton {
-  font: inherit;
-  font-size: 0.8125rem;
-  padding: var(--space-8) var(--space-12);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-card);
-  color: var(--color-text);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-card);
   cursor: pointer;
+  transition: border-color var(--motion-fast) var(--motion-ease);
 }
 
-.segmentButton[data-active="true"] {
+.themeCard[data-checked="true"] {
   border-color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-card));
 }
 
-.segmentButton:focus-visible {
+.themeCard:has(input:focus-visible) {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
-.settingsPage {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
-  max-width: 32rem;
+.themeCard:has(input:disabled) {
+  cursor: progress;
 }
 
-.settingsHint {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.9375rem;
+.themePreview {
+  display: grid;
+  grid-template-columns: 20% 1fr;
+  gap: var(--space-4);
+  height: 84px;
+  padding: 6px;
+  border-radius: var(--radius-control);
 }
 
-.optionList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.themePreview span {
+  border-radius: 4px;
 }
 
-.optionRow {
+/* Fixed swatches: each preview shows its own theme regardless of the active one. */
+.themePreview[data-theme-preview="light"] {
+  background: #f7f5f3;
+}
+
+.themePreview[data-theme-preview="light"] span {
+  background: #ffffff;
+}
+
+.themePreview[data-theme-preview="dark"] {
+  background: #101111;
+}
+
+.themePreview[data-theme-preview="dark"] span {
+  background: #242626;
+}
+
+.themePreview[data-theme-preview="system"] {
+  background: linear-gradient(to right, #f7f5f3 50%, #101111 50%);
+}
+
+.themePreview[data-theme-preview="system"] span {
+  background: linear-gradient(to right, #ffffff 50%, #242626 50%);
+}
+
+.themeLabel {
   display: flex;
   align-items: center;
-  gap: var(--space-12);
+  gap: var(--space-8);
+  padding-inline: var(--space-4);
+  font-size: var(--text-md);
 }
 
-.optionLabel {
-  flex: 1;
+/* ---------- Language select (auth pages) ---------- */
+
+.languageSelect {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
 }
+
+.select {
+  height: 36px;
+  padding-inline: var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-panel);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Command palette / shortcut help ---------- */
 
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgb(15 23 42 / 45%);
   z-index: 100;
+  background: var(--color-overlay);
 }
 
 .dialog {
   position: fixed;
   inset-inline: var(--space-16);
-  top: 15vh;
-  margin-inline: auto;
-  max-width: 28rem;
-  width: 100%;
-  background: var(--color-modal);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-bubble);
-  box-shadow: 0 16px 48px rgb(0 0 0 / 18%);
+  inset-block-start: 12vh;
   z-index: 101;
   display: flex;
   flex-direction: column;
-  max-height: 70vh;
+  width: min(560px, 100% - 2 * var(--space-16));
+  max-height: 70dvh;
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-modal);
+  box-shadow: var(--shadow-modal);
+}
+
+.dialog:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .dialogHeader {
-  padding: var(--space-16);
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-12);
+  border-block-end: 1px solid var(--color-border);
 }
 
 .dialogTitle {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.searchInput {
-  width: 100%;
-  margin-block-start: var(--space-12);
-  padding: var(--space-12);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  font: inherit;
-  background: var(--color-panel);
-  color: var(--color-text);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
 }
 
 .commandList {
   margin: 0;
-  padding: var(--space-8);
-  list-style: none;
+  padding: var(--space-8) 0;
   overflow-y: auto;
+  list-style: none;
 }
 
 .commandItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
   width: 100%;
-  text-align: start;
   padding: var(--space-12) var(--space-16);
-  border: none;
-  border-radius: var(--radius-control);
-  background: transparent;
+  border: 0;
+  background: none;
   color: var(--color-text);
   font: inherit;
+  text-align: start;
   cursor: pointer;
 }
 
+.commandItem > svg {
+  color: var(--color-icon);
+}
+
 .commandItem[data-active="true"] {
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  background: var(--color-hover);
 }
 
 .commandItem:focus-visible {
@@ -146,43 +174,39 @@
   outline-offset: -2px;
 }
 
+.commandLabel {
+  flex: 1;
+  min-width: 0;
+}
+
 .emptyState {
-  padding: var(--space-16);
+  padding: var(--space-24) var(--space-16);
   color: var(--color-text-muted);
   text-align: center;
 }
 
 .shortcutList {
-  margin: 0;
-  padding: var(--space-16);
-  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: var(--space-12);
+  margin: 0;
+  padding: var(--space-8) 0;
+  overflow-y: auto;
+  list-style: none;
 }
 
 .shortcutRow {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-16);
-  align-items: center;
+  padding: var(--space-12) var(--space-16);
 }
 
-.shortcutKeys {
-  font-family: ui-monospace, monospace;
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-}
-
-.closeButton {
-  align-self: flex-end;
-  margin: var(--space-16);
-  padding: var(--space-8) var(--space-16);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-panel);
-  font: inherit;
-  cursor: pointer;
+.dialogFoot {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-12) var(--space-16);
+  border-block-start: 1px solid var(--color-border);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -191,20 +215,20 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .themeCard {
+    transition: none;
+  }
+}
+
 @keyframes dialog-in {
   from {
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@media (max-width: 480px) {
-  .quickBar {
-    inset-inline: var(--space-8);
-    inset-inline-end: var(--space-8);
   }
 }

@@ -11,6 +11,8 @@
   "emptyBody": "Lorsqu’il se passe quelque chose d’important, cela apparaîtra ici.",
   "listLabel": "Liste des notifications",
   "markAllRead": "Tout marquer comme lu",
+  "sectionNew": "Nouvelles",
+  "sectionEarlier": "Plus anciennes",
   "unknownActor": "Quelqu’un",
   "itemAria": "{title}, {time}",
   "unreadCount": "{count, plural, =0 {Aucune notification non lue} one {# notification non lue} other {# notifications non lues}}",

@@ -1,10 +1,13 @@
 "use client";
 
 import { memo, useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { useMessaging } from "@/features/direct-messaging/context/MessagingProvider";
+import { composerAboveId } from "@/platform/composer-events";
+import ui from "@/shell/styles/ui.module.css";
 
 import {
   clearReplyTarget,
@@ -26,6 +29,7 @@ function ReplyComposerToolInner({ conversationId }: Props) {
   const [target, setTarget] = useState<ReplyTarget | null>(() =>
     getReplyTarget(conversationId),
   );
+  const [bannerHost, setBannerHost] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const sync = () => setTarget(getReplyTarget(conversationId));
@@ -65,31 +69,39 @@ function ReplyComposerToolInner({ conversationId }: Props) {
     return () => form.removeEventListener("submit", onSubmit, true);
   }, [conversationId, sendMessage]);
 
+  useEffect(() => {
+    setBannerHost(document.getElementById(composerAboveId(conversationId)));
+  }, [conversationId]);
+
   const dismiss = useCallback(() => {
     clearReplyTarget(conversationId);
     setTarget(null);
   }, [conversationId]);
 
+  const banner =
+    !target || target.conversationId !== conversationId ? null : (
+      <div className={styles.replyBanner} role="status">
+        <div className={styles.replyQuote}>
+          <span className={styles.replyLabel}>{t("reply.bannerLabel")}</span>
+          <span className={styles.replyPreview}>{target.preview}</span>
+        </div>
+        <button
+          type="button"
+          className={`${ui.iconBtn} ${ui.iconBtnSm}`}
+          aria-label={t("reply.dismiss")}
+          title={t("reply.dismiss")}
+          onClick={dismiss}
+        >
+          <X size={18} aria-hidden />
+        </button>
+      </div>
+    );
+
   return (
     <>
       <JumpToReplyBridge />
       <MessagingMutationBridge />
-      {!target || target.conversationId !== conversationId ? null : (
-    <div className={styles.replyBanner} role="status">
-      <div className={styles.replyBannerText}>
-        <span className={styles.replyBannerLabel}>{t("reply.bannerLabel")}</span>
-        <span className={styles.replyBannerPreview}>{target.preview}</span>
-      </div>
-      <button
-        type="button"
-        className={styles.iconButton}
-        aria-label={t("reply.dismiss")}
-        onClick={dismiss}
-      >
-        <X size={18} aria-hidden />
-      </button>
-    </div>
-      )}
+      {banner && bannerHost ? createPortal(banner, bannerHost) : banner}
     </>
   );
 }

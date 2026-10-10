@@ -16,6 +16,7 @@ import {
   type ReactionPickerRequest,
 } from "../reactions-events";
 import styles from "../reactions.module.css";
+import ui from "@/shell/styles/ui.module.css";
 import { ALLOWED_REACTION_EMOJI } from "../types";
 import { useToggleReaction } from "../hooks/use-toggle-reaction";
 
@@ -83,7 +84,7 @@ function PickerPanel({
 
   return (
     <div
-      className={styles.pickerBackdrop}
+      className={`${ui.scrim} ${ui.scrimCenter} ${ui.scrimSheet}`}
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
@@ -92,13 +93,15 @@ function PickerPanel({
       }}
     >
       <div
-        className={styles.pickerPanel}
+        className={ui.dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby="reactions-picker-title"
       >
-        <h3 id="reactions-picker-title">{t("pickerTitle")}</h3>
-        <div className={styles.pickerGrid} role="toolbar" aria-label={t("pickerTitle")}>
+        <h2 id="reactions-picker-title" className={styles.pickerTitle}>
+          {t("pickerTitle")}
+        </h2>
+        <div className={styles.picker} role="toolbar" aria-label={t("pickerTitle")}>
           {ALLOWED_REACTION_EMOJI.map((emoji, index) => {
             const nameKey = emojiCatalogKey(emoji);
             const label = nameKey ? t(nameKey) : emoji;
@@ -119,14 +122,11 @@ function PickerPanel({
             );
           })}
         </div>
-        <button
-          type="button"
-          className="shell-nav-link"
-          style={{ marginBlockStart: "var(--space-12)" }}
-          onClick={onClose}
-        >
-          {t("pickerClose")}
-        </button>
+        <div className={ui.dialogActions}>
+          <button type="button" className={`${ui.btn} ${ui.btnSecondary}`} onClick={onClose}>
+            {t("pickerClose")}
+          </button>
+        </div>
       </div>
     </div>
   );

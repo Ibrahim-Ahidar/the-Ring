@@ -1,6 +1,10 @@
 {
   "loginTitle": "تسجيل الدخول",
   "signupTitle": "إنشاء حساب",
+  "loginSubtitle": "سجّل الدخول لمتابعة محادثاتك.",
+  "signupSubtitle": "اختر اسم مستخدم، فهو طريقة عثور الناس عليك.",
+  "legalNotice": "بالمتابعة فإنك توافق على <terms>الشروط</terms> و<privacy>سياسة الخصوصية</privacy>.",
+  "usernameHint": "من 3 إلى 20 حرفًا: حروف وأرقام وشرطة سفلية، ويبدأ بحرف.",
   "emailLabel": "البريد الإلكتروني",
   "passwordLabel": "كلمة المرور",
   "usernameLabel": "اسم المستخدم",
@@ -61,6 +65,7 @@
     "platform": {
       "rate_limited": "محاولات كثيرة. انتظر قليلًا.",
       "unauthenticated": "سجّل الدخول للمتابعة.",
+      "auth_unavailable": "المصادقة غير مُعَدّة. أضف إعدادات Supabase صالحة ثم حاول مرة أخرى.",
       "unexpected": "حدث خطأ. حاول مرة أخرى."
     }
   }

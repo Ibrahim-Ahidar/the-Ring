@@ -3,10 +3,11 @@
 import { memo, useCallback, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import ui from "@/shell/styles/ui.module.css";
+
 import { REPORT_CATEGORIES } from "../safety-events";
 import type { ReportCategory } from "../types";
 import { useFocusTrap } from "../hooks/useFocusTrap";
-import styles from "./PrivacySettings.module.css";
 
 type ReportDialogProps = {
   subjectLabel?: string | null;
@@ -47,26 +48,38 @@ export const ReportDialog = memo(function ReportDialog({
   }, [category, details, onClose, onSubmit, t]);
 
   return (
-    <div className={styles.modalBackdrop} onClick={onClose} role="presentation">
+    <div
+      className={`${ui.scrim} ${ui.scrimCenter} ${ui.scrimSheet}`}
+      onClick={onClose}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && !busy) {
+          event.stopPropagation();
+          onClose();
+        }
+      }}
+      role="presentation"
+    >
       <div
         ref={trapRef}
-        className={styles.modal}
+        className={ui.dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby="report-dialog-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 id="report-dialog-title" className={styles.modalTitle}>
+        <h2 id="report-dialog-title" className={ui.dialogTitle}>
           {t("report.dialogTitle")}
         </h2>
         {subjectLabel ? (
-          <p className={styles.muted}>{t("report.subject", { subject: subjectLabel })}</p>
+          <p className={ui.dialogText}>{t("report.subject", { subject: subjectLabel })}</p>
         ) : null}
-        <label className={styles.row} htmlFor="report-category">
-          <span className={styles.rowLabel}>{t("report.categoryLabel")}</span>
+        <div className={ui.field}>
+          <label className={ui.fieldLabel} htmlFor="report-category">
+            {t("report.categoryLabel")}
+          </label>
           <select
             id="report-category"
-            className={styles.select}
+            className={ui.input}
             value={category}
             onChange={(event) => setCategory(event.target.value as ReportCategory)}
             disabled={busy}
@@ -77,26 +90,37 @@ export const ReportDialog = memo(function ReportDialog({
               </option>
             ))}
           </select>
-        </label>
-        <label className={styles.row} htmlFor={detailsId}>
-          <span className={styles.rowLabel}>{t("report.detailsLabel")}</span>
+        </div>
+        <div className={ui.field}>
+          <label className={ui.fieldLabel} htmlFor={detailsId}>
+            {t("report.detailsLabel")}
+          </label>
           <textarea
             id={detailsId}
-            className={styles.textarea}
+            className={ui.input}
             value={details}
             maxLength={1000}
             onChange={(event) => setDetails(event.target.value)}
             disabled={busy}
           />
-        </label>
-        {error ? <p className={styles.errorBanner}>{error}</p> : null}
-        <div className={styles.modalActions}>
-          <button type="button" className={styles.button} onClick={onClose} disabled={busy}>
+        </div>
+        {error ? (
+          <p className={ui.errorText} role="alert">
+            {error}
+          </p>
+        ) : null}
+        <div className={ui.dialogActions}>
+          <button
+            type="button"
+            className={`${ui.btn} ${ui.btnSecondary}`}
+            onClick={onClose}
+            disabled={busy}
+          >
             {t("actions.cancel")}
           </button>
           <button
             type="button"
-            className={`${styles.button} ${styles.buttonPrimary}`}
+            className={`${ui.btn} ${ui.btnDanger}`}
             onClick={handleSubmit}
             disabled={busy}
           >

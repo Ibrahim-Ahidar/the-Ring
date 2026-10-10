@@ -39,7 +39,7 @@ async function openPair(usernames: [string, string]) {
 
 describe("reactions RPC", () => {
   it("adds a reaction visible to the other member", async () => {
-    const { alice, bob, aliceRpc, bobRpc, conversationId } = await openPair([
+    const { alice, aliceRpc, bobRpc, conversationId } = await openPair([
       "rx_a1",
       "rx_b1",
     ]);
@@ -92,7 +92,7 @@ describe("reactions RPC", () => {
   });
 
   it("rejects non-members", async () => {
-    const { alice, aliceRpc, conversationId } = await openPair(["rx_a2", "rx_b2"]);
+    const { aliceRpc, conversationId } = await openPair(["rx_a2", "rx_b2"]);
     const outsider = await createUser(db, { username: "rx_out2" });
     const outsiderRpc = createRpcClient(db, outsider.id);
     const sent = await sendText(aliceRpc, {
@@ -195,7 +195,7 @@ describe("reactions RPC", () => {
   });
 
   it("refuses deleted-for-everyone and hidden-for-actor", async () => {
-    const { alice, bob, aliceRpc, bobRpc, conversationId } = await openPair([
+    const { bob, aliceRpc, bobRpc, conversationId } = await openPair([
       "rx_a6",
       "rx_b6",
     ]);

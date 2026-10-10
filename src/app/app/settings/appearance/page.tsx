@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { SettingsAppearanceClient } from "@/features/locale-appearance/components/SettingsAppearanceClient";
+import { SettingsSection } from "@/shell/components/SettingsSection";
 import { resolveLocale, resolveTheme } from "@/shell/preferences";
 
 export default async function SettingsAppearancePage() {
@@ -9,9 +10,8 @@ export default async function SettingsAppearancePage() {
   const theme = await resolveTheme();
 
   return (
-    <div className="route-frame">
-      <h1 className="route-frame-title">{t("settingsAppearanceTitle")}</h1>
+    <SettingsSection title={t("settingsAppearanceTitle")}>
       <SettingsAppearanceClient initialLocale={locale} initialTheme={theme} />
-    </div>
+    </SettingsSection>
   );
 }

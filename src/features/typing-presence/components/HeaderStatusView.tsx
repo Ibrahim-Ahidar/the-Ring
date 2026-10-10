@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useMemo } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { canShowPresence } from "@/features/typing-presence/presence";
 import { useTypingPresence } from "@/features/typing-presence/context/typing-presence-context";
@@ -9,7 +9,6 @@ import {
   typerCount,
   visibleTypers,
 } from "@/features/typing-presence/typing-reducer";
-
 import styles from "@/features/typing-presence/components/HeaderStatusView.module.css";
 
 type Props = {
@@ -17,12 +16,12 @@ type Props = {
   otherUserId?: string;
 };
 
-function formatLastSeen(iso: string, locale: string): string {
-  const date = new Date(iso);
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function daysAgo(date: Date, now: Date): number {
+  const start = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  return Math.round((start(now) - start(date)) / DAY_MS);
 }
 
 export const HeaderStatusView = memo(function HeaderStatusView({
@@ -30,10 +29,9 @@ export const HeaderStatusView = memo(function HeaderStatusView({
   otherUserId,
 }: Props) {
   const t = useTranslations("typing-presence");
-  const locale = useLocale();
+  const format = useFormatter();
   const { typing, subjectPresence, subjectOnline, viewerId } =
     useTypingPresence();
-
   const now = Date.now();
   const typers = visibleTypers(typing, now, viewerId ?? undefined);
   const count = typerCount(typing, now, viewerId ?? undefined);
@@ -58,38 +56,30 @@ export const HeaderStatusView = memo(function HeaderStatusView({
     if (conversationType !== "direct" || !otherUserId || !subjectPresence) {
       return null;
     }
-
     if (presenceVisibility.showOnline && subjectOnline) {
-      return (
-        <span className={styles.presenceRow}>
-          <span
-            className={styles.onlineDot}
-            aria-hidden="true"
-          />
-          <span>{t("online")}</span>
-        </span>
-      );
+      return <span className={styles.online}>{t("online")}</span>;
     }
-
-    if (
-      presenceVisibility.showLastSeen &&
-      subjectPresence.last_seen_at
-    ) {
-      return (
-        <span className={styles.presenceRow}>
-          <span>
-            {t("lastSeen", {
-              when: formatLastSeen(subjectPresence.last_seen_at, locale),
-            })}
-          </span>
-        </span>
-      );
+    if (presenceVisibility.showLastSeen && subjectPresence.last_seen_at) {
+      const seen = new Date(subjectPresence.last_seen_at);
+      const time = format.dateTime(seen, { timeStyle: "short" });
+      const ago = daysAgo(seen, new Date());
+      const label =
+        ago === 0
+          ? t("lastSeenToday", { time })
+          : ago === 1
+            ? t("lastSeenYesterday", { time })
+            : t("lastSeen", {
+                when: format.dateTime(seen, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }),
+              });
+      return <span>{label}</span>;
     }
-
     return null;
   }, [
     conversationType,
-    locale,
+    format,
     otherUserId,
     presenceVisibility.showLastSeen,
     presenceVisibility.showOnline,
@@ -103,8 +93,7 @@ export const HeaderStatusView = memo(function HeaderStatusView({
   }
 
   return (
-    <div className={styles.root}>
-      {presenceLine}
+    <span className={styles.root}>
       {typingLabel ? (
         <span
           className={styles.typing}
@@ -114,7 +103,9 @@ export const HeaderStatusView = memo(function HeaderStatusView({
         >
           {typingLabel}
         </span>
-      ) : null}
-    </div>
+      ) : (
+        presenceLine
+      )}
+    </span>
   );
 });

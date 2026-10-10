@@ -16,7 +16,9 @@ import {
   emitComposerActivity,
   getComposerSendExtras,
 } from "@/platform/composer-events";
+import { composerAboveId } from "@/platform/composer-events";
 import { getContributions } from "@/shell/slots";
+import ui from "@/shell/styles/ui.module.css";
 
 import { useMessaging } from "../context/MessagingProvider";
 import styles from "../direct-messaging.module.css";
@@ -90,30 +92,36 @@ function MessageComposerInner({ conversationId }: Props) {
 
   return (
     <form className={styles.composer} onSubmit={onSubmit}>
-      <div className={styles.toolsRow}>
-        {tools.map((tool) => (
-          <tool.Component
-            key={tool.id}
-            conversationId={conversationId}
-            disabled={disabled}
-          />
-        ))}
-      </div>
-      <div className={styles.composerRow}>
-        <label className="visually-hidden" htmlFor={`composer-${conversationId}`}>
+      <div id={composerAboveId(conversationId)} className={styles.composerAbove} />
+      <div className={styles.composerBar}>
+        <div className={styles.composerTools}>
+          {tools.map((tool) => (
+            <tool.Component
+              key={tool.id}
+              conversationId={conversationId}
+              disabled={disabled}
+            />
+          ))}
+        </div>
+        <label className="sr-only" htmlFor={`composer-${conversationId}`}>
           {t("composerLabel")}
         </label>
         <textarea
           id={`composer-${conversationId}`}
           className={styles.composerInput}
           value={draft}
-          rows={2}
+          rows={1}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={onKeyDown}
           placeholder={t("composerPlaceholder")}
         />
-        <button type="submit" className="shell-nav-link" aria-label={t("send")}>
-          <SendHorizontal size={20} aria-hidden />
+        <button
+          type="submit"
+          className={`${ui.iconBtn} ${ui.iconBtnAccent} ${styles.composerSend}`}
+          aria-label={t("send")}
+          title={t("send")}
+        >
+          <SendHorizontal size={24} className="flip-rtl" aria-hidden />
         </button>
       </div>
     </form>

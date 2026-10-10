@@ -1,6 +1,8 @@
 {
   "online": "متصل",
   "lastSeen": "آخر ظهور {when}",
+  "lastSeenToday": "آخر ظهور اليوم عند {time}",
+  "lastSeenYesterday": "آخر ظهور أمس عند {time}",
   "typingOne": "{name} يكتب",
   "typingMany": "{count, plural, one {شخص واحد يكتب} two {شخصان يكتبان} few {# أشخاص يكتبون} many {# شخصًا يكتب} other {# شخص يكتب}}"
 }

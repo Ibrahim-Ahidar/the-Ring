@@ -1,7 +1,10 @@
 "use client";
 
 import { memo, useCallback } from "react";
+import { Ban } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+import ui from "@/shell/styles/ui.module.css";
 
 import { requestBlockDialog } from "../safety-events";
 import styles from "./PrivacySettings.module.css";
@@ -24,12 +27,9 @@ export const BlockUserButton = memo(function BlockUserButton({
   }, [displayName, userId, username]);
 
   return (
-    <button
-      type="button"
-      className={`${styles.button} ${styles.buttonDanger}`}
-      onClick={open}
-    >
-      {t("block.action")}
+    <button type="button" className={`${ui.setting} ${styles.dangerRow}`} onClick={open}>
+      <Ban size={20} aria-hidden />
+      <span className={ui.settingBody}>{t("block.action")}</span>
     </button>
   );
 });

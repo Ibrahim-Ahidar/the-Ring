@@ -157,14 +157,21 @@ export function MessagingProvider({
     writeDraftsToStorage(state.drafts);
   }, [state.drafts]);
 
-  const flushPending = useCallback(async () => {
-    const queue = state.pendingSends.filter((p) => p.status === "pending");
-    for (const pending of queue) {
-      dispatch({
-        type: "pending/update",
-        clientId: pending.clientId,
-        status: "pending",
-      });
+  const pendingSendsRef = useRef(state.pendingSends);
+  const connectionStatusRef = useRef(state.connectionStatus);
+  const inFlightRef = useRef(new Set<string>());
+
+  useEffect(() => {
+    pendingSendsRef.current = state.pendingSends;
+    connectionStatusRef.current = state.connectionStatus;
+  }, [state.pendingSends, state.connectionStatus]);
+
+  const deliver = useCallback(async (pending: PendingSend) => {
+    if (inFlightRef.current.has(pending.clientId)) {
+      return;
+    }
+    inFlightRef.current.add(pending.clientId);
+    try {
       const result = await sendTextAction({
         conversationId: pending.conversationId,
         clientId: pending.clientId,
@@ -172,13 +179,19 @@ export function MessagingProvider({
         replyToId: pending.replyToId,
       });
       if (!result.ok) {
+        pendingSendsRef.current = pendingSendsRef.current.map((p) =>
+          p.clientId === pending.clientId ? { ...p, status: "failed" } : p,
+        );
         dispatch({
           type: "pending/update",
           clientId: pending.clientId,
           status: "failed",
         });
-        continue;
+        return;
       }
+      pendingSendsRef.current = pendingSendsRef.current.filter(
+        (p) => p.clientId !== pending.clientId,
+      );
       dispatch({ type: "pending/remove", clientId: pending.clientId });
       dispatch({
         type: "messages/upsert",
@@ -189,8 +202,17 @@ export function MessagingProvider({
         kind: "sent",
         conversationId: pending.conversationId,
       });
+    } finally {
+      inFlightRef.current.delete(pending.clientId);
     }
-  }, [state.pendingSends]);
+  }, []);
+
+  const flushPending = useCallback(async () => {
+    const queue = pendingSendsRef.current.filter((p) => p.status === "pending");
+    for (const pending of queue) {
+      await deliver(pending);
+    }
+  }, [deliver]);
 
   useEffect(() => {
     if (state.connectionStatus === "connected") {
@@ -210,7 +232,7 @@ export function MessagingProvider({
     const openIds = new Set(
       initialConversationId ? [initialConversationId] : [],
     );
-    for (const pending of state.pendingSends) {
+    for (const pending of pendingSendsRef.current) {
       openIds.add(pending.conversationId);
     }
     for (const conversationId of openIds) {
@@ -227,7 +249,7 @@ export function MessagingProvider({
       });
     }
     await flushPending();
-  }, [flushPending, initialConversationId, listInbox, state.pendingSends]);
+  }, [flushPending, initialConversationId, listInbox]);
 
   const inboxRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -246,10 +268,11 @@ export function MessagingProvider({
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
     const inbox = joinInbox(supabase, userId);
+    const timerRef = inboxRefreshTimerRef;
 
     const offStatus = inbox.onStatus((status) => {
       if (status === "SUBSCRIBED") {
-        if (state.connectionStatus === "reconnecting") {
+        if (connectionStatusRef.current === "reconnecting") {
           void reconcile();
         }
         dispatch({ type: "connection", status: "connected" });
@@ -267,7 +290,7 @@ export function MessagingProvider({
     const offChange = inbox.onChange((change) => {
       if (change.table === "conversations") {
         if (change.eventType === "UPDATE") {
-          scheduleInboxRefresh(inboxRefreshTimerRef, refreshInboxList);
+          scheduleInboxRefresh(timerRef, refreshInboxList);
         }
         return;
       }
@@ -277,21 +300,21 @@ export function MessagingProvider({
           change.eventType === "UPDATE" ||
           change.eventType === "DELETE"
         ) {
-          scheduleInboxRefresh(inboxRefreshTimerRef, refreshInboxList);
+          scheduleInboxRefresh(timerRef, refreshInboxList);
         }
       }
     });
 
     return () => {
-      const timer = inboxRefreshTimerRef.current;
-      if (timer) {
-        clearTimeout(timer);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
       offStatus();
       offChange();
       inbox.leave();
     };
-  }, [reconcile, refreshInboxList, state.connectionStatus, userId]);
+  }, [reconcile, refreshInboxList, userId]);
 
   useEffect(() => {
     if (!initialConversationId) {
@@ -445,70 +468,29 @@ export function MessagingProvider({
       dispatch({ type: "pending/add", pending });
       dispatch({ type: "draft/set", conversationId: input.conversationId, text: "" });
 
-      if (state.connectionStatus !== "connected") {
+      if (connectionStatusRef.current !== "connected") {
         return;
       }
-
-      const result = await sendTextAction({
-        conversationId: input.conversationId,
-        clientId,
-        body: input.body,
-        replyToId: input.replyToId,
-      });
-      if (!result.ok) {
-        dispatch({
-          type: "pending/update",
-          clientId,
-          status: "failed",
-        });
-        return;
-      }
-      dispatch({ type: "pending/remove", clientId });
-      dispatch({
-        type: "messages/upsert",
-        conversationId: input.conversationId,
-        message: result.value,
-      });
-      emitComposerActivity({ kind: "sent", conversationId: input.conversationId });
+      await deliver(pending);
     },
-    [state.connectionStatus],
+    [deliver],
   );
 
-  const retrySend = useCallback(async (clientId: string) => {
-    const pending = state.pendingSends.find((p) => p.clientId === clientId);
-    if (!pending) {
-      return;
-    }
-    dispatch({
-      type: "pending/update",
-      clientId,
-      status: "pending",
-    });
-    const result = await sendTextAction({
-      conversationId: pending.conversationId,
-      clientId: pending.clientId,
-      body: pending.body,
-      replyToId: pending.replyToId,
-    });
-    if (!result.ok) {
+  const retrySend = useCallback(
+    async (clientId: string) => {
+      const pending = pendingSendsRef.current.find((p) => p.clientId === clientId);
+      if (!pending) {
+        return;
+      }
       dispatch({
         type: "pending/update",
         clientId,
-        status: "failed",
+        status: "pending",
       });
-      return;
-    }
-    dispatch({ type: "pending/remove", clientId });
-    dispatch({
-      type: "messages/upsert",
-      conversationId: pending.conversationId,
-      message: result.value,
-    });
-    emitComposerActivity({
-      kind: "sent",
-      conversationId: pending.conversationId,
-    });
-  }, [state.pendingSends]);
+      await deliver({ ...pending, status: "pending" });
+    },
+    [deliver],
+  );
 
   const setDraft = useCallback((conversationId: string, text: string) => {
     dispatch({ type: "draft/set", conversationId, text });

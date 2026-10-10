@@ -1,127 +1,224 @@
-.stack {
+/* ---------- Auth frame (login / signup) ---------- */
+
+.auth {
   display: flex;
   flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-bg);
+}
+
+.authTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-16);
-  max-width: 28rem;
+  padding: var(--space-16) var(--space-24);
 }
 
-.field {
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+}
+
+.brand span {
+  color: var(--color-text);
+}
+
+.authMain {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-24) var(--space-16);
+}
+
+.authCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  width: min(960px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-panel);
+  box-shadow: var(--shadow-bubble);
+}
+
+.authForm {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-24);
+  padding: 48px 40px;
 }
 
-.label {
-  font-size: 0.875rem;
-  color: var(--color-text);
+.authTitle {
+  font-size: 28px;
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.01em;
 }
 
-.input,
-.textarea {
-  padding: var(--space-12);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-panel);
-  color: var(--color-text);
-  font: inherit;
-}
-
-.textarea {
-  min-height: 5rem;
-  resize: vertical;
-}
-
-.hint {
-  margin: 0;
-  font-size: 0.8125rem;
+.authSubtitle {
+  margin-block-start: var(--space-8);
   color: var(--color-text-muted);
 }
 
-.actions {
+.authFormBody {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-12);
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.authFields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.authRow {
+  display: flex;
   align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-12);
+  font-size: var(--text-sm);
 }
 
-.button {
-  padding: var(--space-12) var(--space-16);
-  border: none;
-  border-radius: var(--radius-control);
-  background: var(--color-accent);
-  color: var(--color-accent-contrast);
-  font: inherit;
-  cursor: pointer;
+.authSwitch {
+  color: var(--color-text-muted);
+  text-align: center;
 }
 
-.buttonSecondary {
-  composes: button;
-  background: transparent;
+.authSwitch a,
+.authLegal a {
   color: var(--color-accent);
-  border: 1px solid var(--color-border);
+  font-weight: var(--weight-medium);
 }
 
-.buttonDanger {
-  composes: button;
-  background: var(--color-danger);
-  color: var(--color-accent-contrast);
+.authNotice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  color: var(--color-text-muted);
 }
 
-.button:disabled {
+.authNoticeTitle {
+  color: var(--color-text);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+}
+
+.authArt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-12);
+  padding: 40px;
+  background-color: var(--color-accent-soft);
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 7px,
+    color-mix(in srgb, var(--color-accent) 22%, transparent) 8px,
+    color-mix(in srgb, var(--color-accent) 22%, transparent) 9.5px,
+    transparent 10.5px
+  );
+  background-size: 48px 48px;
+  color: var(--color-accent-strong);
+}
+
+.authRing {
+  position: absolute;
+  inset-block-start: 15%;
+  inset-inline: 0;
+  margin-inline: auto;
+  color: var(--color-accent);
+}
+
+.authQuote {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  line-height: 1.35;
+}
+
+.authLegal {
+  padding: var(--space-16) var(--space-24);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ---------- Feedback ---------- */
+
+.error {
+  padding: var(--space-12);
+  border-radius: var(--radius-control);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+
+.success {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* ---------- Account / security ---------- */
+
+.avatarUpload:has(input:focus-visible) label {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.cardFoot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dangerTitle {
+  color: var(--color-danger);
+}
+
+.sessionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sessionName {
+  display: block;
+  font-weight: var(--weight-medium);
+  unicode-bidi: plaintext;
+}
+
+.dangerRow,
+.dangerRow > svg {
+  color: var(--color-danger);
+}
+
+.dangerRow:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.error {
-  margin: 0;
-  padding: var(--space-12);
-  border-radius: var(--radius-control);
-  background: color-mix(in srgb, var(--color-danger) 12%, var(--color-panel));
-  color: var(--color-danger);
-  font-size: 0.875rem;
-}
+@media (max-width: 767px) {
+  .authCard {
+    grid-template-columns: minmax(0, 1fr);
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
 
-.success {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-}
+  .authArt {
+    display: none;
+  }
 
-.linkRow {
-  margin: 0;
-  font-size: 0.875rem;
-}
+  .authForm {
+    padding: var(--space-8) 0;
+  }
 
-.section {
-  padding-block-start: var(--space-24);
-  border-block-start: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-}
-
-.sessionList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-}
-
-.sessionItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-12);
-  padding: var(--space-12);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-panel);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .button {
-    transition: none;
+  .authTop {
+    padding-inline: var(--space-16);
   }
 }

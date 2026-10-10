@@ -1,0 +1,85 @@
+{
+  "title": "المجموعات",
+  "newTitle": "مجموعة جديدة",
+  "adminTitle": "إعدادات المجموعة",
+  "membersTab": "الأعضاء",
+  "createSubmit": "إنشاء مجموعة",
+  "openChat": "فتح المحادثة",
+  "backToGroups": "العودة إلى المجموعات",
+  "nameLabel": "اسم المجموعة",
+  "descriptionLabel": "الوصف (اختياري)",
+  "avatarLabel": "صورة المجموعة (اختياري)",
+  "emptyGroups": "لست عضوًا في أي مجموعة بعد.",
+  "createLink": "إنشاء مجموعة",
+  "inviteLabel": "دعوة باسم المستخدم",
+  "inviteSubmit": "إرسال الدعوة",
+  "joinCodeLabel": "الانضمام برمز دعوة",
+  "joinSubmit": "انضم إلى المجموعة",
+  "createLinkSubmit": "إنشاء رابط دعوة",
+  "linkCreated": "تم إنشاء رابط الدعوة",
+  "copyCode": "نسخ الرمز",
+  "leaveGroup": "مغادرة المجموعة",
+  "transferOwnership": "نقل الملكية",
+  "removeMember": "إزالة العضو",
+  "promoteAdmin": "تعيين مشرف",
+  "demoteMember": "إزالة دور المشرف",
+  "restrictMessaging": "تقييد المراسلة",
+  "allowMessaging": "السماح بالمراسلة",
+  "reportsTitle": "بلاغات الرسائل",
+  "reportsEmpty": "لا توجد بلاغات مفتوحة لهذه المجموعة.",
+  "markReviewed": "تعليم كمراجع",
+  "roles": {
+    "owner": "مالك",
+    "admin": "مشرف",
+    "member": "عضو"
+  },
+  "system": {
+    "fallback": "تحديث في المجموعة",
+    "unknownMember": "عضو",
+    "events": {
+      "joined": "انضم {name} إلى المجموعة",
+      "left": "غادر {name} المجموعة",
+      "removed": "تمت إزالة {name} من المجموعة",
+      "promoted": "تمت ترقية {name} إلى مشرف",
+      "demoted": "لم يعد {name} مشرفًا"
+    }
+  },
+  "confirm": {
+    "removeTitle": "إزالة هذا العضو؟",
+    "removeBody": "سيفقد الوصول إلى المجموعة.",
+    "leaveTitle": "مغادرة هذه المجموعة؟",
+    "leaveBody": "لن تتلقى رسائل من هذه المجموعة.",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  },
+  "actions": {
+    "retry": "إعادة المحاولة",
+    "save": "حفظ التغييرات"
+  },
+  "states": {
+    "loading": "جارٍ التحميل…",
+    "saving": "جارٍ الحفظ…"
+  },
+  "errors": {
+    "generic": "حدث خطأ. حاول مرة أخرى.",
+    "groups": {
+      "not_allowed": "لا يمكن دعوة هذا الشخص إلى المجموعات.",
+      "owner_must_transfer": "انقل الملكية قبل المغادرة.",
+      "member_limit": "وصلت المجموعة إلى الحد الأقصى للأعضاء.",
+      "forbidden": "ليس لديك صلاحية لهذا الإجراء.",
+      "not_member": "لست عضوًا في هذه المجموعة.",
+      "not_found": "المجموعة غير موجودة.",
+      "name_required": "أدخل اسم المجموعة.",
+      "name_too_long": "اسم المجموعة طويل جدًا.",
+      "description_too_long": "الوصف طويل جدًا.",
+      "avatar_rejected": "اختر صورة مدعومة ضمن الحد المسموح.",
+      "user_not_found": "العضو غير موجود.",
+      "cannot_target_owner": "لا يمكن تغيير المالك بهذه الطريقة.",
+      "invite_link_invalid": "رمز الدعوة غير صالح.",
+      "invite_link_revoked": "تم إلغاء رابط الدعوة.",
+      "invite_link_expired": "انتهت صلاحية رابط الدعوة.",
+      "invite_link_exhausted": "وصل رابط الدعوة إلى حد الاستخدام.",
+      "invite_link_not_found": "رابط الدعوة غير موجود."
+    }
+  }
+}

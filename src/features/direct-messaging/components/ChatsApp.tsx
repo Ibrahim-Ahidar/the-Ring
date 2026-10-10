@@ -6,11 +6,12 @@ import type { TimelineMessage } from "@/platform/timeline";
 
 import { MessagingProvider } from "../context/MessagingProvider";
 import type { InboxFilters } from "../lib/inbox-filters";
-import type { ConversationDetail, ConversationSummary } from "../types";
+import type { ChatsViewer, ConversationDetail, ConversationSummary } from "../types";
 import { ChatsLayout } from "./ChatsLayout";
 
 type Props = {
   userId: string;
+  viewer?: ChatsViewer | null;
   initialConversations: ConversationSummary[];
   initialConversationsHasMore: boolean;
   inboxFilters?: InboxFilters;
@@ -34,6 +35,7 @@ function ChatsAppInner(props: Props) {
     >
       <ChatsLayout
         userId={props.userId}
+        viewer={props.viewer ?? null}
         activeConversationId={props.activeConversationId}
         threadDetail={props.initialDetail}
       />

@@ -3,11 +3,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { ChevronRight, Search } from "lucide-react";
 
 import { collectPaletteCommands } from "@/features/locale-appearance/collect-commands";
 import { filterCommands } from "@/features/locale-appearance/filter-commands";
 import { useAppearance } from "@/features/locale-appearance/context/AppearanceContext";
 import styles from "@/features/locale-appearance/components/locale-appearance.module.css";
+import ui from "@/shell/styles/ui.module.css";
 
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -138,29 +140,32 @@ function CommandPaletteInner() {
         }}
       >
         <div className={styles.dialogHeader}>
-          <h2 className={styles.dialogTitle}>{t("paletteTitle")}</h2>
-          <input
-            ref={inputRef}
-            className={styles.searchInput}
-            type="search"
-            value={state.paletteQuery}
-            placeholder={t("palettePlaceholder")}
-            aria-controls="command-palette-list"
-            onChange={(event) =>
-              dispatch({
-                type: "set_palette_query",
-                query: event.target.value,
-                maxIndex: Math.max(
-                  0,
-                  filterCommands(
-                    commands,
-                    event.target.value,
-                    resolveLabel,
-                  ).length - 1,
-                ),
-              })
-            }
-          />
+          <h2 className="sr-only">{t("paletteTitle")}</h2>
+          <div className={ui.search}>
+            <Search size={20} aria-hidden />
+            <input
+              ref={inputRef}
+              type="search"
+              aria-label={t("paletteTitle")}
+              value={state.paletteQuery}
+              placeholder={t("palettePlaceholder")}
+              aria-controls="command-palette-list"
+              onChange={(event) =>
+                dispatch({
+                  type: "set_palette_query",
+                  query: event.target.value,
+                  maxIndex: Math.max(
+                    0,
+                    filterCommands(
+                      commands,
+                      event.target.value,
+                      resolveLabel,
+                    ).length - 1,
+                  ),
+                })
+              }
+            />
+          </div>
         </div>
         {filtered.length === 0 ? (
           <p className={styles.emptyState}>{t("paletteEmpty")}</p>
@@ -182,7 +187,8 @@ function CommandPaletteInner() {
                     router.push(command.href);
                   }}
                 >
-                  {resolveLabel(command)}
+                  <span className={styles.commandLabel}>{resolveLabel(command)}</span>
+                  <ChevronRight size={16} className="flip-rtl" aria-hidden />
                 </button>
               </li>
             ))}

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create account · The Ring</title>
+  <link rel="stylesheet" href="../css/ring.css">
+  <script src="../assets/preview.js"></script>
+  <script src="../assets/icons.js"></script>
+</head>
+<body>
+<div class="auth">
+  <header class="auth__top">
+    <a class="brand" href="login.html"><svg class="icon"><use href="#logo"/></svg><span>The Ring</span></a>
+    <select class="select" aria-label="Language">
+      <option>English</option>
+      <option lang="ar">العربية</option>
+      <option>Français</option>
+    </select>
+  </header>
+
+  <main class="auth__main">
+    <div class="auth-card">
+      <form class="auth-card__form" action="chats.html">
+        <div>
+          <h1 class="auth-card__title">Create your account</h1>
+          <p class="auth-card__subtitle">Pick a username — it's how people find you.</p>
+        </div>
+
+        <div class="auth-card__fields">
+          <label class="field">
+            <span class="field__label">Display name</span>
+            <input class="input" type="text" value="Amina K." autocomplete="name">
+          </label>
+          <div class="field">
+            <label class="field__label" for="username">Username</label>
+            <div class="input-prefix"><span>@</span><input id="username" type="text" value="amina" autocomplete="username" aria-describedby="username-hint"></div>
+            <span class="field__hint" id="username-hint"><span class="conv-header__subtitle--online">✓ @amina is available</span> · 3–20 letters, numbers, dots or underscores</span>
+          </div>
+          <label class="field">
+            <span class="field__label">Email</span>
+            <input class="input" type="email" value="amina@example" aria-invalid="true" aria-describedby="email-error" autocomplete="email">
+            <span class="field__error" id="email-error">Enter a valid email address</span>
+          </label>
+          <label class="field">
+            <span class="field__label">Password</span>
+            <input class="input" type="password" placeholder="At least 8 characters" autocomplete="new-password">
+          </label>
+        </div>
+
+        <button class="btn btn--primary btn--block" type="submit">Create account</button>
+        <p class="auth-card__switch">Already have an account? <a href="login.html">Log in</a></p>
+      </form>
+
+      <div class="auth-card__art" aria-hidden="true">
+        <svg class="icon auth-card__ring"><use href="#logo"/></svg>
+        <div class="auth-card__bubbles">
+          <div class="msg msg--in msg--first"><div class="bubble"><span class="bubble__text">No phone number needed 🙌</span><span class="bubble__meta">09:41</span></div></div>
+          <div class="msg msg--out msg--first"><div class="bubble"><span class="bubble__text">Just a username. Nice.</span><span class="bubble__meta">09:42</span></div></div>
+        </div>
+        <p class="auth-card__quote">Your username is your ring. Share it with anyone.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="auth__legal">By creating an account you agree to the <a href="#terms">Terms</a> and <a href="#privacy">Privacy Policy</a>.</footer>
+</div>
+</body>
+</html>

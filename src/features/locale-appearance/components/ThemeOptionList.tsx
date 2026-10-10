@@ -7,6 +7,7 @@ import { useAppearance } from "@/features/locale-appearance/context/AppearanceCo
 import { usePreferenceSave } from "@/features/locale-appearance/hooks/use-preference-save";
 import styles from "@/features/locale-appearance/components/locale-appearance.module.css";
 import { THEMES, type Theme } from "@/shell/locale";
+import ui from "@/shell/styles/ui.module.css";
 
 const THEME_LABEL_KEYS: Record<
   Theme,
@@ -25,24 +26,42 @@ function ThemeOptionListInner() {
   const { saveTheme, pending } = usePreferenceSave();
 
   return (
-    <ul className={styles.optionList}>
-      {THEMES.map((code) => (
-        <li key={code} className={styles.optionRow}>
-          <label className={styles.optionLabel} htmlFor={`theme-${code}`}>
-            {t(THEME_LABEL_KEYS[code])}
+    <div
+      className={styles.themeCards}
+      role="radiogroup"
+      aria-label={t("settingsAppearanceTitle")}
+    >
+      {THEMES.map((code) => {
+        const checked = theme === code;
+        return (
+          <label
+            key={code}
+            className={styles.themeCard}
+            data-checked={checked}
+            htmlFor={`theme-${code}`}
+          >
+            <span className={styles.themePreview} data-theme-preview={code} aria-hidden>
+              <span />
+              <span />
+            </span>
+            <span className={styles.themeLabel}>
+              <input
+                id={`theme-${code}`}
+                className="sr-only"
+                type="radio"
+                name="theme"
+                value={code}
+                checked={checked}
+                disabled={pending}
+                onChange={() => saveTheme(code)}
+              />
+              <span className={ui.radio} data-checked={checked} aria-hidden />
+              {t(THEME_LABEL_KEYS[code])}
+            </span>
           </label>
-          <input
-            id={`theme-${code}`}
-            type="radio"
-            name="theme"
-            value={code}
-            checked={theme === code}
-            disabled={pending}
-            onChange={() => saveTheme(code)}
-          />
-        </li>
-      ))}
-    </ul>
+        );
+      })}
+    </div>
   );
 }
 

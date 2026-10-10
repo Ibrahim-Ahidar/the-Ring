@@ -1,0 +1,14 @@
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v5.0.3 D:/study-main/0 full-stack/Projects/chatapp
+
+
+ Test Files  63 passed | 1 skipped (64)
+      Tests  324 passed | 2 skipped (326)
+   Start at  02:57:43
+   Duration  68.95s (tests 64%, environment 24%, import 9%, transform 3%)
+
+    Isolate  64 workers spawned · ~2.31s startup each (spawn + environment, per file)
+             at least ~18.85s faster with isolate: false — reuses workers across files instead of one per file
+
+exit 0

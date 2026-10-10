@@ -1,12 +1,12 @@
 "use client";
 
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
 import type { TimelineMessage } from "@/platform/timeline";
 
-import { getDownloadUrlAction } from "../actions";
 import { useAttachmentList } from "../hooks/useAttachmentList";
+import { useDownloadUrl } from "../hooks/useDownloadUrl";
 import styles from "../media.module.css";
 import { uploadPhase } from "../upload-status";
 import { UploadProgress } from "./UploadProgress";
@@ -16,13 +16,13 @@ type Props = {
   currentUserId: string;
 };
 
-function ImageMessageRendererInner({ message, currentUserId }: Props) {
+function ImageMessageRendererInner({ message }: Props) {
   const t = useTranslations("media");
   const attachments = useAttachmentList(message.id, message.attachments);
   const attachment = attachments[0];
   const phase = uploadPhase(message);
-  const isMine = message.sender_id === currentUserId;
-  const [src, setSrc] = useState<string | null>(null);
+  const uploading = phase === "pending" || phase === "failed";
+  const src = useDownloadUrl(uploading ? null : attachment?.id);
 
   const aspectStyle = useMemo(() => {
     if (!attachment?.width || !attachment?.height) {
@@ -31,11 +31,7 @@ function ImageMessageRendererInner({ message, currentUserId }: Props) {
     return { aspectRatio: `${attachment.width} / ${attachment.height}` };
   }, [attachment?.height, attachment?.width]);
 
-  if (!attachment && phase !== "pending" && phase !== "failed") {
-    return <p>{t("attachmentMissing")}</p>;
-  }
-
-  if (phase === "pending" || phase === "failed") {
+  if (uploading) {
     return (
       <UploadProgress
         progress={phase === "failed" ? 0 : 0.35}
@@ -44,27 +40,23 @@ function ImageMessageRendererInner({ message, currentUserId }: Props) {
     );
   }
 
-  if (!src && attachment) {
-    void getDownloadUrlAction({ attachmentId: attachment.id }).then((result) => {
-      if (result.ok) {
-        setSrc(result.value.url);
-      }
-    });
+  if (!attachment) {
+    return <span className={styles.missing}>{t("attachmentMissing")}</span>;
   }
 
   return (
     <figure className={styles.imageFrame} style={aspectStyle}>
       {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
-          alt={attachment?.file_name ?? t("imageAlt")}
-          width={attachment?.width ?? undefined}
-          height={attachment?.height ?? undefined}
+          alt={attachment.file_name ?? t("imageAlt")}
+          width={attachment.width ?? undefined}
+          height={attachment.height ?? undefined}
         />
       ) : (
-        <p>{t("loadingImage")}</p>
+        <span className="sr-only">{t("loadingImage")}</span>
       )}
-      {isMine ? null : null}
     </figure>
   );
 }

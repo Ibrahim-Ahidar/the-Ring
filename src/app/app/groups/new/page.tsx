@@ -1,5 +1,21 @@
-import { RouteFrame } from "@/shell/components/RouteFrame";
+import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
-export default function NewGroupPage() {
-  return <RouteFrame titleKey="groupsNew" />;
+import { NewGroupForm } from "@/features/groups/components/NewGroupForm";
+import { getSessionContext } from "@/platform/session";
+import { SinglePane } from "@/shell/components/SinglePane";
+
+export default async function NewGroupPage() {
+  const session = await getSessionContext();
+  if (!session) {
+    redirect("/login");
+  }
+
+  const t = await getTranslations("groups");
+
+  return (
+    <SinglePane title={t("newTitle")} backHref="/app/groups">
+      <NewGroupForm />
+    </SinglePane>
+  );
 }

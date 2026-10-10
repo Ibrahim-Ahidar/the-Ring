@@ -6,13 +6,27 @@ import { useTranslations } from "next-intl";
 import styles from "../identity.module.css";
 import { useIdentityForm } from "../context/identity-form-context";
 
-function FormFeedbackInner() {
+/** Translated message for an error code, falling back to the generic one. */
+export function useErrorMessage(errorCode: string | null): string | null {
   const t = useTranslations("identity");
-  const { errorCode, successMessage } = useIdentityForm();
+  if (!errorCode) {
+    return null;
+  }
+  const key = `errors.${errorCode}` as "errors.identity.username_taken";
+  return t.has(key) ? t(key) : t("errors.platform.unexpected");
+}
 
-  if (errorCode) {
-    const key = `errors.${errorCode}` as "errors.identity.username_taken";
-    const message = t.has(key) ? t(key) : t("errors.platform.unexpected");
+type Props = {
+  /** Codes the form shows next to a field instead of in this banner. */
+  exclude?: (errorCode: string) => boolean;
+};
+
+function FormFeedbackInner({ exclude }: Props) {
+  const { errorCode, successMessage } = useIdentityForm();
+  const shown = errorCode && !exclude?.(errorCode) ? errorCode : null;
+  const message = useErrorMessage(shown);
+
+  if (message) {
     return (
       <p className={styles.error} role="alert">
         {message}

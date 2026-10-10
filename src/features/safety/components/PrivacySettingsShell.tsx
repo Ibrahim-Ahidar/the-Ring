@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 
 import { SafetyProvider } from "../context/safety-context";
 import type { BlockRow, PrivacySettings, ReportRow } from "../types";
@@ -10,12 +10,14 @@ type PrivacySettingsShellProps = {
   initialPrivacy: PrivacySettings;
   initialBlocks: BlockRow[];
   initialReports: ReportRow[];
+  leading?: ReactNode;
 };
 
 export const PrivacySettingsShell = memo(function PrivacySettingsShell({
   initialPrivacy,
   initialBlocks,
   initialReports,
+  leading,
 }: PrivacySettingsShellProps) {
   return (
     <SafetyProvider
@@ -23,7 +25,7 @@ export const PrivacySettingsShell = memo(function PrivacySettingsShell({
       initialBlocks={initialBlocks}
       initialReports={initialReports}
     >
-      <PrivacySettingsView />
+      <PrivacySettingsView leading={leading} />
     </SafetyProvider>
   );
 });

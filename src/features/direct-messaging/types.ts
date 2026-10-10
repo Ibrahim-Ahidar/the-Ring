@@ -65,6 +65,14 @@ export type ConversationDetail = {
   role: "owner" | "admin" | "member";
 };
 
+/** Signed-in member shown in the chat list header. */
+export type ChatsViewer = {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+};
+
 export type MarkReadResult = {
   last_read_message_id: string | null;
   last_read_at: string | null;

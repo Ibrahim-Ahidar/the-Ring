@@ -1,63 +1,137 @@
+/*
+ * Every colour is a light-dark() pair; [data-theme] on <html> only pins color-scheme.
+ * data-theme="system" leaves color-scheme as "light dark" so the OS decides.
+ */
+
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
 
-  --color-bg: #f5f5f4;
-  --color-panel: #ffffff;
-  --color-card: #ffffff;
-  --color-modal: #ffffff;
-  --color-text: #111827;
-  --color-text-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-accent: #2563eb;
-  --color-accent-contrast: #ffffff;
-  --color-focus: #2563eb;
-  --color-danger: #dc2626;
+  /* Surfaces */
+  --color-bg: light-dark(#f7f5f3, #161717);
+  --color-panel: light-dark(#ffffff, #161717);
+  --color-card: light-dark(#ffffff, #1d1f1f);
+  --color-modal: light-dark(#ffffff, #1d1f1f);
+  --color-elevated: light-dark(#ffffff, #242626);
+  --color-input: light-dark(#f0eeec, #2e2f2f);
+  --color-hover: light-dark(rgba(194, 189, 184, 0.18), rgba(255, 255, 255, 0.06));
+  --color-selected: light-dark(rgba(194, 189, 184, 0.3), rgba(255, 255, 255, 0.1));
+  --color-pressed: light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.16));
+  --color-overlay: rgba(0, 0, 0, 0.32);
 
+  /* Content */
+  --color-text: light-dark(#0a0a0a, #fafafa);
+  --color-text-muted: light-dark(rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.6));
+  --color-text-disabled: light-dark(#bdbdbd, #5c5e5f);
+  --color-icon: light-dark(#54585a, #aebac1);
+  --color-border: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+  --color-border-strong: light-dark(#959393, #757778);
+
+  /* Brand accent */
+  --color-accent: light-dark(#1daa61, #21c063);
+  --color-accent-strong: light-dark(#15603e, #d9fdd3);
+  --color-accent-soft: light-dark(#d9fdd3, #103529);
+  --color-accent-contrast: light-dark(#ffffff, #0a0a0a);
+  --color-focus: light-dark(#1daa61, #21c063);
+
+  /* Status */
+  --color-danger: light-dark(#ea0038, #fb5061);
+  --color-danger-soft: light-dark(#ffe5ea, #3b1219);
+  --color-warning: light-dark(#ffeecd, #3a3121);
+  --color-online: #25d366;
+  --color-read: light-dark(#007bfc, #53bdeb);
+  --color-link: light-dark(#027eb5, #53bdeb);
+
+  /* Conversation */
+  --color-chat-bg: light-dark(#f5f1eb, #101111);
+  --color-chat-pattern: light-dark(rgba(0, 0, 0, 0.045), rgba(255, 255, 255, 0.035));
+  --color-bubble-in: light-dark(#ffffff, #242626);
+  --color-bubble-out: light-dark(#d9fdd3, #144d37);
+  --color-bubble-meta: light-dark(rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.6));
+  --color-quote: light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.22));
+  --color-system: light-dark(#ffffff, #1d1f1f);
+
+  /* Avatar fallbacks */
+  --avatar-1: light-dark(#ffd7c2, #5e3a2a);
+  --avatar-2: light-dark(#c9e7ff, #1f4560);
+  --avatar-3: light-dark(#dccbff, #3d2f63);
+  --avatar-4: light-dark(#ffe3a3, #5a4718);
+  --avatar-5: light-dark(#c4f1dd, #1f4c3a);
+  --avatar-6: light-dark(#ffcfe0, #5a2338);
+  --avatar-text: light-dark(rgba(0, 0, 0, 0.7), rgba(255, 255, 255, 0.85));
+
+  /* Group sender names */
+  --sender-1: light-dark(#c4532d, #ff8f6b);
+  --sender-2: light-dark(#1f7aec, #7fb8ff);
+  --sender-3: light-dark(#8a3ffc, #c4a2ff);
+  --sender-4: light-dark(#a1690c, #ffc857);
+
+  /* Shape */
   --radius-control: 8px;
-  --radius-bubble: 16px;
+  --radius-bubble: 8px;
+  --radius-card: 12px;
+  --radius-pill: 999px;
 
+  /* Spacing */
+  --space-2: 2px;
+  --space-4: 4px;
   --space-8: 8px;
   --space-12: 12px;
   --space-16: 16px;
   --space-24: 24px;
 
+  /* Type */
+  --font-sans: "Segoe UI", Inter, "Helvetica Neue", Helvetica, Arial, "Noto Naskh Arabic", system-ui, sans-serif;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 14.5px;
+  --text-lg: 16px;
+  --text-xl: 19px;
+  --text-2xl: 22px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 600;
+
+  /* Layout */
+  --sidebar-width: clamp(320px, 30vw, 440px);
+  --drawer-width: clamp(320px, 28vw, 420px);
+  --header-height: 60px;
+  --row-height: 72px;
+  --bubble-max: min(65%, 560px);
+
+  /* Elevation */
+  --shadow-bubble: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+  --shadow-menu: 0 2px 5px rgba(11, 20, 26, 0.26), 0 2px 10px rgba(11, 20, 26, 0.16);
+  --shadow-modal: 0 17px 50px rgba(11, 20, 26, 0.19), 0 12px 15px rgba(11, 20, 26, 0.24);
+
+  /* Motion */
   --motion-fast: 120ms;
   --motion-medium: 180ms;
   --motion-slow: 220ms;
   --motion-ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
-[data-theme="dark"] {
-  color-scheme: dark;
-
-  --color-bg: #0f172a;
-  --color-panel: #1e293b;
-  --color-card: #1e293b;
-  --color-modal: #1e293b;
-  --color-text: #f8fafc;
-  --color-text-muted: #94a3b8;
-  --color-border: #334155;
-  --color-accent: #3b82f6;
-  --color-accent-contrast: #0f172a;
-  --color-focus: #60a5fa;
-  --color-danger: #f87171;
+[data-theme="light"] {
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  [data-theme="system"] {
-    color-scheme: dark;
+[data-theme="dark"] {
+  color-scheme: dark;
+}
 
-    --color-bg: #0f172a;
-    --color-panel: #1e293b;
-    --color-card: #1e293b;
-    --color-modal: #1e293b;
-    --color-text: #f8fafc;
-    --color-text-muted: #94a3b8;
-    --color-border: #334155;
-    --color-accent: #3b82f6;
-    --color-accent-contrast: #0f172a;
-    --color-focus: #60a5fa;
-    --color-danger: #f87171;
+[lang="ar"] {
+  --font-sans: "Noto Naskh Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --text-md: 15.5px;
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --sidebar-width: 300px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --bubble-max: 85%;
   }
 }
 

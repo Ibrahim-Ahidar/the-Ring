@@ -35,6 +35,18 @@ export const contributions: FeatureContributions = {
       order: 40,
     },
     {
+      id: "go-groups",
+      labelKey: "cmdGroups",
+      href: "/app/groups",
+      order: 42,
+    },
+    {
+      id: "go-requests",
+      labelKey: "cmdRequests",
+      href: "/app/chats/requests",
+      order: 44,
+    },
+    {
       id: "go-settings",
       labelKey: "cmdSettings",
       href: "/app/settings/account",

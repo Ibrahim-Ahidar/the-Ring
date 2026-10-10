@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { AccountSettings } from "@/features/identity/components/AccountSettings";
-import styles from "@/features/identity/identity.module.css";
 import * as identity from "@/features/identity/service";
 import { getSessionContext } from "@/platform/session";
+import { SettingsSection } from "@/shell/components/SettingsSection";
 
 export default async function SettingsAccountPage() {
   const ctx = await getSessionContext();
@@ -20,9 +20,8 @@ export default async function SettingsAccountPage() {
   const t = await getTranslations("identity");
 
   return (
-    <div className={styles.stack}>
-      <h1 className="route-frame-title">{t("accountTitle")}</h1>
+    <SettingsSection title={t("accountTitle")}>
       <AccountSettings profile={profileResult.value} />
-    </div>
+    </SettingsSection>
   );
 }

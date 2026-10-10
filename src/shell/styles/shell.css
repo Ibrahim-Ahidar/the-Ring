@@ -1,115 +1,234 @@
+/*
+ * App shell
+ *   desktop  >= 1200px : sidebar | main | drawer (inline)
+ *   laptop  768-1199px : sidebar | main, drawer overlays main
+ *   mobile    < 768px  : one pane chosen by data-view (list | main | drawer)
+ */
+
 .shell-root {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  background: var(--color-bg);
-}
-
-.shell-nav {
-  width: 72px;
-  padding-block: var(--space-16);
-  padding-inline: var(--space-8);
-  background: var(--color-panel);
-  border-inline-end: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-8);
-}
-
-.shell-nav-link {
   position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-control);
-  color: var(--color-text-muted);
-  text-decoration: none;
-  transition: background var(--motion-fast) var(--motion-ease);
-}
-
-.shell-nav-link:hover {
-  background: var(--color-bg);
-  color: var(--color-text);
-}
-
-.shell-nav-link[data-active="true"] {
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
-  color: var(--color-accent);
-}
-
-.shell-main-wrap {
-  display: flex;
   flex-direction: column;
-  min-width: 0;
-  min-height: 100vh;
-}
-
-.shell-mobile-bar {
-  display: none;
-  align-items: center;
-  gap: var(--space-8);
-  padding: var(--space-12) var(--space-16);
-  border-block-end: 1px solid var(--color-border);
-  background: var(--color-panel);
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-bg);
 }
 
 .shell-main {
+  display: flex;
   flex: 1;
-  padding: var(--space-24);
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
 }
 
 .shell-right-pane {
-  width: 320px;
-  border-inline-start: 1px solid var(--color-border);
+  position: absolute;
+  z-index: 20;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: var(--drawer-width);
+  overflow-y: auto;
   background: var(--color-panel);
-  padding: var(--space-16);
+  border-inline-start: 1px solid var(--color-border);
+  box-shadow: var(--shadow-modal);
 }
 
 .shell-right-pane[data-open="false"] {
   display: none;
 }
 
-@media (max-width: 767px) {
-  .shell-root {
-    grid-template-columns: 1fr;
+/* ---------- Pane layout ---------- */
+
+.pane-app {
+  position: relative;
+  display: grid;
+  flex: 1;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  grid-template-areas: "sidebar main";
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.pane-app[data-drawer="open"] {
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--drawer-width);
+  grid-template-areas: "sidebar main drawer";
+}
+
+.pane-app[data-single="true"] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "main";
+}
+
+.pane-sidebar {
+  grid-area: sidebar;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-panel);
+  border-inline-end: 1px solid var(--color-border);
+}
+
+.pane-main {
+  grid-area: main;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-bg);
+}
+
+.pane-drawer {
+  grid-area: drawer;
+  display: none;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-panel);
+  border-inline-start: 1px solid var(--color-border);
+}
+
+.pane-app[data-drawer="open"] .pane-drawer {
+  display: flex;
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: var(--header-height);
+  padding: var(--space-12) var(--space-16) var(--space-8);
+}
+
+.pane-header__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.01em;
+}
+
+.pane-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.pane-header__profile {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  transition: box-shadow var(--motion-fast) var(--motion-ease);
+}
+
+.pane-header__profile:hover {
+  box-shadow: 0 0 0 3px var(--color-hover);
+}
+
+.pane-tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-4) var(--space-16) var(--space-8);
+}
+
+.pane-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-8) var(--space-16);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+/* Main-pane header for single-column pages (new chat, group admin, media, profile). */
+.pane-main > .pane-header {
+  background: var(--color-panel);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.pane-main > .pane-header .pane-header__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+}
+
+/* Doubled class beats the single-class icon button display from ui.module.css. */
+.shell-back--mobile.shell-back--mobile {
+  display: none;
+  margin-inline-start: calc(var(--space-8) * -1);
+}
+
+/* Laptop: drawer floats over the main pane */
+@media (max-width: 1199px) {
+  .pane-app[data-drawer="open"] {
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    grid-template-areas: "sidebar main";
   }
 
-  .shell-nav {
+  .pane-drawer {
+    position: absolute;
+    z-index: 20;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: var(--drawer-width);
+    box-shadow: var(--shadow-modal);
+  }
+}
+
+/* Mobile: single pane */
+@media (max-width: 767px) {
+  .pane-app,
+  .pane-app[data-drawer="open"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "pane";
+  }
+
+  .pane-sidebar,
+  .pane-main,
+  .pane-drawer {
+    grid-area: pane;
+    border: 0;
+  }
+
+  .pane-app .pane-sidebar,
+  .pane-app .pane-main,
+  .pane-app:not([data-view="drawer"]) .pane-drawer {
     display: none;
   }
 
-  .shell-mobile-bar {
+  .pane-app[data-view="list"] .pane-sidebar,
+  .pane-app[data-view="main"] .pane-main,
+  .pane-app[data-single="true"] .pane-main {
     display: flex;
   }
 
+  .pane-app[data-view="drawer"] .pane-drawer {
+    position: static;
+    display: flex;
+    width: auto;
+    box-shadow: none;
+  }
+
+  .pane-header {
+    padding-block-start: var(--space-16);
+  }
+
+  .shell-back--mobile.shell-back--mobile {
+    display: inline-grid;
+  }
+
   .shell-right-pane {
-    display: none;
-  }
-
-  .shell-main {
-    padding: var(--space-16);
+    width: 100%;
   }
 }
 
-.route-frame {
-  max-width: 48rem;
-}
-
-.route-frame-title {
-  margin: 0 0 var(--space-8);
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.route-frame-meta {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-}
+/* ---------- Landing ---------- */
 
 .landing {
   min-height: 100vh;
@@ -138,10 +257,11 @@
 .landing-actions a {
   display: inline-flex;
   align-items: center;
-  padding: var(--space-8) var(--space-16);
-  border-radius: var(--radius-control);
+  min-height: 40px;
+  padding: 0 var(--space-24);
+  border-radius: var(--radius-pill);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
 }
 
 .landing-actions a.primary {
@@ -150,37 +270,38 @@
 }
 
 .landing-actions a.secondary {
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  background: var(--color-panel);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-accent);
 }
 
 .landing-locale-block {
   margin-block-end: var(--space-16);
   padding: var(--space-16);
   background: var(--color-panel);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-card);
   border: 1px solid var(--color-border);
 }
 
 .landing-locale-block h2 {
   margin: 0 0 var(--space-8);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-text-muted);
 }
 
-.landing-locale-block p {
-  margin: 0;
-}
-
 .landing-footer {
   margin-block-start: var(--space-24);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 
 .landing-footer a {
   margin-inline-end: var(--space-16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pane-header__profile {
+    transition: none;
+  }
 }

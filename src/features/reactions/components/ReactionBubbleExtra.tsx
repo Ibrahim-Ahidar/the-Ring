@@ -74,7 +74,7 @@ function ReactionBubbleExtraInner({ message, currentUserId }: Props) {
   }
 
   return (
-    <div className={styles.row} role="group" aria-label={t("reactionsGroup")}>
+    <div className={styles.row} role="group" aria-label={t("reactionsGroup")} data-overhang>
       {chips.map((chip) => (
         <ReactionChip
           key={chip.emoji}

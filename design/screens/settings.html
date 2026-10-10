@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings · The Ring</title>
+  <link rel="stylesheet" href="../css/ring.css">
+  <script src="../assets/preview.js"></script>
+  <script src="../assets/icons.js"></script>
+</head>
+<body>
+<div class="app" data-view="list">
+
+  <aside class="sidebar" aria-label="Settings">
+    <header class="sidebar__header">
+      <a class="icon-btn" href="chats.html" aria-label="Back to chats"><svg class="icon icon--flip"><use href="#i-back"/></svg></a>
+      <h1 class="sidebar__title">Settings</h1>
+    </header>
+    <div class="sidebar__tools">
+      <label class="search">
+        <svg class="icon icon--sm"><use href="#i-search"/></svg>
+        <input type="search" placeholder="Search settings" aria-label="Search settings">
+      </label>
+    </div>
+    <div class="sidebar__body scroll">
+      <a class="profile-card" href="#profile">
+        <span class="avatar avatar--lg avatar--c3">AK</span>
+        <span class="list-row__body">
+          <span class="profile-card__name">Amina K.</span>
+          <span class="list-row__subtitle">@amina · Making things feel nice</span>
+        </span>
+      </a>
+
+      <a class="list-row" href="#account"><svg class="icon"><use href="#i-key"/></svg><span class="list-row__body"><span class="list-row__title">Account</span><span class="list-row__subtitle">Email, username, delete account</span></span></a>
+      <a class="list-row" href="#privacy"><svg class="icon"><use href="#i-lock"/></svg><span class="list-row__body"><span class="list-row__title">Privacy</span><span class="list-row__subtitle">Last seen, read receipts, blocked</span></span></a>
+      <a class="list-row" href="#security"><svg class="icon"><use href="#i-shield"/></svg><span class="list-row__body"><span class="list-row__title">Security</span><span class="list-row__subtitle">Password, active sessions</span></span></a>
+      <a class="list-row" href="notifications.html"><svg class="icon"><use href="#i-bell"/></svg><span class="list-row__body"><span class="list-row__title">Notifications</span><span class="list-row__subtitle">Messages, groups, requests</span></span></a>
+      <a class="list-row" href="#appearance" aria-current="true"><svg class="icon"><use href="#i-palette"/></svg><span class="list-row__body"><span class="list-row__title">Appearance</span><span class="list-row__subtitle">Theme, accent colour</span></span></a>
+      <a class="list-row" href="#language"><svg class="icon"><use href="#i-globe"/></svg><span class="list-row__body"><span class="list-row__title">Language</span><span class="list-row__subtitle">English</span></span></a>
+      <a class="list-row" href="#shortcuts"><svg class="icon"><use href="#i-keyboard"/></svg><span class="list-row__body"><span class="list-row__title">Keyboard shortcuts</span></span></a>
+      <button class="list-row list-row--danger"><svg class="icon icon--flip"><use href="#i-logout"/></svg><span class="list-row__body"><span class="list-row__title">Log out</span></span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="settings-page" aria-labelledby="appearance-title">
+      <div class="settings-page__inner">
+        <h2 class="sidebar__title" id="appearance-title">Appearance</h2>
+
+        <div class="settings-card">
+          <div class="settings-card__head">
+            <h3 class="settings-card__title">Theme</h3>
+            <p class="settings-card__desc">System follows your device's light or dark setting.</p>
+          </div>
+          <div class="settings-card__body">
+            <div class="theme-cards" role="radiogroup" aria-label="Theme">
+              <button class="theme-card" role="radio" aria-checked="true">
+                <span class="theme-card__preview theme-card__preview--system"><span></span><span></span></span>
+                <span class="theme-card__label"><span class="radio" aria-checked="true"></span>System</span>
+              </button>
+              <button class="theme-card" role="radio" aria-checked="false">
+                <span class="theme-card__preview theme-card__preview--light"><span></span><span></span></span>
+                <span class="theme-card__label"><span class="radio"></span>Light</span>
+              </button>
+              <button class="theme-card" role="radio" aria-checked="false">
+                <span class="theme-card__preview theme-card__preview--dark"><span></span><span></span></span>
+                <span class="theme-card__label"><span class="radio"></span>Dark</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card__head">
+            <h3 class="settings-card__title">Accent colour</h3>
+            <p class="settings-card__desc">Used for buttons, unread badges and your message bubbles.</p>
+          </div>
+          <div class="settings-card__body">
+            <div class="swatches" role="radiogroup" aria-label="Accent colour">
+              <button class="swatch swatch--green" role="radio" aria-checked="true" aria-label="Emerald"></button>
+              <button class="swatch swatch--blue" role="radio" aria-checked="false" aria-label="Blue"></button>
+              <button class="swatch swatch--violet" role="radio" aria-checked="false" aria-label="Violet"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card" id="language">
+          <div class="settings-card__head">
+            <h3 class="settings-card__title">Language</h3>
+            <p class="settings-card__desc">Arabic switches the whole app to right-to-left.</p>
+          </div>
+          <div class="setting" role="radio" aria-checked="false"><span class="radio"></span><span class="setting__body"><span lang="ar">العربية</span><span class="setting__desc">Arabic · RTL</span></span></div>
+          <div class="setting" role="radio" aria-checked="true"><span class="radio" aria-checked="true"></span><span class="setting__body">English<span class="setting__desc">English · LTR</span></span></div>
+          <div class="setting" role="radio" aria-checked="false"><span class="radio"></span><span class="setting__body">Français<span class="setting__desc">French · LTR</span></span></div>
+        </div>
+
+        <div class="settings-card">
+          <div class="setting">
+            <svg class="icon"><use href="#i-eye"/></svg>
+            <span class="setting__body">Reduce motion<span class="setting__desc">Follows your system setting</span></span>
+            <span class="switch" role="switch" aria-checked="false" aria-label="Reduce motion"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</div>
+</body>
+</html>

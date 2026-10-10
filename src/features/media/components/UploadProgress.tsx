@@ -3,6 +3,8 @@
 import { memo } from "react";
 import { useTranslations } from "next-intl";
 
+import ui from "@/shell/styles/ui.module.css";
+
 import styles from "../media.module.css";
 
 type Props = {
@@ -17,7 +19,7 @@ function UploadProgressInner({ progress, failed, onRetry, onCancel }: Props) {
   const pct = Math.round(progress * 100);
 
   return (
-    <div>
+    <div className={styles.upload}>
       <div
         className={styles.progress}
         role="progressbar"
@@ -29,15 +31,15 @@ function UploadProgressInner({ progress, failed, onRetry, onCancel }: Props) {
         <div className={styles.progressBar} style={{ width: `${pct}%` }} />
       </div>
       {failed ? (
-        <div className={styles.toolRow}>
+        <div className={styles.uploadFailed}>
           <span>{t("uploadFailed")}</span>
           {onRetry ? (
-            <button type="button" onClick={onRetry} aria-label={t("retryUpload")}>
+            <button type="button" className={ui.linkBtn} onClick={onRetry} aria-label={t("retryUpload")}>
               {t("retry")}
             </button>
           ) : null}
           {onCancel ? (
-            <button type="button" onClick={onCancel} aria-label={t("cancelUpload")}>
+            <button type="button" className={ui.linkBtn} onClick={onCancel} aria-label={t("cancelUpload")}>
               {t("cancel")}
             </button>
           ) : null}

@@ -1,15 +1,19 @@
 import { getTranslations } from "next-intl/server";
 
+import { AuthFrame } from "@/features/identity/components/AuthFrame";
 import { LoginForm } from "@/features/identity/components/LoginForm";
-import styles from "@/features/identity/identity.module.css";
+import { LanguageSelect } from "@/features/locale-appearance/components/LanguageSelect";
 
 export default async function LoginPage() {
   const t = await getTranslations("identity");
 
   return (
-    <main className={styles.stack} style={{ margin: "var(--space-24)" }}>
-      <h1 className="route-frame-title">{t("loginTitle")}</h1>
+    <AuthFrame
+      title={t("loginTitle")}
+      subtitle={t("loginSubtitle")}
+      topEnd={<LanguageSelect />}
+    >
       <LoginForm />
-    </main>
+    </AuthFrame>
   );
 }

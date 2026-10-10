@@ -28,7 +28,11 @@ function ReactionChipInner({ emoji, count, reactedByMe, onToggle }: Props) {
       onClick={onToggle}
     >
       <span aria-hidden>{emoji}</span>
-      <span aria-hidden>{count}</span>
+      {count > 1 ? (
+        <span className={styles.chipCount} aria-hidden>
+          {count}
+        </span>
+      ) : null}
     </button>
   );
 }

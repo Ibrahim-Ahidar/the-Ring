@@ -3,6 +3,9 @@
 import { memo, useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { Avatar } from "@/shell/components/Avatar";
+import ui from "@/shell/styles/ui.module.css";
+
 import { useSafety } from "../context/safety-context";
 import { UnblockConfirmDialog } from "./UnblockConfirmDialog";
 import styles from "./PrivacySettings.module.css";
@@ -23,27 +26,26 @@ export const BlockedMembersSection = memo(function BlockedMembersSection() {
   const pending = blocks.find((b) => b.blockedId === pendingUnblock);
 
   return (
-    <section
-      className={`${styles.section} ${styles.dangerZone}`}
-      aria-labelledby="blocked-heading"
-    >
-      <h2 id="blocked-heading" className={styles.sectionTitle}>
-        {t("block.listTitle")}
-      </h2>
+    <section className={ui.settingsCard} aria-labelledby="blocked-heading">
+      <div className={ui.settingsCardHead}>
+        <h2 id="blocked-heading" className={ui.settingsCardTitle}>
+          {t("block.listTitle")}
+        </h2>
+      </div>
 
       {blocksError ? (
-        <p className={styles.errorBanner} role="alert">
-          {t("errors.generic")}
-          <button type="button" className={styles.button} onClick={() => void refreshBlocks()}>
+        <p className={`${ui.errorText} ${styles.cardNote}`} role="alert">
+          {t("errors.generic")}{" "}
+          <button type="button" className={ui.linkBtn} onClick={() => void refreshBlocks()}>
             {t("actions.retry")}
           </button>
         </p>
       ) : null}
 
-      {blocksLoading ? <p className={styles.muted}>{t("states.loading")}</p> : null}
+      {blocksLoading ? <p className={styles.cardNote}>{t("states.loading")}</p> : null}
 
       {!blocksLoading && blocks.length === 0 ? (
-        <p className={styles.muted}>{t("block.empty")}</p>
+        <p className={styles.cardNote}>{t("block.empty")}</p>
       ) : null}
 
       {!blocksLoading && blocks.length > 0 ? (
@@ -51,11 +53,15 @@ export const BlockedMembersSection = memo(function BlockedMembersSection() {
           {blocks.map((row) => {
             const label = row.displayName?.trim() || row.username;
             return (
-              <li key={row.blockedId} className={styles.listItem}>
-                <span>{label}</span>
+              <li key={row.blockedId} className={ui.setting}>
+                <Avatar name={label} seed={row.blockedId} size="sm" />
+                <span className={`${ui.settingBody} bidi-auto`}>
+                  {label}
+                  <span className={`${ui.settingDesc} handle`}>@{row.username}</span>
+                </span>
                 <button
                   type="button"
-                  className={styles.button}
+                  className={`${ui.btn} ${ui.btnSm} ${ui.btnSecondary}`}
                   onClick={() => setPendingUnblock(row.blockedId)}
                 >
                   {t("block.unblock")}

@@ -4,21 +4,27 @@ import { getTranslations } from "next-intl/server";
 import { GlobalSearchView } from "@/features/search/components/GlobalSearchView";
 import { SearchProvider } from "@/features/search/context/SearchProvider";
 import { getSessionContext } from "@/platform/session";
+import { SinglePane } from "@/shell/components/SinglePane";
 
-export default async function SearchPage() {
+type PageProps = {
+  searchParams: Promise<{ q?: string | string[] }>;
+};
+
+export default async function SearchPage({ searchParams }: PageProps) {
   const session = await getSessionContext();
   if (!session) {
     redirect("/login");
   }
 
+  const query = await searchParams;
+  const initialQuery = typeof query.q === "string" ? query.q : undefined;
   const t = await getTranslations("search");
 
   return (
-    <div className="route-frame">
-      <h1 className="route-frame-title">{t("pageTitle")}</h1>
+    <SinglePane title={t("pageTitle")}>
       <SearchProvider>
-        <GlobalSearchView />
+        <GlobalSearchView initialQuery={initialQuery} />
       </SearchProvider>
-    </div>
+    </SinglePane>
   );
 }

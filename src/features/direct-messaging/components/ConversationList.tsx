@@ -1,19 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import { Ban, BellOff, Pin } from "lucide-react";
 import { memo, useMemo } from "react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
+import { Avatar } from "@/shell/components/Avatar";
 import { getContributions } from "@/shell/slots";
+import ui from "@/shell/styles/ui.module.css";
 
 import { useMessaging } from "../context/MessagingProvider";
+import { useQueryHref } from "../hooks/useQueryHref";
+import { calendarDaysAgo } from "../lib/calendar";
 import type { ConversationSummary } from "../types";
 import styles from "../direct-messaging.module.css";
 
 type Props = {
   activeConversationId?: string;
 };
+
+type Formatter = ReturnType<typeof useFormatter>;
+type Translator = ReturnType<typeof useTranslations>;
 
 function displayTitle(item: ConversationSummary): string {
   if (item.type === "group") {
@@ -22,14 +30,30 @@ function displayTitle(item: ConversationSummary): string {
   return item.other_display_name ?? item.other_username ?? item.id;
 }
 
-function previewText(
-  item: ConversationSummary,
-  t: ReturnType<typeof useTranslations>,
-): string {
+function previewText(item: ConversationSummary, t: Translator): string {
   if (item.last_message_deletion_scope === "everyone") {
     return t("messageDeleted");
   }
   return item.last_message_preview ?? t("noPreview");
+}
+
+function listTime(iso: string, now: Date, format: Formatter, t: Translator): string {
+  const date = new Date(iso);
+  const daysAgo = calendarDaysAgo(date, now);
+  if (daysAgo <= 0) {
+    return format.dateTime(date, { hour: "numeric", minute: "numeric" });
+  }
+  if (daysAgo === 1) {
+    return t("yesterday");
+  }
+  if (daysAgo < 7) {
+    return format.dateTime(date, { weekday: "long" });
+  }
+  return format.dateTime(date, { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function isMuted(item: ConversationSummary, now: Date): boolean {
+  return item.muted_until !== null && new Date(item.muted_until).getTime() > now.getTime();
 }
 
 function ConversationListInner({ activeConversationId }: Props) {
@@ -37,7 +61,9 @@ function ConversationListInner({ activeConversationId }: Props) {
   const tOrg = useTranslations("conversation-organization");
   const tFeature = useTranslations();
   const format = useFormatter();
+  const now = useNow({ updateInterval: 60_000 });
   const searchParams = useSearchParams();
+  const queryHref = useQueryHref();
   const folderId = searchParams.get("folder");
   const { state } = useMessaging();
   const menus = useMemo(() => getContributions("listItemMenu"), []);
@@ -45,29 +71,28 @@ function ConversationListInner({ activeConversationId }: Props) {
   if (state.conversations.length === 0) {
     if (folderId) {
       return (
-        <div className={styles.empty}>
+        <div className={styles.listEmpty}>
           <p>{tOrg("folderEmptyHint")}</p>
         </div>
       );
     }
     return (
-      <div className={styles.empty}>
+      <div className={styles.listEmpty}>
         <p>{t("emptyList")}</p>
-        <Link href="/app/chats/new">{t("startChat")}</Link>
+        <Link href="/app/chats/new" className={`${ui.btn} ${ui.btnPrimary}`}>
+          {t("startChat")}
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className={styles.listScroll}>
+    <ul className={styles.chatList}>
       {state.conversations.map((item) => {
         const title = displayTitle(item);
-        const time = item.last_message_at
-          ? format.dateTime(new Date(item.last_message_at), {
-              hour: "numeric",
-              minute: "numeric",
-            })
-          : null;
+        const unread = item.unread_count > 0;
+        const muted = isMuted(item, now);
+        const deleted = item.last_message_deletion_scope === "everyone";
         const menuCtx = {
           conversationId: item.id,
           conversationType: item.type,
@@ -77,58 +102,84 @@ function ConversationListInner({ activeConversationId }: Props) {
             archived_at: item.archived_at,
           },
         };
+        const availableMenus = menus.filter((menu) => menu.isAvailable(menuCtx));
+
         return (
-          <Link
-            key={item.id}
-            href={`/app/chats/${item.id}`}
-            className={styles.listItem}
-            data-active={item.id === activeConversationId ? "true" : "false"}
-          >
-            <div className={styles.avatar} aria-hidden>
-              {(title[0] ?? "?").toUpperCase()}
-            </div>
-            <div className={styles.listBody}>
-              <div className={styles.listTitleRow}>
-                <strong>{title}</strong>
-                {time ? <span className={styles.listPreview}>{time}</span> : null}
-              </div>
-              <p className={styles.listPreview}>{previewText(item, t)}</p>
-            </div>
-            {item.unread_count > 0 ? (
-              <span
-                className={styles.badge}
-                aria-label={t("unreadCount", { count: item.unread_count })}
-              >
-                {item.unread_count}
+          <li key={item.id} className={styles.chatItem}>
+            <Link
+              href={queryHref(`/app/chats/${item.id}`, { info: null, message: null })}
+              className={styles.chatRow}
+              aria-current={item.id === activeConversationId ? "true" : undefined}
+            >
+              <Avatar
+                name={title}
+                seed={item.other_user_id ?? item.id}
+                src={item.other_avatar_url}
+              />
+              <span className={styles.chatRowBody}>
+                <span className={styles.chatRowTop}>
+                  <span className={styles.chatRowName}>{title}</span>
+                  {item.last_message_at ? (
+                    <time
+                      className={styles.chatRowTime}
+                      dateTime={item.last_message_at}
+                      data-unread={unread ? "true" : "false"}
+                    >
+                      {listTime(item.last_message_at, now, format, t)}
+                    </time>
+                  ) : null}
+                </span>
+                <span className={styles.chatRowBottom}>
+                  <span
+                    className={styles.chatRowPreview}
+                    data-deleted={deleted ? "true" : "false"}
+                  >
+                    {deleted ? <Ban size={16} aria-hidden /> : null}
+                    <span>{previewText(item, t)}</span>
+                  </span>
+                  <span className={styles.chatRowMeta}>
+                    {item.pinned_at ? (
+                      <Pin size={16} aria-label={t("pinned")} role="img" />
+                    ) : null}
+                    {muted ? (
+                      <BellOff size={16} aria-label={t("muted")} role="img" />
+                    ) : null}
+                    {unread ? (
+                      <span
+                        className={`${ui.badge} ${muted ? ui.badgeMuted : ""}`}
+                        aria-label={t("unreadCount", { count: item.unread_count })}
+                      >
+                        {item.unread_count}
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
               </span>
-            ) : null}
-            <div className={styles.toolsRow}>
-              {menus
-                .filter((menu) => menu.isAvailable(menuCtx))
-                .map((menu) => {
+            </Link>
+            {availableMenus.length > 0 ? (
+              <div className={styles.rowMenu}>
+                {availableMenus.map((menu) => {
                   const Icon = menu.icon;
                   const label = tFeature(menu.labelKey!);
                   return (
                     <button
                       key={menu.id}
                       type="button"
-                      className={styles.listMenuButton}
-                      aria-label={label}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        void menu.run(menuCtx);
-                      }}
+                      className={`${ui.iconBtn} ${ui.iconBtnSm}`}
+                      aria-label={`${label}: ${title}`}
+                      title={label}
+                      onClick={() => void menu.run(menuCtx)}
                     >
                       <Icon size={18} aria-hidden />
-                      <span className="visually-hidden">{label}</span>
                     </button>
                   );
                 })}
-            </div>
-          </Link>
+              </div>
+            ) : null}
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }
 

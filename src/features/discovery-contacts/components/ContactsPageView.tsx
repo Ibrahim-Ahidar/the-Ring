@@ -25,8 +25,8 @@ function ContactsPageViewInner({
     >
       <div className={styles.root}>
         <UsernameSearch />
-        <RecentSearches />
         <FavoritesList />
+        <RecentSearches />
       </div>
     </DiscoveryProvider>
   );

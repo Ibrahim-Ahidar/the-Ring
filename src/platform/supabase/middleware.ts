@@ -1,11 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { isHttpUrl } from "@/platform/env/validate";
+
 function readMiddlewareEnv() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl?.trim() || !supabaseAnonKey?.trim()) {
+  if (!isHttpUrl(supabaseUrl) || !supabaseAnonKey?.trim()) {
     return null;
   }
 

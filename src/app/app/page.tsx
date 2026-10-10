@@ -1,5 +1,5 @@
-import { RouteFrame } from "@/shell/components/RouteFrame";
+import { redirect } from "next/navigation";
 
 export default function AppHomePage() {
-  return <RouteFrame titleKey="home" />;
+  redirect("/app/chats");
 }

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Ring · Design canvas</title>
+  <link rel="stylesheet" href="css/ring.css">
+  <link rel="stylesheet" href="css/board.css">
+  <script src="assets/icons.js"></script>
+</head>
+<body class="board">
+  <header class="board__bar">
+    <h1 class="board__title"><svg class="icon"><use href="#logo"/></svg>The Ring <small>· Design canvas</small></h1>
+    <div class="seg" role="group" aria-label="Theme" data-param="theme">
+      <button aria-pressed="false" data-value="light">Light</button>
+      <button aria-pressed="true" data-value="dark">Dark</button>
+    </div>
+    <div class="seg" role="group" aria-label="Direction" data-param="dir">
+      <button aria-pressed="true" data-value="ltr">LTR</button>
+      <button aria-pressed="false" data-value="rtl">RTL (ar)</button>
+    </div>
+    <div class="seg" role="group" aria-label="Accent" data-param="accent">
+      <button aria-pressed="true" data-value="green">Emerald</button>
+      <button aria-pressed="false" data-value="blue">Blue</button>
+      <button aria-pressed="false" data-value="violet">Violet</button>
+    </div>
+    <div class="seg" role="group" aria-label="Zoom" data-param="zoom">
+      <button aria-pressed="false" data-value="0.3">30%</button>
+      <button aria-pressed="true" data-value="0.42">42%</button>
+      <button aria-pressed="false" data-value="0.6">60%</button>
+    </div>
+    <a class="board__link" href="styleguide.html">Style guide →</a>
+  </header>
+
+  <section class="board__section">
+    <h2 class="board__section-title">Desktop <span>1440 × 900 · rail + list + conversation + info drawer</span></h2>
+    <div class="frames" data-device="desktop"></div>
+  </section>
+
+  <section class="board__section">
+    <h2 class="board__section-title">Laptop / tablet <span>1024 × 768 · drawer overlays the conversation</span></h2>
+    <div class="frames" data-device="laptop"></div>
+  </section>
+
+  <section class="board__section">
+    <h2 class="board__section-title">Mobile <span>390 × 844 · single pane + bottom tab bar</span></h2>
+    <div class="frames" data-device="mobile"></div>
+  </section>
+
+  <script>
+    const devices = {
+      desktop: { w: 1440, h: 900, screens: ["chats", "chat", "chat-info", "group", "search", "contacts", "requests", "notifications", "settings", "login", "signup"] },
+      laptop: { w: 1024, h: 768, screens: ["chat", "chat-info", "group", "settings"] },
+      mobile: { w: 390, h: 844, screens: ["chats", "chat", "chat-info", "group", "search", "requests", "notifications", "settings", "login"] },
+    };
+    const names = {
+      chats: "Chats · empty state", chat: "Conversation", "chat-info": "Contact info", group: "Group + group info",
+      search: "Search · public profile", contacts: "Contacts", requests: "Message requests",
+      notifications: "Notifications", settings: "Settings · appearance", login: "Log in", signup: "Sign up",
+    };
+    const state = { theme: "dark", dir: "ltr", accent: "green", zoom: "0.42" };
+
+    function render() {
+      const query = `?theme=${state.theme}&dir=${state.dir}&accent=${state.accent}`;
+      for (const [device, spec] of Object.entries(devices)) {
+        const host = document.querySelector(`[data-device="${device}"]`);
+        host.replaceChildren(...spec.screens.map((screen) => {
+          const frame = document.createElement("figure");
+          frame.className = `frame frame--${device}`;
+          frame.style.setProperty("--w", `${spec.w}px`);
+          frame.style.setProperty("--h", `${spec.h}px`);
+          frame.style.setProperty("--s", device === "mobile" ? Math.min(1, state.zoom * 1.6) : state.zoom);
+          const src = `screens/${screen}.html${query}`;
+          frame.innerHTML = `
+            <figcaption class="frame__label"><a href="${src}" target="_blank" rel="noopener">${names[screen]}</a><span>${spec.w}×${spec.h}</span></figcaption>
+            <div class="frame__viewport"><iframe src="${src}" title="${names[screen]} (${device})" loading="lazy"></iframe></div>`;
+          return frame;
+        }));
+      }
+    }
+
+    for (const group of document.querySelectorAll("[data-param]")) {
+      group.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        state[group.dataset.param] = button.dataset.value;
+        for (const b of group.querySelectorAll("button")) b.setAttribute("aria-pressed", String(b === button));
+        render();
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>

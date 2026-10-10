@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Search · The Ring</title>
+  <link rel="stylesheet" href="../css/ring.css">
+  <script src="../assets/preview.js"></script>
+  <script src="../assets/icons.js"></script>
+</head>
+<body>
+<div class="app" data-view="list">
+
+  <aside class="sidebar" aria-label="Search">
+    <header class="sidebar__header">
+      <a class="icon-btn" href="chats.html" aria-label="Back to chats"><svg class="icon icon--flip"><use href="#i-back"/></svg></a>
+      <h1 class="sidebar__title">Search</h1>
+    </header>
+    <div class="sidebar__tools">
+      <label class="search">
+        <svg class="icon icon--sm"><use href="#i-search"/></svg>
+        <input type="search" value="lina" aria-label="Search people and messages">
+        <button class="icon-btn" aria-label="Clear search"><svg class="icon icon--xs"><use href="#i-close"/></svg></button>
+      </label>
+      <div class="chips" role="tablist" aria-label="Result type">
+        <button class="chip" role="tab" aria-pressed="true" aria-selected="true">All</button>
+        <button class="chip" role="tab" aria-pressed="false" aria-selected="false">People</button>
+        <button class="chip" role="tab" aria-pressed="false" aria-selected="false">Messages</button>
+        <button class="chip" role="tab" aria-pressed="false" aria-selected="false">Groups</button>
+        <button class="chip" role="tab" aria-pressed="false" aria-selected="false">Media</button>
+      </div>
+    </div>
+    <div class="sidebar__body scroll">
+      <h2 class="section-label">People · exact username</h2>
+      <a class="chat-row" href="search.html" aria-current="true">
+        <span class="avatar avatar--c1">LH</span>
+        <span class="chat-row__body">
+          <span class="chat-row__top"><span class="chat-row__name"><mark class="mark">lina</mark>.h</span></span>
+          <span class="chat-row__bottom"><span class="chat-row__preview"><span>Lina Haddad · Product designer</span></span></span>
+        </span>
+      </a>
+
+      <h2 class="section-label">Chats</h2>
+      <a class="chat-row" href="chat.html">
+        <span class="avatar avatar--c1">LH</span>
+        <span class="chat-row__body">
+          <span class="chat-row__top"><span class="chat-row__name"><mark class="mark">Lina</mark> Haddad</span><time class="chat-row__time">12:45</time></span>
+          <span class="chat-row__bottom"><span class="chat-row__preview"><span>Sounds good, see you at 6 ✨</span></span></span>
+        </span>
+      </a>
+
+      <h2 class="section-label">Messages</h2>
+      <a class="chat-row" href="group.html">
+        <span class="avatar avatar--c3">DT</span>
+        <span class="chat-row__body">
+          <span class="chat-row__top"><span class="chat-row__name">Design Team</span><time class="chat-row__time">Monday</time></span>
+          <span class="chat-row__bottom"><span class="chat-row__preview"><span>Nadia: Ask <mark class="mark">Lina</mark> for the final icon set</span></span></span>
+        </span>
+      </a>
+      <a class="chat-row" href="chat.html">
+        <span class="avatar avatar--c6">SM</span>
+        <span class="chat-row__body">
+          <span class="chat-row__top"><span class="chat-row__name">Sofia Martin</span><time class="chat-row__time">02/10/2026</time></span>
+          <span class="chat-row__bottom"><span class="chat-row__preview"><span>You: <mark class="mark">Lina</mark>'s mockups are in the drive</span></span></span>
+        </span>
+      </a>
+      <a class="chat-row" href="group.html">
+        <span class="avatar avatar--c4">PL</span>
+        <span class="chat-row__body">
+          <span class="chat-row__top"><span class="chat-row__name">Product Launch</span><time class="chat-row__time">28/09/2026</time></span>
+          <span class="chat-row__bottom"><span class="chat-row__preview"><span>Karim: thanks <mark class="mark">Lina</mark> 🙏</span></span></span>
+        </span>
+      </a>
+      <p class="notice">People only appear when you type their exact username.</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="settings-page" aria-label="Public profile">
+      <div class="settings-page__inner">
+        <div class="settings-card">
+          <div class="profile-hero">
+            <span class="avatar avatar--xl avatar--c1">LH</span>
+            <h2 class="profile-hero__name">Lina Haddad</h2>
+            <p class="profile-hero__handle">@lina.h</p>
+            <p class="muted">Product designer. Coffee first, pixels second ☕</p>
+            <div class="profile-actions">
+              <a class="btn btn--primary" href="chat.html"><svg class="icon icon--sm"><use href="#i-message"/></svg>Message</a>
+              <button class="btn btn--secondary"><svg class="icon icon--sm"><use href="#i-star"/></svg>Add to favourites</button>
+            </div>
+          </div>
+          <a class="setting" href="#groups">
+            <svg class="icon"><use href="#i-groups"/></svg>
+            <span class="setting__body"><span>Groups in common</span><span class="setting__desc">Design Team, Product Launch</span></span>
+            <svg class="icon icon--sm icon--flip muted"><use href="#i-chevron"/></svg>
+          </a>
+          <div class="setting">
+            <svg class="icon"><use href="#i-clock"/></svg>
+            <span class="setting__body"><span>Joined</span><span class="setting__desc">March 2026</span></span>
+          </div>
+          <button class="setting list-row--danger">
+            <svg class="icon"><use href="#i-ban"/></svg>
+            <span class="setting__body">Block @lina.h</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</div>
+</body>
+</html>

@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { SharedMediaBrowser } from "@/features/media/components/SharedMediaBrowser";
 import { listShared } from "@/features/media/service";
 import { getSessionContext } from "@/platform/session";
-import { RouteFrame } from "@/shell/components/RouteFrame";
+import { SinglePane } from "@/shell/components/SinglePane";
 
 type PageProps = {
   params: Promise<{ conversationId: string }>;
@@ -29,10 +30,11 @@ export default async function MediaPage({ params, searchParams }: PageProps) {
     notFound();
   }
 
+  const t = await getTranslations("media");
+
   return (
-    <>
-      <RouteFrame titleKey="media" meta={conversationId} />
+    <SinglePane title={t("sharedMedia")} backHref={`/app/chats/${conversationId}?info=1`}>
       <SharedMediaBrowser conversationId={conversationId} initialTab={tab} />
-    </>
+    </SinglePane>
   );
 }

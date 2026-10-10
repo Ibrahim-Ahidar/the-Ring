@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 
 import { ThemeOptionList } from "@/features/locale-appearance/components/ThemeOptionList";
 import { AppearanceProvider } from "@/features/locale-appearance/context/AppearanceContext";
-import styles from "@/features/locale-appearance/components/locale-appearance.module.css";
 import type { Locale, Theme } from "@/shell/locale";
+import ui from "@/shell/styles/ui.module.css";
 
 type SettingsAppearanceClientProps = {
   initialLocale: Locale;
@@ -21,10 +21,14 @@ function SettingsAppearanceClientInner({
 
   return (
     <AppearanceProvider initialLocale={initialLocale} initialTheme={initialTheme}>
-      <div className={styles.settingsPage}>
-        <p className={styles.settingsHint}>{t("settingsAppearanceHint")}</p>
-        <ThemeOptionList />
-      </div>
+      <section className={ui.settingsCard}>
+        <div className={ui.settingsCardHead}>
+          <p className={ui.settingsCardDesc}>{t("settingsAppearanceHint")}</p>
+        </div>
+        <div className={ui.settingsCardBody}>
+          <ThemeOptionList />
+        </div>
+      </section>
     </AppearanceProvider>
   );
 }

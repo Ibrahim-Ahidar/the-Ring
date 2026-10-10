@@ -202,7 +202,7 @@ describe("deleteForEveryone", () => {
 
   it("allows sender within 48 hours", async () => {
     const alice = await createUser(db, { username: "ma_del_alice" });
-    const bob = await createUser(db, { username: "ma_del_bob" });
+    await createUser(db, { username: "ma_del_bob" });
     const aliceRpc = createRpcClient(db, alice.id);
     const opened = await openDirect(aliceRpc, { username: "ma_del_bob" });
     if (!opened.ok) throw new Error(opened.error.code);
@@ -226,7 +226,7 @@ describe("deleteForEveryone", () => {
 describe("forwardMessage", () => {
   it("creates a forwarded copy without source conversation metadata", async () => {
     const alice = await createUser(db, { username: "ma_fwd_alice" });
-    const bob = await createUser(db, { username: "ma_fwd_bob" });
+    await createUser(db, { username: "ma_fwd_bob" });
     const carol = await createUser(db, { username: "ma_fwd_carol" });
     const aliceRpc = createRpcClient(db, alice.id);
     const carolRpc = createRpcClient(db, carol.id);
@@ -303,7 +303,7 @@ describe("forwardMessage", () => {
 describe("pinMessage", () => {
   it("allows direct members and rejects group members without role", async () => {
     const alice = await createUser(db, { username: "ma_pin_alice" });
-    const bob = await createUser(db, { username: "ma_pin_bob" });
+    await createUser(db, { username: "ma_pin_bob" });
     const aliceRpc = createRpcClient(db, alice.id);
     const opened = await openDirect(aliceRpc, { username: "ma_pin_bob" });
     if (!opened.ok) throw new Error(opened.error.code);
@@ -339,8 +339,8 @@ describe("pinMessage", () => {
 describe("reply via sendText", () => {
   it("rejects reply targets from another conversation", async () => {
     const alice = await createUser(db, { username: "ma_rep_alice" });
-    const bob = await createUser(db, { username: "ma_rep_bob" });
-    const carol = await createUser(db, { username: "ma_rep_carol" });
+    await createUser(db, { username: "ma_rep_bob" });
+    await createUser(db, { username: "ma_rep_carol" });
     const aliceRpc = createRpcClient(db, alice.id);
 
     const ab = await openDirect(aliceRpc, { username: "ma_rep_bob" });

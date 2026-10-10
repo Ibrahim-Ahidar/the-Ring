@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { NotificationsSettingsForm } from "@/features/notifications/components/NotificationsSettingsForm";
 import { getPreferences } from "@/features/notifications/service";
 import { getSessionContext } from "@/platform/session";
+import { SettingsSection } from "@/shell/components/SettingsSection";
 
 export default async function SettingsNotificationsPage() {
   const session = await getSessionContext();
@@ -22,9 +23,8 @@ export default async function SettingsNotificationsPage() {
       };
 
   return (
-    <div className="route-frame">
-      <h1 className="route-frame-title">{t("settingsTitle")}</h1>
+    <SettingsSection title={t("settingsTitle")}>
       <NotificationsSettingsForm initial={initial} />
-    </div>
+    </SettingsSection>
   );
 }

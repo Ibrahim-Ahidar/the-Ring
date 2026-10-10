@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { useAppearance } from "@/features/locale-appearance/context/AppearanceContext";
 import styles from "@/features/locale-appearance/components/locale-appearance.module.css";
+import ui from "@/shell/styles/ui.module.css";
 import {
   GLOBAL_SHORTCUTS,
   formatShortcutLabel,
@@ -72,15 +73,21 @@ function ShortcutHelpDialogInner() {
           {GLOBAL_SHORTCUTS.map((shortcut) => (
             <li key={shortcut.id} className={styles.shortcutRow}>
               <span>{t(SHORTCUT_LABEL_KEYS[shortcut.id] ?? shortcut.id)}</span>
-              <span className={styles.shortcutKeys}>
+              <kbd className={ui.kbd} dir="ltr">
                 {formatShortcutLabel(shortcut, isMac)}
-              </span>
+              </kbd>
             </li>
           ))}
         </ul>
-        <button type="button" className={styles.closeButton} onClick={close}>
-          {t("shortcutHelpClose")}
-        </button>
+        <div className={styles.dialogFoot}>
+          <button
+            type="button"
+            className={`${ui.btn} ${ui.btnPrimary}`}
+            onClick={close}
+          >
+            {t("shortcutHelpClose")}
+          </button>
+        </div>
       </div>
     </>
   );

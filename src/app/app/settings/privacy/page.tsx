@@ -7,6 +7,7 @@ import {
   listMyReports,
 } from "@/features/safety/service";
 import { getSessionContext } from "@/platform/session";
+import { SettingsBack, SettingsSection } from "@/shell/components/SettingsSection";
 
 export default async function SettingsPrivacyPage() {
   const session = await getSessionContext();
@@ -25,10 +26,13 @@ export default async function SettingsPrivacyPage() {
   }
 
   return (
-    <PrivacySettingsShell
-      initialPrivacy={privacyResult.value}
-      initialBlocks={blocksResult.ok ? blocksResult.value : []}
-      initialReports={reportsResult.ok ? reportsResult.value : []}
-    />
+    <SettingsSection>
+      <PrivacySettingsShell
+        initialPrivacy={privacyResult.value}
+        initialBlocks={blocksResult.ok ? blocksResult.value : []}
+        initialReports={reportsResult.ok ? reportsResult.value : []}
+        leading={<SettingsBack />}
+      />
+    </SettingsSection>
   );
 }

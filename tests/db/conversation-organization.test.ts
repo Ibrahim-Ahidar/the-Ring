@@ -151,7 +151,7 @@ describe("conversation organization", () => {
 
   it("returns organization.not_found for non-members", async () => {
     const a = await createTestUser("org_nm_a");
-    const b = await createTestUser("org_nm_b");
+    await createTestUser("org_nm_b");
     const c = await createTestUser("org_nm_c");
     const aRpc = createRpcClient(db, a.id);
     const cRpc = createRpcClient(db, c.id);

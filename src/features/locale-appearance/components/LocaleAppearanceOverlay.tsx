@@ -1,13 +1,22 @@
 "use client";
 
 import { memo } from "react";
+import dynamic from "next/dynamic";
 
 import { isLocale, isTheme } from "@/shell/locale";
 import { AppearanceProvider } from "@/features/locale-appearance/context/AppearanceContext";
-import { CommandPalette } from "@/features/locale-appearance/components/CommandPalette";
 import { GlobalKeyboardShortcuts } from "@/features/locale-appearance/components/GlobalKeyboardShortcuts";
-import { QuickPreferencesBar } from "@/features/locale-appearance/components/QuickPreferencesBar";
 import { ShortcutHelpDialog } from "@/features/locale-appearance/components/ShortcutHelpDialog";
+
+// CommandPalette reads the feature registry, which includes this overlay. Loading
+// it after the registry initializes prevents that registry/component import cycle.
+const CommandPalette = dynamic(
+  () =>
+    import("@/features/locale-appearance/components/CommandPalette").then(
+      (module) => module.CommandPalette,
+    ),
+  { ssr: false },
+);
 
 function readInitialLocale() {
   if (typeof document === "undefined") {
@@ -32,7 +41,6 @@ function LocaleAppearanceOverlayInner() {
       initialTheme={readInitialTheme()}
     >
       <GlobalKeyboardShortcuts />
-      <QuickPreferencesBar />
       <CommandPalette />
       <ShortcutHelpDialog />
     </AppearanceProvider>

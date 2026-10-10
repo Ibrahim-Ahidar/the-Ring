@@ -6,8 +6,8 @@ import { useTranslations } from "next-intl";
 
 import type { TimelineMessage } from "@/platform/timeline";
 
-import { getDownloadUrlAction } from "../actions";
 import { useAttachmentList } from "../hooks/useAttachmentList";
+import { useDownloadUrl } from "../hooks/useDownloadUrl";
 import styles from "../media.module.css";
 import { uploadPhase } from "../upload-status";
 import { UploadProgress } from "./UploadProgress";
@@ -29,9 +29,11 @@ function AudioMessageRendererInner({ message }: Props) {
   const attachments = useAttachmentList(message.id, message.attachments);
   const attachment = attachments[0];
   const phase = uploadPhase(message);
+  const uploading = phase === "pending" || phase === "failed";
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
-  const [src, setSrc] = useState<string | null>(null);
+  const [positionMs, setPositionMs] = useState(0);
+  const src = useDownloadUrl(uploading ? null : attachment?.id);
 
   const waveform = useMemo(() => {
     const raw = attachment?.waveform;
@@ -41,7 +43,7 @@ function AudioMessageRendererInner({ message }: Props) {
     return raw.slice(0, 64).map((value) => Number(value));
   }, [attachment?.waveform]);
 
-  if (phase === "pending" || phase === "failed") {
+  if (uploading) {
     return (
       <UploadProgress
         progress={phase === "failed" ? 0 : 0.35}
@@ -54,15 +56,11 @@ function AudioMessageRendererInner({ message }: Props) {
     return null;
   }
 
-  if (!src) {
-    void getDownloadUrlAction({ attachmentId: attachment.id }).then((result) => {
-      if (result.ok) {
-        setSrc(result.value.url);
-      }
-    });
-  }
-
-  const durationLabel = formatMs(attachment.duration_ms ?? 0);
+  const durationMs = attachment.duration_ms ?? 0;
+  const durationLabel = formatMs(durationMs);
+  const progress = durationMs > 0 ? Math.min(1, positionMs / durationMs) : 0;
+  const playedBars = Math.round(progress * waveform.length);
+  const started = playing || positionMs > 0;
 
   const toggle = async () => {
     const el = audioRef.current;
@@ -79,36 +77,48 @@ function AudioMessageRendererInner({ message }: Props) {
   };
 
   return (
-    <div className={styles.audioRoot}>
-      {waveform.length > 0 ? (
-        <div className={styles.waveform} aria-hidden>
-          {waveform.map((amp, index) => (
-            <span
-              key={index}
-              className={styles.waveBar}
-              style={{ height: `${Math.max(8, amp * 100)}%` }}
-            />
-          ))}
-        </div>
-      ) : null}
-      <div className={styles.toolRow}>
-        <button
-          type="button"
-          className={styles.iconButton}
-          onClick={() => void toggle()}
-          aria-label={playing ? t("pauseAudio") : t("playAudio")}
+    <div className={styles.voice}>
+      <button
+        type="button"
+        className={styles.voicePlay}
+        onClick={() => void toggle()}
+        disabled={!src}
+        aria-label={playing ? t("pauseAudio") : t("playAudio")}
+      >
+        {playing ? <Pause size={24} aria-hidden /> : <Play size={24} aria-hidden />}
+      </button>
+      <div className={styles.voiceTrack}>
+        {waveform.length > 0 ? (
+          <div className={styles.voiceWave} aria-hidden>
+            {waveform.map((amp, index) => (
+              <span
+                key={index}
+                data-played={index < playedBars ? "true" : "false"}
+                style={{ height: `${Math.max(8, amp * 100)}%` }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className={styles.voiceLine} aria-hidden>
+            <span style={{ inlineSize: `${progress * 100}%` }} />
+          </div>
+        )}
+        <span
+          className={styles.voiceTime}
+          aria-label={t("durationLabel", { time: durationLabel })}
         >
-          {playing ? <Pause size={18} /> : <Play size={18} />}
-        </button>
-        <span aria-label={t("durationLabel", { time: durationLabel })}>
-          {durationLabel}
+          {started ? `${formatMs(positionMs)} / ${durationLabel}` : durationLabel}
         </span>
       </div>
       {src ? (
         <audio
           ref={audioRef}
           src={src}
-          onEnded={() => setPlaying(false)}
+          onTimeUpdate={(event) => setPositionMs(event.currentTarget.currentTime * 1000)}
+          onEnded={() => {
+            setPlaying(false);
+            setPositionMs(0);
+          }}
           preload="metadata"
         />
       ) : null}

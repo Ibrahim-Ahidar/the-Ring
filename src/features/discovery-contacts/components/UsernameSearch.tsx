@@ -1,11 +1,12 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { AtSign, Search } from "lucide-react";
 import { memo, useCallback } from "react";
 import { useTranslations } from "next-intl";
 
+import ui from "@/shell/styles/ui.module.css";
+
 import { useDiscovery } from "../context/DiscoveryContext";
-import styles from "../discovery-contacts.module.css";
 import { SearchCardView } from "./SearchCardView";
 
 function UsernameSearchInner() {
@@ -21,49 +22,54 @@ function UsernameSearchInner() {
   );
 
   return (
-    <section className={styles.section} aria-labelledby="discovery-search-heading">
-      <h2 id="discovery-search-heading" className={styles.sectionTitle}>
+    <section aria-labelledby="discovery-search-heading">
+      <h2 id="discovery-search-heading" className={ui.sectionLabel}>
         {t("search.title")}
       </h2>
-      <form className={styles.searchForm} onSubmit={onSubmit}>
-        <div className={styles.searchField}>
-          <label htmlFor="discovery-username-search">{t("search.label")}</label>
+      <form role="search" onSubmit={onSubmit}>
+        <div className={ui.search}>
+          <AtSign size={16} aria-hidden />
+          <label className="sr-only" htmlFor="discovery-username-search">
+            {t("search.label")}
+          </label>
           <input
             id="discovery-username-search"
             type="search"
             name="username"
             autoComplete="off"
-            className={styles.searchInput}
+            spellCheck={false}
             value={state.query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("search.placeholder")}
           />
+          <button
+            type="submit"
+            className={ui.iconBtn}
+            disabled={state.searching}
+            aria-label={t("search.submit")}
+            title={t("search.submit")}
+          >
+            <Search size={16} aria-hidden />
+          </button>
         </div>
-        <button
-          type="submit"
-          className={styles.searchButton}
-          disabled={state.searching}
-          aria-label={t("search.submit")}
-        >
-          <Search size={18} aria-hidden="true" />
-          {t("search.submit")}
-        </button>
       </form>
       {state.searchError ? (
-        <p className={styles.error} role="alert">
+        <p className={ui.errorText} role="alert">
           {state.searchError === "platform.rate_limited"
             ? t("errors.platform.rate_limited")
             : t("errors.generic")}
         </p>
       ) : null}
       {state.searching ? (
-        <p className={styles.hint}>{t("search.loading")}</p>
+        <p className={ui.emptyInline} role="status">
+          {t("search.loading")}
+        </p>
       ) : null}
       {!state.searching && state.query.trim() && state.result === null ? (
-        <p className={styles.noResult}>{t("search.noResult")}</p>
+        <p className={ui.emptyInline}>{t("search.noResult")}</p>
       ) : null}
       {state.result ? (
-        <ul className={styles.list} aria-label={t("search.resultsLabel")}>
+        <ul className={ui.list} aria-label={t("search.resultsLabel")}>
           <SearchCardView
             card={state.result}
             profileHref={(username) => `/app/profile/${username}`}

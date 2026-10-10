@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { SettingsLanguageClient } from "@/features/locale-appearance/components/SettingsLanguageClient";
+import { SettingsSection } from "@/shell/components/SettingsSection";
 import { resolveLocale, resolveTheme } from "@/shell/preferences";
 
 export default async function SettingsLanguagePage() {
@@ -9,9 +10,8 @@ export default async function SettingsLanguagePage() {
   const theme = await resolveTheme();
 
   return (
-    <div className="route-frame">
-      <h1 className="route-frame-title">{t("settingsLanguageTitle")}</h1>
+    <SettingsSection title={t("settingsLanguageTitle")}>
       <SettingsLanguageClient initialLocale={locale} initialTheme={theme} />
-    </div>
+    </SettingsSection>
   );
 }

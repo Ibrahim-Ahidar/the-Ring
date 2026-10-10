@@ -1,8 +1,8 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useId } from "react";
 
-import styles from "./PrivacySettings.module.css";
+import ui from "@/shell/styles/ui.module.css";
 
 type ToggleControlProps = {
   label: string;
@@ -17,6 +17,7 @@ export const ToggleControl = memo(function ToggleControl({
   disabled,
   onChange,
 }: ToggleControlProps) {
+  const labelId = useId();
   const toggle = useCallback(() => {
     if (!disabled) {
       onChange(!checked);
@@ -24,21 +25,19 @@ export const ToggleControl = memo(function ToggleControl({
   }, [checked, disabled, onChange]);
 
   return (
-    <div className={styles.controlRow}>
-      <span className={styles.rowLabel} id={`toggle-label-${label}`}>
+    <div className={ui.setting}>
+      <span className={ui.settingBody} id={labelId}>
         {label}
       </span>
       <button
         type="button"
-        className={styles.toggle}
+        className={ui.switch}
         role="switch"
         aria-checked={checked}
-        aria-labelledby={`toggle-label-${label}`}
+        aria-labelledby={labelId}
         disabled={disabled}
         onClick={toggle}
-      >
-        <span className={styles.toggleThumb} aria-hidden />
-      </button>
+      />
     </div>
   );
 });

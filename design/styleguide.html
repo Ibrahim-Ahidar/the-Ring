@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Ring · Style guide</title>
+  <link rel="stylesheet" href="css/ring.css">
+  <link rel="stylesheet" href="css/board.css">
+  <script src="assets/preview.js"></script>
+  <script src="assets/icons.js"></script>
+</head>
+<body>
+<div class="sg">
+  <nav class="sg__nav" aria-label="Style guide">
+    <a class="brand" href="index.html"><svg class="icon"><use href="#logo"/></svg><span>The Ring</span></a>
+    <a href="#colors">Colors</a>
+    <a href="#type">Typography</a>
+    <a href="#spacing">Spacing &amp; radius</a>
+    <a href="#buttons">Buttons</a>
+    <a href="#inputs">Inputs &amp; controls</a>
+    <a href="#avatars">Avatars &amp; badges</a>
+    <a href="#rows">List rows</a>
+    <a href="#bubbles">Message bubbles</a>
+    <a href="#composer">Composer</a>
+    <a href="#menus">Menus</a>
+    <a href="#palette">Command palette</a>
+    <a href="#icons">Icons</a>
+  </nav>
+
+  <main class="sg__main">
+    <section class="sg__section">
+      <h1 class="sg__h">The Ring — design system</h1>
+      <p class="sg__p">Layout, density and color relationships follow the WhatsApp desktop client. Token names match <code>src/shell/styles/tokens.css</code>, so values move into the app without renaming. Every color is a <code>light-dark()</code> pair; <code>data-theme</code> on <code>&lt;html&gt;</code> picks the scheme and <code>data-accent</code> swaps the brand color.</p>
+    </section>
+
+    <section class="sg__section" id="colors">
+      <h2 class="sg__h">Colors</h2>
+      <div class="sg__grid">
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-bg)"></div><div class="sg__swatch-name">--color-bg</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-panel)"></div><div class="sg__swatch-name">--color-panel</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-elevated)"></div><div class="sg__swatch-name">--color-elevated</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-input)"></div><div class="sg__swatch-name">--color-input</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-text)"></div><div class="sg__swatch-name">--color-text</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-text-muted)"></div><div class="sg__swatch-name">--color-text-muted</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-icon)"></div><div class="sg__swatch-name">--color-icon</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-accent)"></div><div class="sg__swatch-name">--color-accent</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-accent-soft)"></div><div class="sg__swatch-name">--color-accent-soft</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-chat-bg)"></div><div class="sg__swatch-name">--color-chat-bg</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-bubble-in)"></div><div class="sg__swatch-name">--color-bubble-in</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-bubble-out)"></div><div class="sg__swatch-name">--color-bubble-out</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-read)"></div><div class="sg__swatch-name">--color-read</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-online)"></div><div class="sg__swatch-name">--color-online</div></div>
+        <div class="sg__swatch"><div class="sg__swatch-color" style="background:var(--color-danger)"></div><div class="sg__swatch-name">--color-danger</div></div>
+      </div>
+    </section>
+
+    <section class="sg__section" id="type">
+      <h2 class="sg__h">Typography</h2>
+      <p class="sg__p">Segoe UI / Inter for Latin scripts, Noto Naskh Arabic when <code>lang="ar"</code> (slightly larger message size for legibility).</p>
+      <div class="sg__card">
+        <div class="sg__type"><code>28 / 700 · auth title</code><span style="font-size:28px;font-weight:600">Welcome back</span></div>
+        <div class="sg__type"><code>22 / 600 · --text-2xl</code><span style="font-size:var(--text-2xl);font-weight:600">Chats</span></div>
+        <div class="sg__type"><code>19 · --text-xl</code><span style="font-size:var(--text-xl)">Amina K.</span></div>
+        <div class="sg__type"><code>16 · --text-lg</code><span style="font-size:var(--text-lg)">Lina Haddad</span></div>
+        <div class="sg__type"><code>14.5 · --text-md</code><span>Spacing looks perfect on mobile too. Ship it!</span></div>
+        <div class="sg__type"><code>13 · --text-sm</code><span style="font-size:var(--text-sm)" class="muted">last seen today at 12:46</span></div>
+        <div class="sg__type"><code>11 · --text-xs</code><span style="font-size:var(--text-xs)" class="muted">12:45</span></div>
+        <div class="sg__type"><code>Arabic · 15.5</code><span lang="ar" dir="rtl" style="font-family:'Noto Naskh Arabic',serif;font-size:15.5px">مرحبا! هل رأيت التصميم الجديد؟</span></div>
+      </div>
+    </section>
+
+    <section class="sg__section" id="spacing">
+      <h2 class="sg__h">Spacing &amp; radius</h2>
+      <div class="sg__card">
+        <div class="sg__space"><code class="sg__code">--space-4</code><span style="width:4px"></span></div>
+        <div class="sg__space"><code class="sg__code">--space-8</code><span style="width:8px"></span></div>
+        <div class="sg__space"><code class="sg__code">--space-12</code><span style="width:12px"></span></div>
+        <div class="sg__space"><code class="sg__code">--space-16</code><span style="width:16px"></span></div>
+        <div class="sg__space"><code class="sg__code">--space-24</code><span style="width:24px"></span></div>
+      </div>
+      <div class="sg__row">
+        <div class="sg__card" style="border-radius:var(--radius-control)"><code class="sg__code">--radius-control 8</code></div>
+        <div class="sg__card" style="border-radius:var(--radius-bubble)"><code class="sg__code">--radius-bubble 8</code></div>
+        <div class="sg__card" style="border-radius:var(--radius-card)"><code class="sg__code">--radius-card 12</code></div>
+        <div class="sg__card" style="border-radius:var(--radius-pill)"><code class="sg__code">--radius-pill</code></div>
+      </div>
+    </section>
+
+    <section class="sg__section" id="buttons">
+      <h2 class="sg__h">Buttons</h2>
+      <div class="sg__card sg__row">
+        <button class="btn btn--primary">Primary</button>
+        <button class="btn btn--secondary">Secondary</button>
+        <button class="btn btn--ghost">Ghost</button>
+        <button class="btn btn--danger">Danger</button>
+        <button class="btn btn--primary btn--sm">Small</button>
+        <button class="icon-btn" aria-label="Icon button"><svg class="icon"><use href="#i-more"/></svg></button>
+        <button class="icon-btn" aria-expanded="true" aria-label="Icon button active"><svg class="icon"><use href="#i-search"/></svg></button>
+        <button class="icon-btn icon-btn--accent" aria-label="Accent icon button"><svg class="icon icon--sm"><use href="#i-new-chat"/></svg></button>
+        <a class="quick-action" href="#"><span class="quick-action__icon"><svg class="icon"><use href="#i-groups"/></svg></span>Quick action</a>
+      </div>
+    </section>
+
+    <section class="sg__section" id="inputs">
+      <h2 class="sg__h">Inputs &amp; controls</h2>
+      <div class="sg__card sg__grid">
+        <label class="search"><svg class="icon icon--sm"><use href="#i-search"/></svg><input type="search" placeholder="Search or start a new chat" aria-label="Search"></label>
+        <label class="field"><span class="field__label">Email</span><input class="input" placeholder="you@example.com"></label>
+        <div class="field"><span class="field__label">Username</span><div class="input-prefix"><span>@</span><input value="amina" aria-label="Username"></div></div>
+        <label class="field"><span class="field__label">Invalid</span><input class="input" value="amina@" aria-invalid="true"><span class="field__error">Enter a valid email</span></label>
+      </div>
+      <div class="sg__card sg__row">
+        <div class="chips">
+          <button class="chip" aria-pressed="true">All</button>
+          <button class="chip" aria-pressed="false">Unread <span class="chip__count">4</span></button>
+          <button class="chip" aria-pressed="false">Groups</button>
+        </div>
+        <span class="switch" role="switch" aria-checked="true" aria-label="On"></span>
+        <span class="switch" role="switch" aria-checked="false" aria-label="Off"></span>
+        <span class="radio" aria-checked="true"></span>
+        <span class="radio"></span>
+        <div class="swatches"><span class="swatch swatch--green" aria-checked="true"></span><span class="swatch swatch--blue"></span><span class="swatch swatch--violet"></span></div>
+      </div>
+    </section>
+
+    <section class="sg__section" id="avatars">
+      <h2 class="sg__h">Avatars &amp; badges</h2>
+      <div class="sg__card sg__row">
+        <span class="avatar avatar--xs avatar--c1">LH</span>
+        <span class="avatar avatar--sm avatar--c2">KS</span>
+        <span class="avatar avatar--md avatar--c3">AK</span>
+        <span class="avatar avatar--c4">RF<span class="avatar__presence"></span></span>
+        <span class="avatar avatar--lg avatar--c5">NR</span>
+        <span class="avatar avatar--c6">SM</span>
+        <span class="avatar avatar--icon"><svg class="icon"><use href="#i-contacts"/></svg></span>
+        <span class="avatar-stack"><span class="avatar avatar--sm avatar--c1">LH</span><span class="avatar avatar--sm avatar--c2">KS</span><span class="avatar avatar--sm avatar--c5">NR</span></span>
+        <span class="badge">3</span>
+        <span class="badge">99+</span>
+        <span class="badge badge--muted">12</span>
+        <span class="dot"></span>
+        <span class="tag">Admin</span>
+        <span class="tag tag--neutral">Possible spam</span>
+      </div>
+    </section>
+
+    <section class="sg__section" id="rows">
+      <h2 class="sg__h">List rows</h2>
+      <div class="sg__card" style="max-width:440px">
+        <a class="archive-row" href="#"><svg class="icon icon--sm"><use href="#i-archive"/></svg>Archived<span class="archive-row__count">2</span></a>
+        <a class="chat-row" href="#" aria-current="true">
+          <span class="avatar avatar--c1">LH<span class="avatar__presence"></span></span>
+          <span class="chat-row__body">
+            <span class="chat-row__top"><span class="chat-row__name">Selected · Lina Haddad</span><time class="chat-row__time">12:45</time></span>
+            <span class="chat-row__bottom"><span class="chat-row__preview"><svg class="icon ticks ticks--read"><use href="#i-check-check"/></svg><span>Sounds good, see you at 6 ✨</span></span><span class="chat-row__meta"><svg class="icon"><use href="#i-pin"/></svg></span></span>
+          </span>
+        </a>
+        <a class="chat-row" href="#">
+          <span class="avatar avatar--c3">DT</span>
+          <span class="chat-row__body">
+            <span class="chat-row__top"><span class="chat-row__name">Unread · Design Team</span><time class="chat-row__time chat-row__time--unread">12:30</time></span>
+            <span class="chat-row__bottom"><span class="chat-row__preview"><span>Karim: I pushed the new tokens</span></span><span class="chat-row__meta"><span class="badge">3</span></span></span>
+          </span>
+        </a>
+        <a class="chat-row" href="#">
+          <span class="avatar avatar--c5">WH</span>
+          <span class="chat-row__body">
+            <span class="chat-row__top"><span class="chat-row__name">Muted · Weekend Hikers</span><time class="chat-row__time">Yesterday</time></span>
+            <span class="chat-row__bottom"><span class="chat-row__preview chat-row__preview--typing"><span>Nadia is typing…</span></span><span class="chat-row__meta"><svg class="icon"><use href="#i-bell-off"/></svg><span class="badge badge--muted">12</span></span></span>
+          </span>
+        </a>
+        <a class="list-row" href="#"><svg class="icon"><use href="#i-palette"/></svg><span class="list-row__body"><span class="list-row__title">Appearance</span><span class="list-row__subtitle">Theme, accent colour</span></span><svg class="icon icon--sm icon--flip muted"><use href="#i-chevron"/></svg></a>
+        <button class="list-row list-row--danger"><svg class="icon"><use href="#i-ban"/></svg><span class="list-row__body"><span class="list-row__title">Block @lina.h</span></span></button>
+      </div>
+    </section>
+
+    <section class="sg__section" id="bubbles">
+      <h2 class="sg__h">Message bubbles</h2>
+      <p class="sg__p">The first message in a run gets <code>.msg--first</code> (tail + top gap). Timestamps sit on the last line of text via a reserved inline spacer.</p>
+      <div class="sg__chat">
+        <div class="messages">
+          <div class="messages__inner">
+            <div class="day-divider">Today</div>
+            <div class="system-note"><svg class="icon"><use href="#i-shield"/></svg>System note (safety, requests)</div>
+            <div class="msg msg--in msg--first"><div class="bubble"><span class="bubble__text">Incoming, first of run</span><span class="bubble__meta">09:12</span></div></div>
+            <div class="msg msg--in"><div class="bubble"><span class="bubble__text">Incoming, continued — long text wraps naturally and the timestamp tucks into the last line without overlapping the words.</span><span class="bubble__meta">09:12</span></div></div>
+            <div class="msg msg--out msg--first"><div class="bubble"><span class="bubble__text">Outgoing · sent</span><span class="bubble__meta">09:13 <svg class="icon"><use href="#i-check"/></svg></span></div></div>
+            <div class="msg msg--out"><div class="bubble"><span class="bubble__text">Outgoing · delivered</span><span class="bubble__meta">09:13 <svg class="icon"><use href="#i-check-check"/></svg></span></div></div>
+            <div class="msg msg--out msg--has-reactions"><div class="bubble"><span class="bubble__text">Outgoing · read, with reactions</span><span class="bubble__meta">09:14 <svg class="icon ticks--read"><use href="#i-check-check"/></svg></span><span class="reactions">❤️😂 <span class="reactions__count">2</span></span></div></div>
+            <div class="msg msg--in msg--first"><span class="avatar avatar--sm avatar--c2 msg__avatar">KS</span><div class="bubble"><span class="bubble__sender bubble__sender--2">Karim Saidi</span><span class="bubble__quote"><span class="bubble__quote-author">Nadia Rami</span><span class="bubble__quote-text">Quoted reply preview, clamped to two lines</span></span><span class="bubble__text">Group message with sender and reply</span><span class="bubble__meta">09:20</span></div></div>
+            <div class="msg msg--in"><span class="msg__avatar"></span><div class="bubble"><span class="bubble__forwarded"><svg class="icon icon--xs"><use href="#i-forward"/></svg>Forwarded</span><span class="bubble__text">Forwarded message</span><span class="bubble__meta">09:21</span></div></div>
+            <div class="msg msg--in"><span class="msg__avatar"></span><div class="bubble"><span class="bubble__deleted"><svg class="icon icon--xs"><use href="#i-ban"/></svg><span class="bubble__text">This message was deleted</span></span><span class="bubble__meta">09:22</span></div></div>
+            <div class="msg msg--out msg--first"><div class="bubble bubble--media"><span class="bubble__media bubble__media--b" role="img" aria-label="Photo"></span><span class="bubble__meta bubble__meta--overlay">09:30 <svg class="icon ticks--read"><use href="#i-check-check"/></svg></span></div></div>
+            <div class="msg msg--in msg--first"><div class="bubble"><span class="typing" aria-label="Typing"><span></span><span></span><span></span></span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sg__section" id="composer">
+      <h2 class="sg__h">Composer</h2>
+      <div class="sg__chat">
+        <div class="composer">
+          <div class="composer__bar">
+            <button class="icon-btn" aria-label="Emoji"><svg class="icon"><use href="#i-smile"/></svg></button>
+            <button class="icon-btn" aria-label="Attach"><svg class="icon"><use href="#i-attach"/></svg></button>
+            <textarea class="composer__input" rows="1" placeholder="Type a message" aria-label="Empty composer"></textarea>
+            <button class="icon-btn" aria-label="Record"><svg class="icon"><use href="#i-mic"/></svg></button>
+          </div>
+        </div>
+        <div class="composer">
+          <div class="composer__bar">
+            <button class="icon-btn" aria-label="Delete recording"><svg class="icon"><use href="#i-trash"/></svg></button>
+            <div class="recording"><span class="recording__dot"></span>0:07 · Recording…</div>
+            <button class="icon-btn icon-btn--accent" aria-label="Send voice message"><svg class="icon icon--sm icon--flip"><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sg__section" id="menus">
+      <h2 class="sg__h">Menus</h2>
+      <div class="sg__row sg__relative">
+        <div class="menu" role="menu" aria-label="Message actions">
+          <button class="menu__item" role="menuitem"><svg class="icon icon--flip"><use href="#i-reply"/></svg>Reply</button>
+          <button class="menu__item" role="menuitem"><svg class="icon"><use href="#i-smile"/></svg>React</button>
+          <button class="menu__item" role="menuitem"><svg class="icon"><use href="#i-copy"/></svg>Copy</button>
+          <button class="menu__item" role="menuitem"><svg class="icon icon--flip"><use href="#i-forward"/></svg>Forward</button>
+          <button class="menu__item" role="menuitem"><svg class="icon"><use href="#i-pin"/></svg>Pin</button>
+          <button class="menu__item" role="menuitem"><svg class="icon"><use href="#i-edit"/></svg>Edit</button>
+          <div class="menu__sep"></div>
+          <button class="menu__item menu__item--danger" role="menuitem"><svg class="icon"><use href="#i-trash"/></svg>Delete</button>
+        </div>
+        <div class="menu" role="menu" aria-label="Chat list menu">
+          <button class="menu__item" role="menuitem"><svg class="icon"><use href="#i-groups"/></svg>New group</button>
+          <button class="menu__item" role="menuitem"><svg class="icon"><use href="#i-star"/></svg>Starred messages</button>
+          <button class="menu__item" role="menuitem"><svg class="icon"><use href="#i-check-check"/></svg>Mark all as read</button>
+          <button class="menu__item" role="menuitem"><svg class="icon"><use href="#i-settings"/></svg>Settings</button>
+          <div class="menu__sep"></div>
+          <button class="menu__item" role="menuitem"><svg class="icon icon--flip"><use href="#i-logout"/></svg>Log out</button>
+        </div>
+        <div class="reaction-picker" role="toolbar" aria-label="Reactions">
+          <button aria-label="Thumbs up">👍</button><button aria-label="Heart" aria-pressed="true">❤️</button><button aria-label="Laugh">😂</button><button aria-label="Wow">😮</button><button aria-label="Sad">😢</button><button aria-label="Pray">🙏</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="sg__section" id="palette">
+      <h2 class="sg__h">Command palette</h2>
+      <p class="sg__p">Opens with <span class="kbd">Ctrl</span> <span class="kbd">K</span>. Focus is trapped inside; Escape closes and returns focus.</p>
+      <div class="sg__palette">
+        <div class="scrim">
+          <div class="dialog" role="dialog" aria-label="Command palette">
+            <label class="dialog__search"><svg class="icon"><use href="#i-search"/></svg><input value="se" aria-label="Type a command"></label>
+            <div class="dialog__list" role="listbox">
+              <div class="dialog__item" role="option" aria-selected="true"><svg class="icon"><use href="#i-search"/></svg>Go to search<span class="kbd">Ctrl Shift F</span></div>
+              <div class="dialog__item" role="option" aria-selected="false"><svg class="icon"><use href="#i-settings"/></svg>Open settings<span class="kbd">Ctrl ,</span></div>
+              <div class="dialog__item" role="option" aria-selected="false"><svg class="icon"><use href="#i-palette"/></svg>Appearance settings</div>
+              <div class="dialog__item" role="option" aria-selected="false"><svg class="icon"><use href="#i-keyboard"/></svg>Show keyboard shortcuts<span class="kbd">?</span></div>
+            </div>
+            <div class="dialog__foot"><span>↑↓ navigate</span><span>↵ open</span><span>esc close</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sg__section" id="icons">
+      <h2 class="sg__h">Icons</h2>
+      <p class="sg__p">Lucide paths (same set as <code>lucide-react</code> in the app), 24px, 2px stroke. Icons with <code>.icon--flip</code> mirror in RTL.</p>
+      <div class="sg__card sg__row" id="icon-list"></div>
+    </section>
+  </main>
+</div>
+<script>
+  const ids = ["chats","groups","search","contacts","bell","bell-off","settings","more","plus","new-chat","attach","smile","mic","send","check","check-check","back","close","pin","archive","image","file","lock","chevron","chevron-down","star","sun","moon","monitor","globe","shield","key","palette","logout","user-plus","reply","forward","copy","trash","edit","inbox","download","play","at","ban","flag","link","mail","eye","filter","clock","message","heart","keyboard"];
+  document.getElementById("icon-list").innerHTML = ids
+    .map((id) => `<span class="icon-btn" title="i-${id}"><svg class="icon"><use href="#i-${id}"/></svg></span>`)
+    .join("");
+</script>
+</body>
+</html>

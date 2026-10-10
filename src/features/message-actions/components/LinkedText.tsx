@@ -2,8 +2,9 @@
 
 import { memo } from "react";
 
+import ui from "@/shell/styles/ui.module.css";
+
 import { splitTextWithLinks } from "../lib/linkify";
-import styles from "../message-actions.module.css";
 
 type Props = {
   text: string;
@@ -12,7 +13,7 @@ type Props = {
 function LinkedTextInner({ text }: Props) {
   const segments = splitTextWithLinks(text);
   return (
-    <span className={styles.linkedText}>
+    <span className={ui.bubbleText}>
       {segments.map((segment, index) => {
         if (segment.kind === "text") {
           return <span key={index}>{segment.value}</span>;

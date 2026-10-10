@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import type { TimelineMessage } from "@/platform/timeline";
@@ -138,13 +138,14 @@ function MessageActionHostInner({
       <button
         ref={triggerRef}
         type="button"
-        className="shell-nav-link"
+        className={styles.actionTrigger}
         aria-label={t("messageActions")}
+        title={t("messageActions")}
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen((value) => !value)}
       >
-        <MoreHorizontal size={18} aria-hidden />
+        <ChevronDown size={18} aria-hidden />
       </button>
       {open ? (
         <>
@@ -167,7 +168,7 @@ function MessageActionHostInner({
             {destructive.length > 0 ? (
               <>
                 <hr className={styles.actionMenuDivider} />
-                <ul role="menu" className={styles.actionMenuList}>
+                <ul role="menu" className={styles.actionMenuList} data-tone="danger">
                   {destructive.map(renderAction)}
                 </ul>
               </>

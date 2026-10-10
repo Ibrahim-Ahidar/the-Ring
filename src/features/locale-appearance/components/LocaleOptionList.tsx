@@ -3,10 +3,11 @@
 import { memo } from "react";
 import { useTranslations } from "next-intl";
 
+import { AUTONYMS } from "@/features/locale-appearance/autonyms";
 import { useAppearance } from "@/features/locale-appearance/context/AppearanceContext";
 import { usePreferenceSave } from "@/features/locale-appearance/hooks/use-preference-save";
-import styles from "@/features/locale-appearance/components/locale-appearance.module.css";
 import { LOCALES, type Locale } from "@/shell/locale";
+import ui from "@/shell/styles/ui.module.css";
 
 const LOCALE_LABEL_KEYS: Record<Locale, "localeAr" | "localeEn" | "localeFr"> =
   {
@@ -14,7 +15,6 @@ const LOCALE_LABEL_KEYS: Record<Locale, "localeAr" | "localeEn" | "localeFr"> =
     en: "localeEn",
     fr: "localeFr",
   };
-
 function LocaleOptionListInner() {
   const t = useTranslations("locale-appearance");
   const {
@@ -23,24 +23,33 @@ function LocaleOptionListInner() {
   const { saveLocale, pending } = usePreferenceSave();
 
   return (
-    <ul className={styles.optionList}>
-      {LOCALES.map((code) => (
-        <li key={code} className={styles.optionRow}>
-          <label className={styles.optionLabel} htmlFor={`locale-${code}`}>
-            {t(LOCALE_LABEL_KEYS[code])}
+    <div role="radiogroup" aria-label={t("settingsLanguageTitle")}>
+      {LOCALES.map((code) => {
+        const checked = locale === code;
+        const translated = t(LOCALE_LABEL_KEYS[code]);
+        return (
+          <label key={code} className={ui.setting} htmlFor={`locale-${code}`}>
+            <input
+              id={`locale-${code}`}
+              className="sr-only"
+              type="radio"
+              name="locale"
+              value={code}
+              checked={checked}
+              disabled={pending}
+              onChange={() => saveLocale(code)}
+            />
+            <span className={ui.radio} data-checked={checked} aria-hidden />
+            <span className={ui.settingBody}>
+              <span lang={code}>{AUTONYMS[code]}</span>
+              {translated !== AUTONYMS[code] ? (
+                <span className={ui.settingDesc}>{translated}</span>
+              ) : null}
+            </span>
           </label>
-          <input
-            id={`locale-${code}`}
-            type="radio"
-            name="locale"
-            value={code}
-            checked={locale === code}
-            disabled={pending}
-            onChange={() => saveLocale(code)}
-          />
-        </li>
-      ))}
-    </ul>
+        );
+      })}
+    </div>
   );
 }
 

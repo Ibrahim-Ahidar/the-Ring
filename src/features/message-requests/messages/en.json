@@ -1,0 +1,46 @@
+{
+  "navLabel": "Message requests",
+  "pageTitle": "Message requests",
+  "loading": "Loading requests…",
+  "incomingTitle": "Waiting for you",
+  "incomingEmpty": "No pending requests.",
+  "outgoingTitle": "Sent by you",
+  "outgoingEmpty": "You have not sent any requests yet.",
+  "requestFormTitle": "Send a message request",
+  "requestFormIntro": "Add a short note for @{username}. They can accept or decline before you chat.",
+  "noteLabel": "Note (optional)",
+  "notePlaceholder": "Why do you want to chat?",
+  "noteCounter": "{count} / {max}",
+  "sendRequest": "Send request",
+  "cancel": "Cancel",
+  "backToChats": "Back to chats",
+  "requestSentTitle": "Request sent",
+  "requestSentBody": "You will be notified when they respond.",
+  "accept": "Accept",
+  "decline": "Decline",
+  "openChat": "Open chat",
+  "close": "Close",
+  "openFullPage": "Open full requests page",
+  "pendingBadge": "{count, plural, one {# pending request} other {# pending requests}}",
+  "declineConfirmTitle": "Decline this request?",
+  "declineConfirmBody": "{name} will not be able to start a chat unless they send another request.",
+  "declineConfirmAction": "Decline request",
+  "status": {
+    "pending": "Pending",
+    "accepted": "Accepted",
+    "declined": "Declined"
+  },
+  "errors": {
+    "message_requests": {
+      "not_allowed": "You cannot send a request to this person.",
+      "not_required": "You can open a normal chat instead.",
+      "not_found": "Request not found.",
+      "note_too_long": "The note must be at most 300 characters."
+    },
+    "platform": {
+      "unauthenticated": "Sign in to continue.",
+      "unexpected": "Something went wrong. Try again.",
+      "rate_limited": "Too many attempts. Wait a moment and try again."
+    }
+  }
+}

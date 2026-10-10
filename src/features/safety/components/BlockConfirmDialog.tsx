@@ -3,8 +3,9 @@
 import { memo, useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import ui from "@/shell/styles/ui.module.css";
+
 import { useFocusTrap } from "../hooks/useFocusTrap";
-import styles from "./PrivacySettings.module.css";
 
 type BlockConfirmDialogProps = {
   username: string;
@@ -39,27 +40,46 @@ export const BlockConfirmDialog = memo(function BlockConfirmDialog({
   const label = displayName?.trim() || username;
 
   return (
-    <div className={styles.modalBackdrop} onClick={onClose} role="presentation">
+    <div
+      className={`${ui.scrim} ${ui.scrimCenter} ${ui.scrimSheet}`}
+      onClick={onClose}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && !busy) {
+          event.stopPropagation();
+          onClose();
+        }
+      }}
+      role="presentation"
+    >
       <div
         ref={trapRef}
-        className={styles.modal}
+        className={ui.dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby="block-dialog-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 id="block-dialog-title" className={styles.modalTitle}>
+        <h2 id="block-dialog-title" className={ui.dialogTitle}>
           {t("block.confirmTitle", { name: label })}
         </h2>
-        <p className={styles.rowLabel}>{t("block.confirmBody", { name: label })}</p>
-        {error ? <p className={styles.errorBanner}>{error}</p> : null}
-        <div className={styles.modalActions}>
-          <button type="button" className={styles.button} onClick={onClose} disabled={busy}>
+        <p className={ui.dialogText}>{t("block.confirmBody", { name: label })}</p>
+        {error ? (
+          <p className={ui.errorText} role="alert">
+            {error}
+          </p>
+        ) : null}
+        <div className={ui.dialogActions}>
+          <button
+            type="button"
+            className={`${ui.btn} ${ui.btnSecondary}`}
+            onClick={onClose}
+            disabled={busy}
+          >
             {t("actions.cancel")}
           </button>
           <button
             type="button"
-            className={`${styles.button} ${styles.buttonDanger}`}
+            className={`${ui.btn} ${ui.btnDanger}`}
             onClick={handleConfirm}
             disabled={busy}
           >

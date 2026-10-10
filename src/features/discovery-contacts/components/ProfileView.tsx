@@ -1,37 +1,31 @@
 "use client";
 
-import { MessageCircle, Star } from "lucide-react";
+import { MessageCircle, Star, Users } from "lucide-react";
 import Link from "next/link";
-import { memo, useCallback, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { memo, useCallback, useState, type ReactNode } from "react";
+import { useFormatter, useTranslations } from "next-intl";
+
+import { Avatar } from "@/shell/components/Avatar";
+import ui from "@/shell/styles/ui.module.css";
 
 import { favoriteAction, unfavoriteAction } from "../actions";
 import type { ProfileView as ProfileViewType } from "../types";
 import styles from "../discovery-contacts.module.css";
-import { UserAvatar } from "./UserAvatar";
 
 type ProfileViewProps = {
   profile: ProfileViewType;
   signedIn: boolean;
   newChatHref: string;
+  /** Extra actions owned by other features (block, report). */
+  footer?: ReactNode;
 };
 
-function formatLastSeen(iso: string, locale: string): string {
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
-
-function ProfileViewInner({ profile, signedIn, newChatHref }: ProfileViewProps) {
+function ProfileViewInner({ profile, signedIn, newChatHref, footer }: ProfileViewProps) {
   const t = useTranslations("discovery-contacts");
-  const locale = useLocale();
+  const format = useFormatter();
   const [favorited, setFavorited] = useState(profile.isFavorited ?? false);
   const [favoriteBusy, setFavoriteBusy] = useState(false);
+  const name = profile.displayName ?? profile.username;
 
   const onToggleFavorite = useCallback(async () => {
     if (!signedIn) {
@@ -64,73 +58,78 @@ function ProfileViewInner({ profile, signedIn, newChatHref }: ProfileViewProps) 
     }
     if (profile.lastSeenAt) {
       return t("profile.lastSeen", {
-        time: formatLastSeen(profile.lastSeenAt, locale),
+        time: format.dateTime(new Date(profile.lastSeenAt), {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }),
       });
     }
     return t("profile.offline");
   })();
 
   return (
-    <article className={styles.profilePage}>
-      <header className={styles.profileHeader}>
-        <UserAvatar avatarUrl={profile.avatarUrl} size="lg" />
-        <div>
-          <h1 className={styles.displayName}>
-            {profile.displayName ?? profile.username}
-          </h1>
-          <p className={styles.username}>@{profile.username}</p>
-        </div>
-        {profile.bio ? <p className={styles.bio}>{profile.bio}</p> : null}
+    <>
+      <header className={ui.profileHero}>
+        <Avatar name={name} seed={profile.id} src={profile.avatarUrl} size="xl" />
+        <h2 className={`${ui.profileHeroName} bidi-auto`}>{name}</h2>
+        <p className={`${ui.profileHeroHandle} handle`}>@{profile.username}</p>
         {presenceLine ? (
-          <p className={styles.presence}>{presenceLine}</p>
+          <p className={styles.presence} data-online={profile.isOnline ? "true" : "false"}>
+            {presenceLine}
+          </p>
+        ) : null}
+        {profile.bio ? <p className={`${styles.bio} bidi-auto`}>{profile.bio}</p> : null}
+        {signedIn ? (
+          <div className={ui.profileActions}>
+            <Link href={newChatHref} className={`${ui.btn} ${ui.btnPrimary}`}>
+              <MessageCircle size={18} aria-hidden />
+              {t("profile.startConversation")}
+            </Link>
+            <button
+              type="button"
+              className={`${ui.btn} ${ui.btnSecondary}`}
+              onClick={() => void onToggleFavorite()}
+              disabled={favoriteBusy}
+              aria-pressed={favorited}
+              aria-label={
+                favorited
+                  ? t("profile.unfavorite", { username: profile.username })
+                  : t("profile.favorite", { username: profile.username })
+              }
+            >
+              <Star size={18} aria-hidden fill={favorited ? "currentColor" : "none"} />
+              {favorited ? t("profile.unfavoriteShort") : t("profile.favoriteShort")}
+            </button>
+          </div>
         ) : null}
       </header>
 
-      {signedIn ? (
-        <div className={styles.actions}>
-          <Link href={newChatHref} className={styles.primaryLink}>
-            <MessageCircle size={18} aria-hidden="true" />
-            {t("profile.startConversation")}
-          </Link>
-          <button
-            type="button"
-            className={styles.searchButton}
-            onClick={() => void onToggleFavorite()}
-            disabled={favoriteBusy}
-            aria-pressed={favorited}
-            aria-label={
-              favorited
-                ? t("profile.unfavorite", { username: profile.username })
-                : t("profile.favorite", { username: profile.username })
-            }
-          >
-            <Star
-              size={18}
-              aria-hidden="true"
-              fill={favorited ? "currentColor" : "none"}
-            />
-            {favorited ? t("profile.unfavoriteShort") : t("profile.favoriteShort")}
-          </button>
-        </div>
-      ) : null}
-
       {signedIn && profile.sharedGroups !== undefined ? (
-        <section className={styles.section} aria-labelledby="shared-groups-heading">
-          <h2 id="shared-groups-heading" className={styles.sectionTitle}>
-            {t("profile.sharedGroups")}
-          </h2>
+        <section className={ui.settingsCard} aria-labelledby="shared-groups-heading">
+          <div className={ui.settingsCardHead}>
+            <h2 id="shared-groups-heading" className={ui.settingsCardTitle}>
+              {t("profile.sharedGroups")}
+            </h2>
+          </div>
           {profile.sharedGroups.length === 0 ? (
-            <p className={styles.empty}>{t("profile.noSharedGroups")}</p>
+            <p className={styles.cardNote}>{t("profile.noSharedGroups")}</p>
           ) : (
             <ul className={styles.groupList}>
               {profile.sharedGroups.map((group) => (
-                <li key={group.id}>{group.title ?? t("profile.untitledGroup")}</li>
+                <li key={group.id} className={ui.setting}>
+                  <Users size={20} aria-hidden />
+                  <span className={`${ui.settingBody} bidi-auto`}>
+                    {group.title ?? t("profile.untitledGroup")}
+                  </span>
+                </li>
               ))}
             </ul>
           )}
         </section>
       ) : null}
-    </article>
+
+      {footer}
+    </>
   );
 }
 

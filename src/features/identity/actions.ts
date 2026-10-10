@@ -39,7 +39,7 @@ export async function signUpAction(input: {
   const supabase = await tryCreateSupabaseServerClient();
   const rpc = await anonRpc();
   if (!supabase || !rpc) {
-    return err("platform.unexpected");
+    return err("platform.auth_unavailable");
   }
 
   return identity.signUp(

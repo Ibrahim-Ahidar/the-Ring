@@ -1,8 +1,11 @@
 "use client";
 
+import { Camera } from "lucide-react";
 import { memo, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { Avatar } from "@/shell/components/Avatar";
+import ui from "@/shell/styles/ui.module.css";
 import {
   changeUsernameAction,
   deleteAccountAction,
@@ -87,113 +90,191 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
   }
 
   return (
-    <div className={styles.stack}>
-      <form className={styles.stack} onSubmit={saveProfile}>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="account-display">
-            {t("displayNameLabel")}
-          </label>
-          <input
-            id="account-display"
-            className={styles.input}
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
+    <>
+      <section className={ui.settingsCard} aria-label={t("avatarLabel")}>
+        <div className={ui.profileHero}>
+          <Avatar
+            name={profile.display_name || profile.username}
+            seed={profile.id}
+            src={profile.avatar_url}
+            size="xl"
           />
+          <span className={ui.profileHeroName}>
+            {profile.display_name || profile.username}
+          </span>
+          <span className={`${ui.profileHeroHandle} handle`}>@{profile.username}</span>
+          <div className={`${ui.profileActions} ${styles.avatarUpload}`}>
+            <input
+              id="account-avatar"
+              className="sr-only"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={onAvatarChange}
+            />
+            <label
+              htmlFor="account-avatar"
+              className={`${ui.btn} ${ui.btnSecondary} ${ui.btnSm}`}
+            >
+              <Camera size={16} aria-hidden />
+              {t("uploadAvatar")}
+            </label>
+          </div>
         </div>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="account-bio">
-            {t("bioLabel")}
-          </label>
-          <textarea
-            id="account-bio"
-            className={styles.textarea}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-          />
-        </div>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="account-timezone">
-            {t("timezoneLabel")}
-          </label>
-          <input
-            id="account-timezone"
-            className={styles.input}
-            value={timezone}
-            onChange={(e) => setTimezone(e.target.value)}
-          />
-        </div>
-        <FormFeedback />
-        <button className={styles.button} type="submit" disabled={submitting}>
-          {submitting ? t("submitting") : t("saveProfile")}
-        </button>
-      </form>
-
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="account-avatar">
-          {t("avatarLabel")}
-        </label>
-        <input
-          id="account-avatar"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          onChange={onAvatarChange}
-        />
-      </div>
-
-      <form className={styles.section} onSubmit={onUsernameChange}>
-        <h2 className={styles.label}>{t("changeUsername")}</h2>
-        <p className={styles.hint}>{t("usernameCooldownHint")}</p>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="account-username">
-            {t("usernameLabel")}
-          </label>
-          <input
-            id="account-username"
-            className={styles.input}
-            value={newUsername}
-            onChange={(e) => setNewUsername(e.target.value)}
-          />
-        </div>
-        <button className={styles.buttonSecondary} type="submit" disabled={submitting}>
-          {t("changeUsername")}
-        </button>
-      </form>
-
-      <section className={styles.section} aria-labelledby="export-heading">
-        <h2 id="export-heading" className={styles.label}>
-          {t("exportTitle")}
-        </h2>
-        <p className={styles.hint}>{t("exportHint")}</p>
-        <button
-          className={styles.buttonSecondary}
-          type="button"
-          disabled={submitting}
-          onClick={onExport}
-        >
-          {t("exportSubmit")}
-        </button>
       </section>
 
-      <form className={styles.section} onSubmit={onDelete}>
-        <h2 className={styles.label}>{t("deleteAccountTitle")}</h2>
-        <p className={styles.hint}>{t("deleteAccountHint")}</p>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="delete-confirm">
-            {t("deleteConfirmLabel")}
-          </label>
-          <input
-            id="delete-confirm"
-            className={styles.input}
-            value={deleteConfirm}
-            onChange={(e) => setDeleteConfirm(e.target.value)}
-            autoComplete="off"
-          />
+      <FormFeedback />
+
+      <form className={ui.settingsCard} onSubmit={saveProfile}>
+        <div className={ui.settingsCardBody}>
+          <div className={ui.field}>
+            <label className={ui.fieldLabel} htmlFor="account-display">
+              {t("displayNameLabel")}
+            </label>
+            <input
+              id="account-display"
+              className={ui.input}
+              autoComplete="name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+            />
+          </div>
+          <div className={ui.field}>
+            <label className={ui.fieldLabel} htmlFor="account-bio">
+              {t("bioLabel")}
+            </label>
+            <textarea
+              id="account-bio"
+              className={ui.input}
+              rows={3}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+            />
+          </div>
+          <div className={ui.field}>
+            <label className={ui.fieldLabel} htmlFor="account-timezone">
+              {t("timezoneLabel")}
+            </label>
+            <input
+              id="account-timezone"
+              className={ui.input}
+              dir="ltr"
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+            />
+          </div>
+          <div className={styles.cardFoot}>
+            <button
+              className={`${ui.btn} ${ui.btnPrimary}`}
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting ? t("submitting") : t("saveProfile")}
+            </button>
+          </div>
         </div>
-        <button className={styles.buttonDanger} type="submit" disabled={submitting}>
-          {t("deleteSubmit")}
-        </button>
       </form>
-    </div>
+
+      <form
+        className={ui.settingsCard}
+        onSubmit={onUsernameChange}
+        aria-labelledby="username-heading"
+      >
+        <div className={ui.settingsCardHead}>
+          <h2 id="username-heading" className={ui.settingsCardTitle}>
+            {t("changeUsername")}
+          </h2>
+          <p className={ui.settingsCardDesc}>{t("usernameCooldownHint")}</p>
+        </div>
+        <div className={ui.settingsCardBody}>
+          <div className={ui.field}>
+            <label className={ui.fieldLabel} htmlFor="account-username">
+              {t("usernameLabel")}
+            </label>
+            <div className={ui.inputPrefix}>
+              <span aria-hidden>@</span>
+              <input
+                id="account-username"
+                autoComplete="username"
+                autoCapitalize="none"
+                spellCheck={false}
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className={styles.cardFoot}>
+            <button
+              className={`${ui.btn} ${ui.btnSecondary}`}
+              type="submit"
+              disabled={submitting}
+            >
+              {t("changeUsername")}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <section className={ui.settingsCard} aria-labelledby="export-heading">
+        <div className={ui.settingsCardHead}>
+          <h2 id="export-heading" className={ui.settingsCardTitle}>
+            {t("exportTitle")}
+          </h2>
+          <p className={ui.settingsCardDesc}>{t("exportHint")}</p>
+        </div>
+        <div className={ui.settingsCardBody}>
+          <div className={styles.cardFoot}>
+            <button
+              className={`${ui.btn} ${ui.btnSecondary}`}
+              type="button"
+              disabled={submitting}
+              onClick={onExport}
+            >
+              {t("exportSubmit")}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <form
+        className={ui.settingsCard}
+        onSubmit={onDelete}
+        aria-labelledby="delete-heading"
+      >
+        <div className={ui.settingsCardHead}>
+          <h2
+            id="delete-heading"
+            className={`${ui.settingsCardTitle} ${styles.dangerTitle}`}
+          >
+            {t("deleteAccountTitle")}
+          </h2>
+          <p className={ui.settingsCardDesc}>{t("deleteAccountHint")}</p>
+        </div>
+        <div className={ui.settingsCardBody}>
+          <div className={ui.field}>
+            <label className={ui.fieldLabel} htmlFor="delete-confirm">
+              {t("deleteConfirmLabel")}
+            </label>
+            <input
+              id="delete-confirm"
+              className={ui.input}
+              dir="ltr"
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+          <div className={styles.cardFoot}>
+            <button
+              className={`${ui.btn} ${ui.btnDanger}`}
+              type="submit"
+              disabled={submitting}
+            >
+              {t("deleteSubmit")}
+            </button>
+          </div>
+        </div>
+      </form>
+    </>
   );
 }
 

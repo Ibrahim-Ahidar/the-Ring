@@ -5,6 +5,7 @@ import { Paperclip } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import type { ComposerToolProps } from "@/shell/slots/types";
+import ui from "@/shell/styles/ui.module.css";
 
 import { MediaProvider, useMedia } from "../context/MediaProvider";
 import styles from "../media.module.css";
@@ -38,12 +39,13 @@ function MediaComposerToolInner({ conversationId, disabled }: ComposerToolProps)
       />
       <button
         type="button"
-        className={styles.iconButton}
+        className={ui.iconBtn}
         disabled={disabled}
         onClick={() => fileInput.current?.click()}
         aria-label={t("attachFiles")}
+        title={t("attachFiles")}
       >
-        <Paperclip size={18} aria-hidden />
+        <Paperclip size={24} aria-hidden />
       </button>
       <VoiceRecorder
         disabled={disabled}

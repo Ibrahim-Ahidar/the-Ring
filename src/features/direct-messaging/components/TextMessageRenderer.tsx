@@ -3,6 +3,7 @@
 import { memo } from "react";
 
 import type { TimelineMessage } from "@/platform/timeline";
+import ui from "@/shell/styles/ui.module.css";
 
 type Props = {
   message: TimelineMessage;
@@ -13,7 +14,7 @@ function TextMessageRendererInner({ message }: Props) {
   if (message.deletion_scope === "everyone") {
     return null;
   }
-  return <span>{message.body ?? ""}</span>;
+  return <span className={ui.bubbleText}>{message.body ?? ""}</span>;
 }
 
 export const TextMessageRenderer = memo(TextMessageRendererInner);

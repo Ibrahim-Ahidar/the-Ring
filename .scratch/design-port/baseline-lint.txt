@@ -1,0 +1,42 @@
+
+D:\study-main\0 full-stack\Projects\chatapp\src\features\direct-messaging\components\MessageTimeline.tsx
+  50:9  warning  The 'stored' logical expression could make the dependencies of useMemo Hook (at line 69) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'stored' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+D:\study-main\0 full-stack\Projects\chatapp\src\features\direct-messaging\context\MessagingProvider.tsx
+  286:42  warning  The ref value 'inboxRefreshTimerRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'inboxRefreshTimerRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+D:\study-main\0 full-stack\Projects\chatapp\src\features\media\components\ImageMessageRenderer.tsx
+  58:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+D:\study-main\0 full-stack\Projects\chatapp\tests\db\conversation-organization.test.ts
+  154:11  warning  'b' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\study-main\0 full-stack\Projects\chatapp\tests\db\direct-messaging.test.ts
+   58:11  warning  'bob' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  192:11  warning  'b' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  223:11  warning  'b' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  298:11  warning  'b' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  436:11  warning  'b' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  592:11  warning  'b' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+D:\study-main\0 full-stack\Projects\chatapp\tests\db\message-actions.test.ts
+  205:11  warning  'bob' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  229:11  warning  'bob' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  306:11  warning  'bob' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  342:11  warning  'bob' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  343:11  warning  'carol' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\study-main\0 full-stack\Projects\chatapp\tests\db\reactions.test.ts
+   42:20  warning  'bob' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   95:13  warning  'alice' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  198:13  warning  'alice' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\study-main\0 full-stack\Projects\chatapp\whatsapp-extract\capture_screens.mjs
+  45:5  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+D:\study-main\0 full-stack\Projects\chatapp\whatsapp-extract\dump_cdp.mjs
+  26:5  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+✖ 20 problems (0 errors, 20 warnings)
+
+exit 0

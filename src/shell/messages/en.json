@@ -13,7 +13,19 @@
     "contacts": "Contacts",
     "notifications": "Notifications",
     "settings": "Settings",
-    "back": "Back"
+    "back": "Back",
+    "backToChats": "Back to chats",
+    "profileAndSettings": "Profile and settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "more": "More",
+    "chooseSection": "Choose a section on the left to change your settings.",
+    "accountDesc": "Profile, username, photo, delete account",
+    "privacyDesc": "Last seen, read receipts, who can message you, blocked",
+    "securityDesc": "Active sessions, sign out",
+    "notificationsDesc": "In-app, push, mentions only",
+    "appearanceDesc": "Light, dark or system theme"
   },
   "skipLink": "Skip to content",
   "routes": {

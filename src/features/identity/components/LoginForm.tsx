@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { memo, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import ui from "@/shell/styles/ui.module.css";
 import {
   requestPasswordResetAction,
   signInAction,
@@ -16,9 +17,10 @@ import { FormFeedback } from "./FormFeedback";
 function LoginFormInner() {
   const t = useTranslations("identity");
   const router = useRouter();
-  const { submitting, startSubmit, finishSubmit } = useIdentityForm();
+  const { submitting, errorCode, startSubmit, finishSubmit } = useIdentityForm();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const rejected = errorCode === "identity.credentials_rejected";
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -44,52 +46,60 @@ function LoginFormInner() {
   }
 
   return (
-    <form className={styles.stack} onSubmit={onSubmit} noValidate>
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="login-email">
-          {t("emailLabel")}
-        </label>
-        <input
-          id="login-email"
-          className={styles.input}
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="login-password">
-          {t("passwordLabel")}
-        </label>
-        <input
-          id="login-password"
-          className={styles.input}
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+    <form className={styles.authFormBody} onSubmit={onSubmit} noValidate>
+      <div className={styles.authFields}>
+        <div className={ui.field}>
+          <label className={ui.fieldLabel} htmlFor="login-email">
+            {t("emailLabel")}
+          </label>
+          <input
+            id="login-email"
+            className={ui.input}
+            type="email"
+            autoComplete="email"
+            dir="ltr"
+            required
+            aria-invalid={rejected || undefined}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div className={ui.field}>
+          <label className={ui.fieldLabel} htmlFor="login-password">
+            {t("passwordLabel")}
+          </label>
+          <input
+            id="login-password"
+            className={ui.input}
+            type="password"
+            autoComplete="current-password"
+            required
+            aria-invalid={rejected || undefined}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <div className={styles.authRow}>
+          <button
+            className={ui.linkBtn}
+            type="button"
+            disabled={submitting || !email.trim()}
+            onClick={onReset}
+          >
+            {t("forgotPassword")}
+          </button>
+        </div>
       </div>
       <FormFeedback />
-      <div className={styles.actions}>
-        <button className={styles.button} type="submit" disabled={submitting}>
-          {submitting ? t("submitting") : t("submitLogin")}
-        </button>
-        <button
-          className={styles.buttonSecondary}
-          type="button"
-          disabled={submitting || !email.trim()}
-          onClick={onReset}
-        >
-          {t("forgotPassword")}
-        </button>
-      </div>
-      <p className={styles.linkRow}>
-        {t("noAccount")}{" "}
-        <Link href="/signup">{t("signupLink")}</Link>
+      <button
+        className={`${ui.btn} ${ui.btnPrimary} ${ui.btnBlock}`}
+        type="submit"
+        disabled={submitting}
+      >
+        {submitting ? t("submitting") : t("submitLogin")}
+      </button>
+      <p className={styles.authSwitch}>
+        {t("noAccount")} <Link href="/signup">{t("signupLink")}</Link>
       </p>
     </form>
   );
