@@ -7,6 +7,7 @@ import {
 } from "@/platform/media";
 import { callRpc, type RpcClient } from "@/platform/rpc";
 import { err, ok, type Result } from "@/platform/result";
+import { reportError } from "@/platform/telemetry";
 import { validateUsername } from "@/platform/username";
 
 import type {
@@ -89,7 +90,7 @@ export async function signUp(
     if (error.message.includes("identity.")) {
       return err(error.message);
     }
-    return err("platform.unexpected");
+    return err(await mapCommonAuthError(error, "identity.sign_up"));
   }
 
   const needsEmailConfirmation = !data.user?.email_confirmed_at;
@@ -127,6 +128,55 @@ export async function registerDevice(
   return retry.ok ? ok(freshId) : retry;
 }
 
+type AuthFailure = { code?: string; status?: number };
+
+const RATE_LIMIT_CODES = new Set([
+  "over_request_rate_limit",
+  "over_email_send_rate_limit",
+]);
+
+/** Shared mapping for auth errors that mean "slow down"; anything unknown is reported. */
+async function mapCommonAuthError(
+  error: AuthFailure,
+  operation: string,
+): Promise<string> {
+  if (error.status === 429 || (error.code && RATE_LIMIT_CODES.has(error.code))) {
+    return "platform.rate_limited";
+  }
+  await reportError(error, {
+    operation,
+    authCode: error.code ?? null,
+    status: error.status ?? null,
+  });
+  return "platform.unexpected";
+}
+
+/** Maps a `signInWithPassword` error by its `AuthApiError` code, never its message. */
+export async function mapSignInError(error: AuthFailure): Promise<string> {
+  // Credentials stay one message for both fields; the other cases do not reveal a field.
+  if (error.code === "invalid_credentials") {
+    return "identity.credentials_rejected";
+  }
+  if (error.code === "email_not_confirmed") {
+    return "identity.confirmation_required";
+  }
+  return mapCommonAuthError(error, "identity.sign_in");
+}
+
+/**
+ * Maps a `verifyOtp` error. GoTrue answers `otp_expired` for both wrong and expired
+ * codes, so that case gets one message covering both.
+ */
+export async function mapVerifyCodeError(error: AuthFailure): Promise<string> {
+  if (error.code === "otp_expired") {
+    return "identity.code_expired";
+  }
+  if (error.code === "invalid_otp" || error.code === "validation_failed") {
+    return "identity.code_invalid";
+  }
+  return mapCommonAuthError(error, "identity.verify_code");
+}
+
 /** Returns the device id the session is registered under; the caller stores it in the cookie. */
 export async function signIn(
   supabase: SupabaseClient,
@@ -141,13 +191,69 @@ export async function signIn(
   });
 
   if (error) {
-    return err("identity.credentials_rejected");
+    return err(await mapSignInError(error));
   }
 
+  return registerSignedInDevice(supabase, rpc, input.deviceLabel, deviceId, newDeviceId);
+}
+
+const SIGNUP_CODE = /^\d{6}$/;
+
+/**
+ * Confirms a new account with the 6-digit code from the signup email. On success the
+ * member is signed in and the device is registered like a password sign-in.
+ */
+export async function verifySignupCode(
+  supabase: SupabaseClient,
+  rpc: RpcClient,
+  input: { email: string; token: string; deviceLabel?: string },
+  deviceId: string | undefined,
+  newDeviceId?: () => string,
+): Promise<Result<string>> {
+  const token = input.token.trim();
+  if (!SIGNUP_CODE.test(token)) {
+    return err("identity.code_invalid");
+  }
+
+  const { error } = await supabase.auth.verifyOtp({
+    email: input.email.trim(),
+    token,
+    type: "signup",
+  });
+  if (error) {
+    return err(await mapVerifyCodeError(error));
+  }
+
+  return registerSignedInDevice(supabase, rpc, input.deviceLabel, deviceId, newDeviceId);
+}
+
+/** Sends a new signup code. Unknown emails succeed silently on the Supabase side. */
+export async function resendSignupCode(
+  supabase: SupabaseClient,
+  email: string,
+): Promise<Result<void>> {
+  const trimmed = email.trim();
+  if (!trimmed) {
+    return err("identity.credentials_rejected");
+  }
+  const { error } = await supabase.auth.resend({ type: "signup", email: trimmed });
+  if (error) {
+    return err(await mapCommonAuthError(error, "identity.resend_code"));
+  }
+  return ok(undefined);
+}
+
+async function registerSignedInDevice(
+  supabase: SupabaseClient,
+  rpc: RpcClient,
+  deviceLabel: string | undefined,
+  deviceId: string | undefined,
+  newDeviceId?: () => string,
+): Promise<Result<string>> {
   const device = await registerDevice(
     rpc,
     deviceId,
-    input.deviceLabel ?? null,
+    deviceLabel ?? null,
     newDeviceId,
   );
 

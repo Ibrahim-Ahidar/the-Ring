@@ -77,6 +77,40 @@ export async function signInAction(input: {
   return ok(undefined);
 }
 
+export async function verifySignupCodeAction(input: {
+  email: string;
+  token: string;
+  deviceLabel?: string;
+}): Promise<Result<void>> {
+  const supabase = await tryCreateSupabaseServerClient();
+  if (!supabase) {
+    return err("platform.auth_unavailable");
+  }
+
+  const result = await identity.verifySignupCode(
+    supabase,
+    asRpcClient(supabase),
+    input,
+    await readDeviceId(),
+    randomUUID,
+  );
+  if (!result.ok) {
+    return result;
+  }
+  await writeDeviceId(result.value);
+  return ok(undefined);
+}
+
+export async function resendConfirmationAction(
+  email: string,
+): Promise<Result<void>> {
+  const supabase = await tryCreateSupabaseServerClient();
+  if (!supabase) {
+    return err("platform.auth_unavailable");
+  }
+  return identity.resendSignupCode(supabase, email);
+}
+
 export async function signOutAction(): Promise<Result<void>> {
   const ctx = await getSessionContext();
   const supabase = ctx?.supabase ?? (await tryCreateSupabaseServerClient());

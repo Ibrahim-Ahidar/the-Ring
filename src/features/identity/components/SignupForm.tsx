@@ -9,6 +9,7 @@ import { signUpAction } from "../actions";
 import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-context";
 import styles from "../identity.module.css";
 import { FormFeedback, useErrorMessage } from "./FormFeedback";
+import { SignupCodeEntry } from "./SignupCodeEntry";
 
 function isUsernameError(code: string): boolean {
   return code.startsWith("identity.username_");
@@ -16,7 +17,8 @@ function isUsernameError(code: string): boolean {
 
 function SignupFormInner() {
   const t = useTranslations("identity");
-  const { submitting, errorCode, startSubmit, finishSubmit } = useIdentityForm();
+  const { submitting, errorCode, startSubmit, finishSubmit, clearFeedback } =
+    useIdentityForm();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -49,16 +51,14 @@ function SignupFormInner() {
 
   if (awaitingConfirm) {
     return (
-      <div className={styles.authNotice} role="status">
-        <h2 className={styles.authNoticeTitle}>{t("confirmEmailTitle")}</h2>
-        <p>{t("confirmEmailBody")}</p>
-        <Link
-          className={`${ui.btn} ${ui.btnPrimary} ${ui.btnBlock}`}
-          href="/login"
-        >
-          {t("loginLink")}
-        </Link>
-      </div>
+      <SignupCodeEntry
+        email={email}
+        showLoginLink
+        onBack={() => {
+          clearFeedback();
+          setAwaitingConfirm(false);
+        }}
+      />
     );
   }
 
