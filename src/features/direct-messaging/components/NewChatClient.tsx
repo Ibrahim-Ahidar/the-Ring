@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -9,59 +9,82 @@ import ui from "@/shell/styles/ui.module.css";
 
 import { openDirectAction } from "../actions";
 
+type Translator = {
+  (key: "errors.platform.unexpected"): string;
+  (key: "errors.messaging.not_allowed"): string;
+  has: (key: string) => boolean;
+};
+
+/** Translated message for an error code; unknown codes fall back to the generic message. */
+export function newChatErrorMessage(t: Translator, code: string): string {
+  const key = `errors.${code}` as "errors.messaging.not_allowed";
+  return t.has(key) ? t(key) : t("errors.platform.unexpected");
+}
+
 function NewChatClientInner() {
   const t = useTranslations("direct-messaging");
   const router = useRouter();
   const params = useSearchParams();
-  const [username, setUsername] = useState(params.get("username") ?? "");
+  const fromQuery = params.get("username");
+  const [username, setUsername] = useState(fromQuery ?? "");
   const [error, setError] = useState<string | null>(null);
-  const [targetUserId, setTargetUserId] = useState<string | null>(null);
+  const [targetUsername, setTargetUsername] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [autoOpening, setAutoOpening] = useState(Boolean(fromQuery));
+  const inFlight = useRef(false);
   const requestSlots = useMemo(() => getContributions("requestRequired"), []);
 
+  const open = async (target: string, navigate: "push" | "replace") => {
+    if (inFlight.current) {
+      return;
+    }
+    inFlight.current = true;
+    setPending(true);
+    setError(null);
+    try {
+      const result = await openDirectAction({ username: target });
+      if (result.ok) {
+        // Stay pending while navigating so the button cannot be pressed again.
+        const href = `/app/chats/${result.value.conversationId}`;
+        if (navigate === "replace") {
+          router.replace(href);
+        } else {
+          router.push(href);
+        }
+        return;
+      }
+      if (result.error.code === "messaging.request_required") {
+        setTargetUsername(target);
+      }
+      setError(result.error.code);
+    } catch {
+      setError("platform.unexpected");
+    }
+    inFlight.current = false;
+    setPending(false);
+    setAutoOpening(false);
+  };
+
   useEffect(() => {
-    const fromQuery = params.get("username");
     if (!fromQuery) {
       return;
     }
     setUsername(fromQuery);
-    void (async () => {
-      const result = await openDirectAction({ username: fromQuery });
-      if (result.ok) {
-        router.replace(`/app/chats/${result.value.conversationId}`);
-        return;
-      }
-      if (result.error.code === "messaging.request_required") {
-        setError(result.error.code);
-        setTargetUserId(fromQuery);
-        return;
-      }
-      setError(result.error.code);
-    })();
-  }, [params, router]);
+    void open(fromQuery.trim().replace(/^@/, ""), "replace");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per ?username value
+  }, [fromQuery]);
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError(null);
-    const target = username.trim().replace(/^@/, "");
-    const result = await openDirectAction({ username: target });
-    if (result.ok) {
-      router.push(`/app/chats/${result.value.conversationId}`);
-      return;
-    }
-    if (result.error.code === "messaging.request_required") {
-      setError(result.error.code);
-      setTargetUserId(target);
-      return;
-    }
-    setError(result.error.code);
+    await open(username.trim().replace(/^@/, ""), "push");
   };
 
-  if (error === "messaging.request_required" && targetUserId) {
+  if (error === "messaging.request_required" && targetUsername) {
     const slot = requestSlots[0];
     if (slot?.Component) {
       return (
         <slot.Component
-          targetUserId={targetUserId}
+          targetUsername={targetUsername}
           onDone={() => router.push("/app/chats")}
         />
       );
@@ -70,6 +93,14 @@ function NewChatClientInner() {
   }
 
   const visibleError = error && error !== "messaging.request_required" ? error : null;
+
+  if (autoOpening && !visibleError) {
+    return (
+      <p className={ui.notice} role="status" aria-busy="true">
+        {t("opening")}
+      </p>
+    );
+  }
 
   return (
     <form className={ui.settingsCard} onSubmit={onSubmit}>
@@ -93,14 +124,17 @@ function NewChatClientInner() {
           </div>
           {visibleError ? (
             <p id="new-chat-error" className={ui.fieldError} role="alert">
-              {visibleError in { "messaging.not_allowed": 1, "messaging.not_found": 1, "platform.unauthenticated": 1, "platform.unexpected": 1 }
-                ? t(`errors.${visibleError}` as "errors.messaging.not_allowed")
-                : visibleError}
+              {newChatErrorMessage(t, visibleError)}
             </p>
           ) : null}
         </div>
-        <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`}>
-          {t("openChat")}
+        <button
+          type="submit"
+          className={`${ui.btn} ${ui.btnPrimary}`}
+          disabled={pending}
+          aria-busy={pending || undefined}
+        >
+          {pending ? t("opening") : t("openChat")}
         </button>
       </div>
     </form>
