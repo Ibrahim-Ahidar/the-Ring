@@ -92,6 +92,7 @@ async function runRpc(
   userId: string | null,
   fn: string,
   args: Record<string, unknown> = {},
+  extraClaims: Record<string, unknown> = {},
 ): Promise<RpcResult> {
   const meta = await getProcMeta(db, fn);
   const argKeys = Object.keys(args);
@@ -99,7 +100,7 @@ async function runRpc(
   const params = argKeys.map((key) => serializeArg(args[key]));
 
   const run = userId
-    ? (query: string, p: unknown[]) => asUser(db, userId, query, p)
+    ? (query: string, p: unknown[]) => asUser(db, userId, query, p, extraClaims)
     : (query: string, p: unknown[]) => asAnon(db, query, p);
 
   try {
@@ -141,10 +142,12 @@ export type PgliteRpcClient = {
 export function createRpcClient(
   db: PGliteInterface,
   userId: string | null,
+  /** Extra JWT claims, e.g. `{ session_id }` for a specific auth session. */
+  extraClaims: Record<string, unknown> = {},
 ): PgliteRpcClient {
   return {
     rpc(fn, args) {
-      return runRpc(db, userId, fn, args ?? {});
+      return runRpc(db, userId, fn, args ?? {}, extraClaims);
     },
   };
 }

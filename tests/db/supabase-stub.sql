@@ -31,6 +31,20 @@ create table if not exists auth.users (
   created_at timestamptz not null default now()
 );
 
+create table if not exists auth.sessions (
+  id uuid primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists auth.refresh_tokens (
+  id bigserial primary key,
+  token text not null,
+  user_id uuid not null,
+  session_id uuid references auth.sessions (id) on delete cascade,
+  revoked boolean not null default false
+);
+
 create or replace function auth.uid()
 returns uuid
 language sql

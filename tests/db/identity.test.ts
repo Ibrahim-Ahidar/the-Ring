@@ -313,6 +313,115 @@ describe("identity devices", () => {
   });
 });
 
+describe("identity device revocation ends the auth session (#59)", () => {
+  async function signInSession(userId: string) {
+    const sessionId = randomUUID();
+    await asSuperuser(db, `insert into auth.sessions (id, user_id) values ($1, $2)`, [
+      sessionId,
+      userId,
+    ]);
+    await asSuperuser(
+      db,
+      `insert into auth.refresh_tokens (token, user_id, session_id) values ($1, $2, $3)`,
+      [randomUUID(), userId, sessionId],
+    );
+    return { sessionId, rpc: createRpcClient(db, userId, { session_id: sessionId }) };
+  }
+
+  async function setup(username: string) {
+    const user = await createUser(db, { username });
+    const a = await signInSession(user.id);
+    const b = await signInSession(user.id);
+    const deviceA = randomUUID();
+    const deviceB = randomUUID();
+    expect((await callRpc(a.rpc, "identity_upsert_device", { p_device_id: deviceA })).ok).toBe(true);
+    expect((await callRpc(b.rpc, "identity_upsert_device", { p_device_id: deviceB })).ok).toBe(true);
+    return { user, a, b, deviceA, deviceB };
+  }
+
+  it("stores the session id on the device row at sign-in", async () => {
+    const { b, deviceB } = await setup("rev_bind");
+    const row = await asSuperuser<{ rows: { session_id: string }[] }>(
+      db,
+      `select session_id from public.devices where id = $1`,
+      [deviceB],
+    );
+    expect(row.rows[0]?.session_id).toBe(b.sessionId);
+  });
+
+  it("refuses B's next request after A revokes B, and leaves A signed in", async () => {
+    const { a, b, deviceA, deviceB } = await setup("rev_next");
+    expect((await callRpc(b.rpc, "identity_assert_session_active")).ok).toBe(true);
+
+    expect((await callRpc(a.rpc, "identity_revoke_device", { p_device_id: deviceB })).ok).toBe(true);
+
+    const session = await callRpc(b.rpc, "identity_assert_session_active");
+    expect(session).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
+    const device = await callRpc(b.rpc, "identity_assert_device_active", { p_device_id: deviceB });
+    expect(device).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
+
+    expect((await callRpc(a.rpc, "identity_assert_session_active")).ok).toBe(true);
+    expect(
+      (await callRpc(a.rpc, "identity_assert_device_active", { p_device_id: deviceA })).ok,
+    ).toBe(true);
+  });
+
+  it("deletes B's auth session so its refresh token can no longer be used", async () => {
+    const { a, b, deviceB } = await setup("rev_refresh");
+    await callRpc(a.rpc, "identity_revoke_device", { p_device_id: deviceB });
+
+    const sessions = await asSuperuser<{ rows: unknown[] }>(
+      db,
+      `select 1 from auth.sessions where id = $1`,
+      [b.sessionId],
+    );
+    expect(sessions.rows).toHaveLength(0);
+    const tokens = await asSuperuser<{ rows: unknown[] }>(
+      db,
+      `select 1 from auth.refresh_tokens where session_id = $1`,
+      [b.sessionId],
+    );
+    expect(tokens.rows).toHaveLength(0);
+
+    const aTokens = await asSuperuser<{ rows: unknown[] }>(
+      db,
+      `select 1 from auth.refresh_tokens where session_id = $1`,
+      [a.sessionId],
+    );
+    expect(aTokens.rows).toHaveLength(1);
+  });
+
+  it("does not let the revoked session re-register itself", async () => {
+    const { a, b, deviceB } = await setup("rev_reupsert");
+    await callRpc(a.rpc, "identity_revoke_device", { p_device_id: deviceB });
+
+    const same = await callRpc(b.rpc, "identity_upsert_device", { p_device_id: deviceB });
+    expect(same).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
+    const fresh = await callRpc(b.rpc, "identity_upsert_device", { p_device_id: randomUUID() });
+    expect(fresh).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
+  });
+
+  it("lets the device back in after a fresh sign-in", async () => {
+    const { user, a, deviceB } = await setup("rev_fresh");
+    await callRpc(a.rpc, "identity_revoke_device", { p_device_id: deviceB });
+
+    const again = await signInSession(user.id);
+    expect((await callRpc(again.rpc, "identity_upsert_device", { p_device_id: deviceB })).ok).toBe(
+      true,
+    );
+    expect(
+      (await callRpc(again.rpc, "identity_assert_device_active", { p_device_id: deviceB })).ok,
+    ).toBe(true);
+  });
+
+  it("refuses an access token whose auth session no longer exists", async () => {
+    const { b } = await setup("rev_gone");
+    await asSuperuser(db, `delete from auth.sessions where id = $1`, [b.sessionId]);
+    const result = await callRpc(b.rpc, "identity_assert_session_active");
+    expect(result).toEqual({ ok: false, error: { code: "identity.session_revoked" } });
+  });
+});
+
 describe("identity account deletion", () => {
   it("anonymizes profile, frees username, leaves messages, rejects wrong confirm", async () => {
     const user = await createUser(db, { username: "del_user" });
