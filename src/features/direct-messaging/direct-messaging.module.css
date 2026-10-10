@@ -798,3 +798,12 @@
     transition: none;
   }
 }
+
+.sender {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-block-end: 2px;
+  font-size: var(--text-sm, 0.8125rem);
+  font-weight: var(--weight-medium);
+}

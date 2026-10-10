@@ -45,6 +45,8 @@
   "today": "اليوم",
   "yesterday": "أمس",
   "you": "أنت",
+  "messageFrom": "{name}, {time}",
+  "unknownSender": "عضو",
   "forwarded": "رسالة محوّلة",
   "quotedPhoto": "صورة",
   "quotedVoice": "رسالة صوتية",
