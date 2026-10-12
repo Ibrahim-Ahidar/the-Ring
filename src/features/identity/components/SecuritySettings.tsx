@@ -16,6 +16,7 @@ import { describeDeviceLabel, type DeviceKind } from "../device-label";
 import styles from "../identity.module.css";
 import { formatLastActive, orderSessions } from "../session-display";
 import type { DeviceSession } from "../types";
+import { ChangePasswordCard } from "./ChangePasswordCard";
 import { FormFeedback } from "./FormFeedback";
 import { SessionConfirmDialog } from "./SessionConfirmDialog";
 
@@ -127,6 +128,8 @@ function SecuritySettingsInner({
 
   return (
     <>
+      <ChangePasswordCard />
+
       <section className={ui.settingsCard} aria-labelledby="sessions-heading">
         <div className={ui.settingsCardHead}>
           <h2 id="sessions-heading" className={ui.settingsCardTitle}>

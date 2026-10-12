@@ -101,6 +101,16 @@
   "usernameChecking": "Checking availability…",
   "usernameAvailable": "@{username} is available",
   "confirmSignupPasswordLabel": "Confirm password",
+  "passwordTitle": "Password",
+  "passwordHint": "Changing it signs you in again on this device.",
+  "currentPasswordLabel": "Current password",
+  "signOutOthersOnChange": "Sign out of all other devices",
+  "changePasswordSubmit": "Change password",
+  "emailTitle": "Email",
+  "emailHint": "Current address: <email></email>",
+  "newEmailLabel": "New email",
+  "emailChangeSubmit": "Change email",
+  "emailPending": "Check both inboxes. Your email changes to <email></email> once you confirm from both addresses.",
   "reasons": {
     "session_revoked": "This session was revoked. Sign in again.",
     "confirmation_required": "Confirm your email before entering Pulse.",
@@ -133,7 +143,12 @@
       "password_mismatch": "The passwords don't match.",
       "reset_session_expired": "Your reset session has expired. Request a new code.",
       "email_invalid": "Enter a valid email address.",
-      "password_required": "Enter your password."
+      "password_required": "Enter your password.",
+      "current_password_wrong": "That isn’t your current password.",
+      "email_taken": "That email is already in use.",
+      "email_same": "That’s already your email.",
+      "email_not_authorized": "We can’t send email to that address yet. Try another address.",
+      "reauthentication_needed": "Sign in again to change your password."
     },
     "platform": {
       "rate_limited": "Too many attempts. Wait a moment and try again.",

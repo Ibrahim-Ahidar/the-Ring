@@ -31,6 +31,11 @@ export async function GET(request: Request) {
     );
 
   if (!code) {
+    // The first of two email-change links carries only `?message=` (the other address
+    // still has to confirm); the target page shows the pending change.
+    if (url.searchParams.get("message") && !url.searchParams.get("error_code")) {
+      return NextResponse.redirect(new URL(target, url.origin));
+    }
     // GoTrue reports a rejected link as `?error_code=otp_expired` instead of a code.
     return fail(linkFailure(url.searchParams.get("error_code")));
   }

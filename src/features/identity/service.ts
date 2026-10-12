@@ -11,6 +11,7 @@ import { reportError } from "@/platform/telemetry";
 import { validateUsername } from "@/platform/username";
 
 import { meetsPasswordPolicy } from "./password-policy";
+import { emailError } from "./validation";
 import type {
   DeviceSession,
   OwnProfile,
@@ -339,10 +340,49 @@ export async function mapUpdatePasswordError(error: AuthFailure): Promise<string
   if (error.code === "same_password") {
     return "identity.password_same";
   }
+  if (error.code === "reauthentication_needed") {
+    return "identity.reauthentication_needed";
+  }
   if (error.code === "session_not_found" || error.status === 401) {
     return "identity.reset_session_expired";
   }
   return mapCommonAuthError(error, "identity.update_password");
+}
+
+/** Maps an `updateUser({ email })` error by its `AuthApiError` code. */
+export async function mapChangeEmailError(error: AuthFailure): Promise<string> {
+  if (error.code === "email_exists") {
+    return "identity.email_taken";
+  }
+  if (error.code === "email_address_invalid") {
+    return "identity.email_invalid";
+  }
+  // The hosted default mailer only delivers to project team members.
+  if (error.code === "email_address_not_authorized") {
+    return "identity.email_not_authorized";
+  }
+  return mapCommonAuthError(error, "identity.change_email");
+}
+
+/** Ends every other auth session and revokes every other device row. */
+async function signOutOtherDevices(
+  supabase: SupabaseClient,
+  rpc: RpcClient,
+  currentDeviceId: string | undefined,
+): Promise<void> {
+  const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
+  if (signOutError) {
+    await reportError(signOutError, { operation: "identity.sign_out_others" });
+  }
+
+  const devices = await listSessions(rpc);
+  if (devices.ok) {
+    for (const device of devices.value) {
+      if (device.id !== currentDeviceId && !device.revoked_at) {
+        await revokeSession(rpc, device.id);
+      }
+    }
+  }
 }
 
 /**
@@ -364,21 +404,92 @@ export async function updatePassword(
     return err(await mapUpdatePasswordError(error));
   }
 
-  const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
-  if (signOutError) {
-    await reportError(signOutError, { operation: "identity.sign_out_others" });
+  await signOutOtherDevices(supabase, rpc, currentDeviceId);
+  return ok(undefined);
+}
+
+/**
+ * Changes a signed-in member's password after checking the current one, and returns
+ * the device id now bound to the session. Signing in again proves the current
+ * password and makes this a recent login, which `secure_password_change` requires;
+ * the device row is re-bound to that new session.
+ */
+export async function changePassword(
+  supabase: SupabaseClient,
+  rpc: RpcClient,
+  input: { email: string; currentPassword: string; newPassword: string; signOutOthers: boolean },
+  deviceId: string | undefined,
+): Promise<Result<string>> {
+  if (!input.currentPassword) {
+    return err("identity.password_required");
+  }
+  if (!meetsPasswordPolicy(input.newPassword)) {
+    return err("identity.password_weak");
+  }
+  if (input.newPassword === input.currentPassword) {
+    return err("identity.password_same");
   }
 
-  const devices = await listSessions(rpc);
-  if (devices.ok) {
-    for (const device of devices.value) {
-      if (device.id !== currentDeviceId && !device.revoked_at) {
-        await revokeSession(rpc, device.id);
-      }
+  const { data: before } = await supabase.auth.getSession();
+  const replacedToken = before.session?.access_token;
+
+  const reauth = await signIn(
+    supabase,
+    rpc,
+    { email: input.email, password: input.currentPassword },
+    deviceId,
+  );
+  if (!reauth.ok) {
+    return reauth.error.code === "identity.credentials_rejected"
+      ? err("identity.current_password_wrong")
+      : reauth;
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: input.newPassword });
+  if (error) {
+    return err(await mapUpdatePasswordError(error));
+  }
+
+  if (input.signOutOthers) {
+    await signOutOtherDevices(supabase, rpc, reauth.value);
+  } else if (replacedToken) {
+    // The session the sign-in replaced has no cookie left; end it rather than let it linger.
+    const { error: endError } = await supabase.auth.admin.signOut(replacedToken, "local");
+    if (endError) {
+      await reportError(endError, { operation: "identity.end_replaced_session" });
     }
   }
 
-  return ok(undefined);
+  return ok(reauth.value);
+}
+
+/**
+ * Starts an email change. With `double_confirm_changes` both addresses get a link;
+ * the address switches once both are confirmed.
+ */
+export async function changeEmail(
+  supabase: SupabaseClient,
+  currentEmail: string | undefined,
+  email: string,
+  redirectTo: string,
+): Promise<Result<{ pendingEmail: string }>> {
+  const invalid = emailError(email);
+  if (invalid) {
+    return err(invalid);
+  }
+  const trimmed = email.trim();
+  if (currentEmail && trimmed.toLowerCase() === currentEmail.toLowerCase()) {
+    return err("identity.email_same");
+  }
+
+  const { data, error } = await supabase.auth.updateUser(
+    { email: trimmed },
+    { emailRedirectTo: redirectTo },
+  );
+  if (error) {
+    return err(await mapChangeEmailError(error));
+  }
+  return ok({ pendingEmail: data.user?.new_email ?? trimmed });
 }
 
 export async function signOut(supabase: SupabaseClient): Promise<Result<void>> {

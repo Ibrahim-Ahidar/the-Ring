@@ -189,6 +189,43 @@ export async function updatePasswordAction(
   return identity.updatePassword(ctx.supabase, ctx.rpc, password, await readDeviceId());
 }
 
+export async function changePasswordAction(input: {
+  currentPassword: string;
+  newPassword: string;
+  signOutOthers: boolean;
+}): Promise<Result<void>> {
+  const ctx = await getSessionContext();
+  if (!ctx?.user.email) {
+    return err("platform.unauthenticated");
+  }
+  const result = await identity.changePassword(
+    ctx.supabase,
+    ctx.rpc,
+    { email: ctx.user.email, ...input },
+    await readDeviceId(),
+  );
+  if (!result.ok) {
+    return result;
+  }
+  await writeDeviceId(result.value);
+  return ok(undefined);
+}
+
+export async function changeEmailAction(
+  email: string,
+): Promise<Result<{ pendingEmail: string }>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+  return identity.changeEmail(
+    ctx.supabase,
+    ctx.user.email,
+    email,
+    `${appOrigin()}/auth/callback?next=/app/settings/account`,
+  );
+}
+
 export async function loadOwnProfileAction(): Promise<Result<OwnProfile | null>> {
   const ctx = await getSessionContext();
   if (!ctx) {

@@ -101,6 +101,16 @@
   "usernameChecking": "جارٍ التحقق من التوفر…",
   "usernameAvailable": "‏@{username} متاح",
   "confirmSignupPasswordLabel": "تأكيد كلمة المرور",
+  "passwordTitle": "كلمة المرور",
+  "passwordHint": "تغييرها يعيد تسجيل دخولك على هذا الجهاز.",
+  "currentPasswordLabel": "كلمة المرور الحالية",
+  "signOutOthersOnChange": "تسجيل الخروج من جميع الأجهزة الأخرى",
+  "changePasswordSubmit": "تغيير كلمة المرور",
+  "emailTitle": "البريد الإلكتروني",
+  "emailHint": "العنوان الحالي: <email></email>",
+  "newEmailLabel": "البريد الإلكتروني الجديد",
+  "emailChangeSubmit": "تغيير البريد الإلكتروني",
+  "emailPending": "تحقق من صندوقَي البريد. سيتغير بريدك إلى <email></email> بعد التأكيد من العنوانين.",
   "reasons": {
     "session_revoked": "أُلغيت هذه الجلسة. سجّل الدخول مجددًا.",
     "confirmation_required": "أكّد بريدك قبل الدخول إلى Pulse.",
@@ -133,7 +143,12 @@
       "password_mismatch": "كلمتا المرور غير متطابقتين.",
       "reset_session_expired": "انتهت جلسة إعادة التعيين. اطلب رمزًا جديدًا.",
       "email_invalid": "أدخل بريدًا إلكترونيًا صالحًا.",
-      "password_required": "أدخل كلمة المرور."
+      "password_required": "أدخل كلمة المرور.",
+      "current_password_wrong": "هذه ليست كلمة مرورك الحالية.",
+      "email_taken": "هذا البريد مستخدم بالفعل.",
+      "email_same": "هذا هو بريدك الحالي بالفعل.",
+      "email_not_authorized": "لا يمكننا إرسال بريد إلى هذا العنوان حاليًا. جرّب عنوانًا آخر.",
+      "reauthentication_needed": "سجّل الدخول مجددًا لتغيير كلمة المرور."
     },
     "platform": {
       "rate_limited": "محاولات كثيرة. انتظر قليلًا.",

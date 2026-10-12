@@ -143,6 +143,21 @@
   outline-offset: -4px;
 }
 
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.checkRow input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent);
+}
+
 .usernameStatus {
   font-size: 12px;
 }

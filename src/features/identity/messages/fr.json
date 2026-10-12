@@ -101,6 +101,16 @@
   "usernameChecking": "Vérification de la disponibilité…",
   "usernameAvailable": "@{username} est disponible",
   "confirmSignupPasswordLabel": "Confirmer le mot de passe",
+  "passwordTitle": "Mot de passe",
+  "passwordHint": "La modification vous reconnecte sur cet appareil.",
+  "currentPasswordLabel": "Mot de passe actuel",
+  "signOutOthersOnChange": "Se déconnecter de tous les autres appareils",
+  "changePasswordSubmit": "Changer le mot de passe",
+  "emailTitle": "E-mail",
+  "emailHint": "Adresse actuelle : <email></email>",
+  "newEmailLabel": "Nouvel e-mail",
+  "emailChangeSubmit": "Changer l’e-mail",
+  "emailPending": "Vérifiez les deux boîtes de réception. Votre e-mail deviendra <email></email> après confirmation depuis les deux adresses.",
   "reasons": {
     "session_revoked": "Session révoquée. Reconnectez-vous.",
     "confirmation_required": "Confirmez votre e-mail avant d’entrer dans Pulse.",
@@ -133,7 +143,12 @@
       "password_mismatch": "Les mots de passe ne correspondent pas.",
       "reset_session_expired": "Votre session de réinitialisation a expiré. Demandez un nouveau code.",
       "email_invalid": "Saisissez une adresse e-mail valide.",
-      "password_required": "Saisissez votre mot de passe."
+      "password_required": "Saisissez votre mot de passe.",
+      "current_password_wrong": "Ce n’est pas votre mot de passe actuel.",
+      "email_taken": "Cet e-mail est déjà utilisé.",
+      "email_same": "C’est déjà votre e-mail.",
+      "email_not_authorized": "Nous ne pouvons pas encore envoyer d’e-mail à cette adresse. Essayez-en une autre.",
+      "reauthentication_needed": "Reconnectez-vous pour changer votre mot de passe."
     },
     "platform": {
       "rate_limited": "Trop de tentatives. Patientez.",
