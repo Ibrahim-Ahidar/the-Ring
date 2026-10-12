@@ -160,6 +160,18 @@
   }
 }
 
+/* Seven labelled tabs do not fit a narrow phone; keep icons, labels stay for assistive tech. */
+@media (max-width: 419px) {
+  .shell-nav__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
 .shell-right-pane {
   position: absolute;
   z-index: 20;
