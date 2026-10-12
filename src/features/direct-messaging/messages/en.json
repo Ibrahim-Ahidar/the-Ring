@@ -57,7 +57,7 @@
   "welcomeText": "Find people by their username and start a conversation. Pick a chat on the list to continue where you left off.",
   "newGroup": "New group",
   "findByUsername": "Find by username",
-  "paletteHint": "Press {keys} to open the command palette",
+  "paletteHint": "Press <keys></keys> to open the command palette",
   "delivery": {
     "pending": "Sending…",
     "failed": "Failed to send",
