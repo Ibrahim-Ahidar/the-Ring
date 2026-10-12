@@ -34,6 +34,16 @@ async function anonRpc() {
   return asRpcClient(supabase);
 }
 
+export async function checkUsernameAvailabilityAction(
+  username: string,
+): Promise<Result<boolean>> {
+  const rpc = await anonRpc();
+  if (!rpc) {
+    return err("platform.auth_unavailable");
+  }
+  return identity.checkUsernameAvailable(rpc, username);
+}
+
 export async function signUpAction(input: {
   email: string;
   password: string;

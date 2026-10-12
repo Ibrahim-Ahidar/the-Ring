@@ -10,7 +10,7 @@ import { err, ok, type Result } from "@/platform/result";
 import { reportError } from "@/platform/telemetry";
 import { validateUsername } from "@/platform/username";
 
-import { MIN_PASSWORD_LENGTH } from "./password-policy";
+import { meetsPasswordPolicy } from "./password-policy";
 import type {
   DeviceSession,
   OwnProfile,
@@ -57,6 +57,9 @@ export async function signUp(
   if (!usernameCheck.ok) {
     return usernameCheck;
   }
+  if (!meetsPasswordPolicy(input.password)) {
+    return err("identity.password_weak");
+  }
 
   const rate = await enforceSignupRateLimit(serverRpc, input.email);
   if (!rate.ok) {
@@ -91,7 +94,7 @@ export async function signUp(
     if (error.message.includes("identity.")) {
       return err(error.message);
     }
-    return err(await mapCommonAuthError(error, "identity.sign_up"));
+    return err(await mapSignUpError(error));
   }
 
   const needsEmailConfirmation = !data.user?.email_confirmed_at;
@@ -150,6 +153,17 @@ async function mapCommonAuthError(
     status: error.status ?? null,
   });
   return "platform.unexpected";
+}
+
+/** Maps a `signUp` error by its `AuthApiError` code. */
+export async function mapSignUpError(error: AuthFailure): Promise<string> {
+  if (error.code === "weak_password") {
+    return "identity.password_weak";
+  }
+  if (error.code === "email_address_invalid") {
+    return "identity.email_invalid";
+  }
+  return mapCommonAuthError(error, "identity.sign_up");
 }
 
 /** Maps a `signInWithPassword` error by its `AuthApiError` code, never its message. */
@@ -341,7 +355,7 @@ export async function updatePassword(
   password: string,
   currentDeviceId: string | undefined,
 ): Promise<Result<void>> {
-  if (password.length < MIN_PASSWORD_LENGTH) {
+  if (!meetsPasswordPolicy(password)) {
     return err("identity.password_weak");
   }
 
