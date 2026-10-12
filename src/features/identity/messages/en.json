@@ -64,7 +64,6 @@
   "unknownDevice": "Unknown device",
   "justNow": "just now",
   "activeNow": "Active now",
-  "cancel": "Cancel",
   "revokeConfirmTitle": "Sign out this device?",
   "revokeConfirmBody": "{device} will be signed out and must log in again.",
   "revokeOthers": "Sign out other devices",
@@ -95,6 +94,13 @@
   "resetExpiredTitle": "This link has expired",
   "resetExpiredBody": "The reset code or link has expired or was already used. Request a new one to continue.",
   "passwordUpdated": "Password updated",
+  "reasons": {
+    "session_revoked": "This session was revoked. Sign in again.",
+    "confirmation_required": "Confirm your email before entering Pulse.",
+    "link_invalid": "That link isn’t valid. Request a new one or sign in.",
+    "link_expired": "That link has expired or was already used. Request a new one or sign in.",
+    "signed_out": "You’re signed out. Sign in to continue."
+  },
   "errors": {
     "identity": {
       "username_too_short": "Username must be at least 3 characters.",

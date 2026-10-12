@@ -64,7 +64,6 @@
   "unknownDevice": "Appareil inconnu",
   "justNow": "à l’instant",
   "activeNow": "Actif maintenant",
-  "cancel": "Annuler",
   "revokeConfirmTitle": "Déconnecter cet appareil ?",
   "revokeConfirmBody": "{device} sera déconnecté et devra se reconnecter.",
   "revokeOthers": "Déconnecter les autres appareils",
@@ -95,6 +94,13 @@
   "resetExpiredTitle": "Ce lien a expiré",
   "resetExpiredBody": "Le code ou le lien de réinitialisation a expiré ou a déjà été utilisé. Demandez-en un nouveau pour continuer.",
   "passwordUpdated": "Mot de passe mis à jour",
+  "reasons": {
+    "session_revoked": "Session révoquée. Reconnectez-vous.",
+    "confirmation_required": "Confirmez votre e-mail avant d’entrer dans Pulse.",
+    "link_invalid": "Ce lien n’est pas valide. Demandez-en un nouveau ou connectez-vous.",
+    "link_expired": "Ce lien a expiré ou a déjà été utilisé. Demandez-en un nouveau ou connectez-vous.",
+    "signed_out": "Vous êtes déconnecté. Connectez-vous pour continuer."
+  },
   "errors": {
     "identity": {
       "username_too_short": "Au moins 3 caractères.",

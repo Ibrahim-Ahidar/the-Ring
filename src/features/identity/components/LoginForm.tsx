@@ -12,7 +12,12 @@ import styles from "../identity.module.css";
 import { FormFeedback } from "./FormFeedback";
 import { SignupCodeEntry } from "./SignupCodeEntry";
 
-function LoginFormInner() {
+type Props = {
+  /** Where to go after sign-in; the page has already checked it with `safeNextPath`. */
+  next?: string;
+};
+
+function LoginFormInner({ next = "/app" }: Props) {
   const t = useTranslations("identity");
   const router = useRouter();
   const { submitting, errorCode, startSubmit, finishSubmit, clearFeedback } =
@@ -37,7 +42,7 @@ function LoginFormInner() {
       return;
     }
     finishSubmit({ successMessage: null });
-    router.push("/app");
+    router.push(next);
     router.refresh();
   }
 
@@ -47,6 +52,7 @@ function LoginFormInner() {
         email={email}
         intro={t("errors.identity.confirmation_required")}
         resendOnMount
+        next={next}
         onBack={() => {
           clearFeedback();
           setConfirming(false);
@@ -116,10 +122,10 @@ function LoginFormInner() {
   );
 }
 
-function LoginFormRoot() {
+function LoginFormRoot(props: Props) {
   return (
     <IdentityFormProvider>
-      <LoginFormInner />
+      <LoginFormInner {...props} />
     </IdentityFormProvider>
   );
 }

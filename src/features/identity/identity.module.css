@@ -111,6 +111,15 @@
   text-align: center;
 }
 
+.reasonBanner {
+  padding: var(--space-12);
+  border-inline-start: 3px solid var(--color-accent);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+
 .authNoticeTitle {
   color: var(--color-text);
   font-size: var(--text-lg);

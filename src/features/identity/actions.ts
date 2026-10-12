@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AVATARS_BUCKET, avatarObjectName } from "@/platform/avatars";
+import { loginPath } from "@/platform/login-redirect";
 import { getSessionContext, type SessionContext } from "@/platform/session";
 import { createSupabaseAdminClient } from "@/platform/supabase/admin";
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
@@ -124,7 +125,7 @@ export async function signOutAction(): Promise<Result<void>> {
   const result = await identity.signOut(supabase);
   if (result.ok) {
     await clearDeviceId();
-    redirect("/login");
+    redirect(loginPath({ reason: "signed_out" }));
   }
   return result;
 }
