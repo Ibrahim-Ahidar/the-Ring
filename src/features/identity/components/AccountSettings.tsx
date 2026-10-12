@@ -2,7 +2,7 @@
 
 import { Camera, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { memo, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import {
@@ -491,4 +491,4 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
   );
 }
 
-export const AccountSettings = memo(AccountSettingsInner);
+export const AccountSettings = AccountSettingsInner;

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import { ShellProvider, useShell } from "@/shell/context/ShellContext";
 import { ShellOverlays } from "./ShellOverlays";
@@ -33,4 +33,4 @@ function AppShellInner({ children }: { children: ReactNode }) {
   );
 }
 
-export const AppShell = memo(AppShellInner);
+export const AppShell = AppShellInner;

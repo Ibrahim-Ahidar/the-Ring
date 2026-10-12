@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Bell, CheckCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -152,4 +152,4 @@ function NotificationsInboxInner() {
   );
 }
 
-export const NotificationsInbox = memo(NotificationsInboxInner);
+export const NotificationsInbox = NotificationsInboxInner;

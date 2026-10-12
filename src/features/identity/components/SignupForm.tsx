@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { memo, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -339,4 +339,4 @@ function SignupFormRoot() {
   );
 }
 
-export const SignupForm = memo(SignupFormRoot);
+export const SignupForm = SignupFormRoot;

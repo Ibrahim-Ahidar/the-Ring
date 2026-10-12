@@ -1,6 +1,5 @@
 "use client";
 
-import { memo } from "react";
 import { useTranslations } from "next-intl";
 
 import type { LoginReason } from "@/platform/login-redirect";
@@ -18,4 +17,4 @@ function LoginReasonBannerInner({ reason }: { reason: LoginReason }) {
   );
 }
 
-export const LoginReasonBanner = memo(LoginReasonBannerInner);
+export const LoginReasonBanner = LoginReasonBannerInner;

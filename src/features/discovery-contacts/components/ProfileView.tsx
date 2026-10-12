@@ -2,7 +2,7 @@
 
 import { MessageCircle, Star, Users } from "lucide-react";
 import Link from "next/link";
-import { memo, useCallback, useState, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { Avatar } from "@/shell/components/Avatar";
@@ -133,4 +133,4 @@ function ProfileViewInner({ profile, signedIn, newChatHref, footer }: ProfileVie
   );
 }
 
-export const ProfileView = memo(ProfileViewInner);
+export const ProfileView = ProfileViewInner;

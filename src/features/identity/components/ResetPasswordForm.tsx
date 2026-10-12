@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { memo, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -111,5 +111,5 @@ function ResetPasswordFormRoot() {
   );
 }
 
-export const ResetPasswordForm = memo(ResetPasswordFormRoot);
+export const ResetPasswordForm = ResetPasswordFormRoot;
 

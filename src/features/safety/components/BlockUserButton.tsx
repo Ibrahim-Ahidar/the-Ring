@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { useCallback } from "react";
 import { Ban } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -15,7 +15,7 @@ type BlockUserButtonProps = {
   displayName?: string | null;
 };
 
-export const BlockUserButton = memo(function BlockUserButton({
+export function BlockUserButton({
   userId,
   username,
   displayName = null,
@@ -32,4 +32,4 @@ export const BlockUserButton = memo(function BlockUserButton({
       <span className={ui.settingBody}>{t("block.action")}</span>
     </button>
   );
-});
+}

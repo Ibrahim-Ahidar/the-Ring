@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { memo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -194,4 +194,4 @@ function LoginFormRoot(props: Props) {
   );
 }
 
-export const LoginForm = memo(LoginFormRoot);
+export const LoginForm = LoginFormRoot;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { memo, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -52,4 +52,4 @@ function PaneHeaderInner({
   );
 }
 
-export const PaneHeader = memo(PaneHeaderInner);
+export const PaneHeader = PaneHeaderInner;

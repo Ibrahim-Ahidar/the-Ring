@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -112,4 +112,4 @@ function NewGroupFormInner() {
   );
 }
 
-export const NewGroupForm = memo(NewGroupFormInner);
+export const NewGroupForm = NewGroupFormInner;

@@ -2,7 +2,7 @@
 
 import { LogOut, Monitor, Smartphone, Tablet } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { memo, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -217,4 +217,4 @@ function SecuritySettingsRoot(props: SecuritySettingsProps) {
   );
 }
 
-export const SecuritySettings = memo(SecuritySettingsRoot);
+export const SecuritySettings = SecuritySettingsRoot;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { memo, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -110,4 +110,4 @@ function ForgotPasswordFormRoot(props: Props) {
   );
 }
 
-export const ForgotPasswordForm = memo(ForgotPasswordFormRoot);
+export const ForgotPasswordForm = ForgotPasswordFormRoot;
