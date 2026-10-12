@@ -57,7 +57,7 @@
   "welcomeText": "Trouvez des personnes par leur nom d'utilisateur et lancez une conversation. Choisissez une discussion dans la liste pour reprendre là où vous en étiez.",
   "newGroup": "Nouveau groupe",
   "findByUsername": "Trouver par nom d'utilisateur",
-  "paletteHint": "Appuyez sur {keys} pour ouvrir la palette de commandes",
+  "paletteHint": "Appuyez sur <keys></keys> pour ouvrir la palette de commandes",
   "delivery": {
     "pending": "Envoi…",
     "failed": "Échec de l'envoi",
