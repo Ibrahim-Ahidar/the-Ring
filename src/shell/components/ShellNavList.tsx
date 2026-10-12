@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
-  ChevronRight,
   MessageCircle,
   Search,
+  Settings,
   UserRound,
   Users,
   type LucideIcon,
@@ -15,7 +15,6 @@ import { memo, useMemo, type ComponentType } from "react";
 import { useTranslations } from "next-intl";
 
 import { getContributions } from "@/shell/slots";
-import ui from "@/shell/styles/ui.module.css";
 
 type NavEntry = {
   id: string;
@@ -26,17 +25,37 @@ type NavEntry = {
   badge?: ComponentType;
 };
 
-type Props = {
-  /** Shell or feature nav ids to leave out (for example the page you are on). */
-  exclude?: readonly string[];
-};
+/** Settings always sits last (bottom of the rail, end of the tab bar). */
+const SETTINGS_ORDER = 1000;
+
+function matches(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 /**
- * Destinations that used to live in the navigation rail, rendered as list rows.
- * Feature `nav` contributions still register here, including their badges.
+ * Id of the entry whose href is the longest prefix of the current path, so
+ * `/app/chats/requests` lights up Requests rather than Chats.
  */
-function ShellNavListInner({ exclude = [] }: Props) {
-  const pathname = usePathname();
+export function activeNavId(
+  pathname: string,
+  entries: readonly { id: string; href: string }[],
+): string | null {
+  let best: { id: string; href: string } | null = null;
+  for (const entry of entries) {
+    if (matches(pathname, entry.href) && (!best || entry.href.length > best.href.length)) {
+      best = entry;
+    }
+  }
+  return best?.id ?? null;
+}
+
+/**
+ * Primary app navigation: a vertical rail on desktop and a bottom tab bar on
+ * mobile (layout lives in shell.css). Feature `nav` contributions register
+ * here, including their badges, so they stay visible from every screen.
+ */
+function ShellNavListInner() {
+  const pathname = usePathname() ?? "";
   const t = useTranslations("shell.nav");
   const tFeature = useTranslations();
   const featureNav = useMemo(() => getContributions("nav"), []);
@@ -54,6 +73,13 @@ function ShellNavListInner({ exclude = [] }: Props) {
         icon: Bell,
         order: 50,
       },
+      {
+        id: "settings",
+        href: "/app/settings",
+        label: t("settings"),
+        icon: Settings,
+        order: SETTINGS_ORDER,
+      },
     ];
     const byId = new Map<string, NavEntry>();
     for (const item of shellItems) {
@@ -70,37 +96,46 @@ function ShellNavListInner({ exclude = [] }: Props) {
         badge: item.badge,
       });
     }
-    return [...byId.values()]
-      .filter((item) => !exclude.includes(item.id))
-      .sort((a, b) => a.order - b.order);
-  }, [exclude, featureNav, t, tFeature]);
+    return [...byId.values()].sort((a, b) => a.order - b.order);
+  }, [featureNav, t, tFeature]);
+
+  const activeId = activeNavId(pathname, entries);
 
   return (
-    <ul className={ui.list}>
-      {entries.map((item) => {
-        const Icon = item.icon;
-        const Badge = item.badge;
-        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-        return (
-          <li key={item.id}>
-            <Link
-              href={item.href}
-              className={ui.listRow}
-              aria-current={active ? "page" : undefined}
+    <nav className="shell-nav" aria-label={t("primary")}>
+      <ul className="shell-nav__list">
+        {entries.map((item) => {
+          const Icon = item.icon;
+          const Badge = item.badge;
+          const active = item.id === activeId;
+          return (
+            <li
+              key={item.id}
+              className="shell-nav__item"
+              data-nav-id={item.id}
+              data-end={item.order >= SETTINGS_ORDER ? "true" : undefined}
             >
-              <Icon size={24} aria-hidden />
-              <span className={ui.listRowBody}>
-                <span className={ui.listRowTitle}>{item.label}</span>
-              </span>
-              <span className={ui.listRowTrail}>
-                {Badge ? <Badge /> : null}
-                <ChevronRight size={16} className="flip-rtl" aria-hidden />
-              </span>
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+              <Link
+                href={item.href}
+                className="shell-nav__link"
+                title={item.label}
+                aria-current={active ? "page" : undefined}
+              >
+                <span className="shell-nav__icon">
+                  <Icon size={22} aria-hidden />
+                  {Badge ? (
+                    <span className="shell-nav__badge">
+                      <Badge />
+                    </span>
+                  ) : null}
+                </span>
+                <span className="shell-nav__label">{item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }
 

@@ -15,7 +15,8 @@
     "settings": "Settings",
     "back": "Back",
     "backToChats": "Back to chats",
-    "profileAndSettings": "Profile and settings"
+    "profileAndSettings": "Profile and settings",
+    "primary": "Main navigation"
   },
   "settings": {
     "title": "Settings",

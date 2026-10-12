@@ -18,7 +18,6 @@ import { useLocale, useTranslations } from "next-intl";
 import ui from "@/shell/styles/ui.module.css";
 import { Avatar } from "./Avatar";
 import { PaneHeader } from "./PaneHeader";
-import { ShellNavList } from "./ShellNavList";
 
 export type SettingsProfileSummary = {
   id: string;
@@ -46,8 +45,6 @@ const LOCALE_LABEL_KEY = {
   en: "localeEn",
   fr: "localeFr",
 } as const;
-
-const NAV_EXCLUDE = ["chats"] as const;
 
 function SettingsSidebarInner({ profile, footer }: Props) {
   const pathname = usePathname();
@@ -140,9 +137,6 @@ function SettingsSidebarInner({ profile, footer }: Props) {
             );
           })}
         </ul>
-
-        <h2 className={ui.sectionLabel}>{t("settings.more")}</h2>
-        <ShellNavList exclude={NAV_EXCLUDE} />
 
         {footer ? <div className={ui.list}>{footer}</div> : null}
       </div>
