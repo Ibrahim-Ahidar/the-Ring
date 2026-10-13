@@ -262,6 +262,19 @@ content_path = "./supabase/templates/confirmation.html"
 subject = "Your Pulse password reset code"
 content_path = "./supabase/templates/recovery.html"
 
+# Every other auth email also sends only the code, never a link.
+[auth.email.template.email_change]
+subject = "Your Pulse email change code"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.magic_link]
+subject = "Your Pulse sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.reauthentication]
+subject = "Your Pulse confirmation code"
+content_path = "./supabase/templates/reauthentication.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

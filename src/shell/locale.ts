@@ -1,7 +1,7 @@
 export const LOCALES = ["ar", "en", "fr"] as const;
 export type Locale = (typeof LOCALES)[number];
 
-export const DEFAULT_LOCALE: Locale = "ar";
+export const DEFAULT_LOCALE: Locale = "en";
 
 export const LOCALE_COOKIE = "pulse_locale";
 export const THEME_COOKIE = "pulse_theme";

@@ -9,8 +9,9 @@ import {
 } from "./locale";
 
 describe("locale helpers", () => {
-  it("defaults to Arabic RTL", () => {
-    expect(DEFAULT_LOCALE).toBe("ar");
+  it("defaults to English LTR, and Arabic is RTL", () => {
+    expect(DEFAULT_LOCALE).toBe("en");
+    expect(isRtl(DEFAULT_LOCALE)).toBe(false);
     expect(isRtl("ar")).toBe(true);
     expect(isRtl("en")).toBe(false);
     expect(isRtl("fr")).toBe(false);

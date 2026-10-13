@@ -3,7 +3,7 @@
 import { memo } from "react";
 import dynamic from "next/dynamic";
 
-import { isLocale, isTheme } from "@/shell/locale";
+import { DEFAULT_LOCALE, isLocale, isTheme } from "@/shell/locale";
 import { AppearanceProvider } from "@/features/locale-appearance/context/AppearanceContext";
 import { GlobalKeyboardShortcuts } from "@/features/locale-appearance/components/GlobalKeyboardShortcuts";
 import { ShortcutHelpDialog } from "@/features/locale-appearance/components/ShortcutHelpDialog";
@@ -20,10 +20,10 @@ const CommandPalette = dynamic(
 
 function readInitialLocale() {
   if (typeof document === "undefined") {
-    return "ar" as const;
+    return DEFAULT_LOCALE;
   }
   const lang = document.documentElement.lang;
-  return isLocale(lang) ? lang : "ar";
+  return isLocale(lang) ? lang : DEFAULT_LOCALE;
 }
 
 function readInitialTheme() {
