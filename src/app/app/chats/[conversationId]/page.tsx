@@ -42,10 +42,17 @@ export default async function ConversationPage({ params, searchParams }: PagePro
     redirect("/app/chats");
   }
 
-  const messages = messagesResult.ok
-    ? messagesResult.value.items.map(mapMessageRow)
-    : [];
-  const messagesHasMore = messagesResult.ok ? messagesResult.value.hasMore : false;
+  if (!messagesResult.ok) {
+    // Never render an empty thread for a failed read: the saved messages would
+    // look lost. Let the route error boundary show a retry instead.
+    console.error("[chats] list_messages failed", {
+      conversationId,
+      code: messagesResult.error.code,
+    });
+    throw new Error(`list_messages failed: ${messagesResult.error.code}`);
+  }
+  const messages = messagesResult.value.items.map(mapMessageRow);
+  const messagesHasMore = messagesResult.value.hasMore;
 
   return (
     <ChatsApp

@@ -16,7 +16,7 @@ export const contributions: FeatureContributions = {
     {
       id: "safety-report-message",
       order: 80,
-      labelKey: "reportMessage",
+      labelKey: "report.reportMessage",
       icon: Flag,
       destructive: true,
       isAvailable: (ctx) =>

@@ -34,7 +34,12 @@ export async function callRpc<T>(
 ): Promise<Result<T>> {
   const { data, error } = await client.rpc(fn, args);
   if (error) {
-    return err(mapRpcError(error.message, error.code));
+    const code = mapRpcError(error.message, error.code);
+    if (code === "platform.unexpected") {
+      // The mapped code hides the cause; keep it visible in server logs.
+      console.error(`[rpc] ${fn} failed`, { pgCode: error.code, message: error.message });
+    }
+    return err(code);
   }
   return ok(data as T);
 }

@@ -26,10 +26,18 @@ type Listeners = {
 };
 
 type Entry = {
-  channel: RealtimeChannel;
+  /** Null until the (deferred) start has created the channel. */
+  channel: RealtimeChannel | null;
   refs: number;
   listeners: Listeners;
   lastStatus: string | null;
+  /** Resolves once the channel exists and `subscribe` has been called. */
+  started: Promise<void>;
+  /** Set once the entry was torn down; a pending start must then do nothing. */
+  dead: boolean;
+  /** Pending deferred removal, cancelled when the topic is re-joined. */
+  idleTimer: ReturnType<typeof setTimeout> | null;
+  stopAuth: (() => void) | null;
 };
 
 export type TopicHandle = {
@@ -50,6 +58,7 @@ export type TopicHandle = {
 type TableSubscription = { table: string; filter?: string };
 
 const registry = new WeakMap<SupabaseClient, Map<string, Entry>>();
+const removals = new WeakMap<SupabaseClient, Map<string, Promise<unknown>>>();
 
 function entriesFor(supabase: SupabaseClient): Map<string, Entry> {
   let map = registry.get(supabase);
@@ -60,22 +69,70 @@ function entriesFor(supabase: SupabaseClient): Map<string, Entry> {
   return map;
 }
 
-function join(
+function removalsFor(supabase: SupabaseClient): Map<string, Promise<unknown>> {
+  let map = removals.get(supabase);
+  if (!map) {
+    map = new Map();
+    removals.set(supabase, map);
+  }
+  return map;
+}
+
+/**
+ * Postgres Changes are filtered by RLS using the JWT the socket joined with.
+ * If the channel joins with the anon key (session not read from cookies yet)
+ * the subscription succeeds but no protected row is ever delivered, so make
+ * sure the socket holds the user's token before subscribing.
+ */
+async function applyRealtimeAuth(supabase: SupabaseClient): Promise<void> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data?.session?.access_token;
+    if (token) {
+      await supabase.realtime.setAuth(token);
+    }
+  } catch {
+    // Fall back to whatever the client already configured.
+  }
+}
+
+/** Delay before an unreferenced channel is removed (survives effect re-runs). */
+const IDLE_REMOVAL_MS = 0;
+
+function createEntry(
   supabase: SupabaseClient,
   topic: string,
   tables: TableSubscription[],
   presenceKey: string,
-): TopicHandle {
-  const entries = entriesFor(supabase);
-  let entry = entries.get(topic);
+): Entry {
+  const listeners: Listeners = {
+    change: new Set(),
+    broadcast: new Set(),
+    presence: new Set(),
+    status: new Set(),
+  };
+  const entry: Entry = {
+    channel: null,
+    refs: 0,
+    listeners,
+    lastStatus: null,
+    started: Promise.resolve(),
+    dead: false,
+    idleTimer: null,
+    stopAuth: null,
+  };
 
-  if (!entry) {
-    const listeners: Listeners = {
-      change: new Set(),
-      broadcast: new Set(),
-      presence: new Set(),
-      status: new Set(),
-    };
+  entry.started = (async () => {
+    // A previous channel for this topic may still be leaving; creating a new
+    // one before it is gone can reuse it or let its server-side leave kill us.
+    const leaving = removalsFor(supabase).get(topic);
+    if (leaving) {
+      await leaving.catch(() => undefined);
+    }
+    if (entry.dead) return;
+    await applyRealtimeAuth(supabase);
+    if (entry.dead) return;
+
     const channel = supabase.channel(topic, {
       config: { broadcast: { self: false }, presence: { key: presenceKey } },
     });
@@ -103,16 +160,66 @@ function join(
       listeners.presence.forEach((cb) => cb(state));
     });
 
-    const created: Entry = { channel, refs: 0, listeners, lastStatus: null };
+    entry.channel = channel;
     channel.subscribe((status) => {
-      created.lastStatus = status;
+      entry.lastStatus = status;
       listeners.status.forEach((cb) => cb(status));
     });
-    entry = created;
+
+    // Keep the socket's JWT fresh across refreshes.
+    const auth = supabase.auth?.onAuthStateChange?.((event, session) => {
+      if (
+        (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") &&
+        session?.access_token
+      ) {
+        void supabase.realtime.setAuth(session.access_token);
+      }
+    });
+    entry.stopAuth = () => auth?.data?.subscription?.unsubscribe();
+  })();
+
+  return entry;
+}
+
+function teardown(supabase: SupabaseClient, topic: string, entry: Entry): void {
+  const entries = entriesFor(supabase);
+  if (entries.get(topic) === entry) {
+    entries.delete(topic);
+  }
+  entry.dead = true;
+  entry.stopAuth?.();
+  entry.stopAuth = null;
+  const channel = entry.channel;
+  if (!channel) return;
+  const map = removalsFor(supabase);
+  const done = Promise.resolve(supabase.removeChannel(channel)).catch(
+    () => undefined,
+  );
+  map.set(topic, done);
+  void done.then(() => {
+    if (map.get(topic) === done) map.delete(topic);
+  });
+}
+
+function join(
+  supabase: SupabaseClient,
+  topic: string,
+  tables: TableSubscription[],
+  presenceKey: string,
+): TopicHandle {
+  const entries = entriesFor(supabase);
+  let entry = entries.get(topic);
+
+  if (!entry) {
+    entry = createEntry(supabase, topic, tables, presenceKey);
     entries.set(topic, entry);
   }
 
   const current = entry;
+  if (current.idleTimer) {
+    clearTimeout(current.idleTimer);
+    current.idleTimer = null;
+  }
   current.refs += 1;
   const owned = new Set<() => void>();
 
@@ -137,22 +244,29 @@ function join(
       return remove;
     },
     async send(event, payload) {
-      await current.channel.send({ type: "broadcast", event, payload });
+      await current.started;
+      await current.channel?.send({ type: "broadcast", event, payload });
     },
     async track(meta) {
-      await current.channel.track(meta);
+      await current.started;
+      await current.channel?.track(meta);
     },
     async untrack() {
-      await current.channel.untrack();
+      await current.started;
+      await current.channel?.untrack();
     },
     leave() {
       if (left) return;
       left = true;
       [...owned].forEach((remove) => remove());
       current.refs -= 1;
-      if (current.refs <= 0) {
-        entries.delete(topic);
-        void supabase.removeChannel(current.channel);
+      if (current.refs <= 0 && !current.idleTimer) {
+        // Defer: a strict-mode / effect re-run re-joins synchronously and
+        // should reuse the live channel instead of tearing it down.
+        current.idleTimer = setTimeout(() => {
+          current.idleTimer = null;
+          if (current.refs <= 0) teardown(supabase, topic, current);
+        }, IDLE_REMOVAL_MS);
       }
     },
   };

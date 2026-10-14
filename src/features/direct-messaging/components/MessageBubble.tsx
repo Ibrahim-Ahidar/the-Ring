@@ -9,6 +9,7 @@ import { Avatar, avatarColourIndex } from "@/shell/components/Avatar";
 import { getContributions } from "@/shell/slots";
 
 import { outboundDeliveryStatus, type OutboundDelivery } from "../delivery";
+import { useHydrated } from "../lib/use-hydrated";
 import type { ConversationDetail } from "../types";
 import { MessageActionHost } from "./MessageActionHost";
 import { MessageRendererHost } from "./MessageRendererHost";
@@ -79,6 +80,7 @@ function MessageBubbleInner({
   const t = useTranslations("direct-messaging");
   const format = useFormatter();
   const extras = useMemo(() => getContributions("bubbleExtra"), []);
+  const hydrated = useHydrated();
 
   if (message.type === "system") {
     return (
@@ -93,10 +95,14 @@ function MessageBubbleInner({
     ? outboundDeliveryStatus(message, detail, pendingStatus)
     : null;
   const deleted = message.deletion_scope === "everyone";
-  const time = format.dateTime(new Date(message.created_at), {
-    hour: "numeric",
-    minute: "numeric",
-  });
+  // The time depends on the viewer's zone, which can differ from the zone the
+  // server rendered with; keep it out of the SSR/hydration pass.
+  const time = hydrated
+    ? format.dateTime(new Date(message.created_at), {
+        hour: "numeric",
+        minute: "numeric",
+      })
+    : "";
 
   const showSender = !isMine && !grouped && Boolean(senderName);
   const accessibleName = t("messageFrom", {
@@ -126,7 +132,7 @@ function MessageBubbleInner({
       ) : null}
       <article
         className={styles.bubble}
-        aria-label={accessibleName}
+        aria-label={hydrated ? accessibleName : undefined}
         tabIndex={-1}
         data-message-id={
           message.id.startsWith("pending-") ? message.client_id : message.id

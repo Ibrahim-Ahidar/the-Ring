@@ -111,8 +111,20 @@ export function messagingReducer(
       const existing = current.find((m) => m.id === action.message.id);
       const merged = mergeRealtimeMessage(existing, action.message);
       const without = current.filter((m) => m.id !== merged.id);
+      // The realtime echo can land before sendText resolves; the persisted row
+      // supersedes the optimistic pending item that shares its client_id.
+      const echoedClientId =
+        merged.sender_id === state.userId && merged.client_id
+          ? merged.client_id
+          : null;
+      const pendingSends =
+        echoedClientId &&
+        state.pendingSends.some((p) => p.clientId === echoedClientId)
+          ? state.pendingSends.filter((p) => p.clientId !== echoedClientId)
+          : state.pendingSends;
       return {
         ...state,
+        pendingSends,
         messagesByConversation: {
           ...state.messagesByConversation,
           [action.conversationId]: mergeMessages(without, [merged]),

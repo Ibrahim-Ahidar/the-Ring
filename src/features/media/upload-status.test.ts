@@ -39,3 +39,28 @@ describe("shouldHideMessageForViewer", () => {
     expect(shouldHideMessageForViewer(msg, "u1")).toBe(false);
   });
 });
+
+describe("text messages are never hidden", () => {
+  it.each([null, {}, { upload: "ready" }, { other: 1 }])(
+    "shows a text message with metadata %j to another viewer",
+    (metadata) => {
+      const msg = {
+        id: "m",
+        conversation_id: "c",
+        sender_id: "u1",
+        client_id: "x",
+        type: "text",
+        body: "hi",
+        reply_to_id: null,
+        created_at: "2026-01-01T00:00:00Z",
+        edited_at: null,
+        deleted_at: null,
+        deletion_scope: "none",
+        pinned_at: null,
+        forwarded: false,
+        metadata,
+      } as Parameters<typeof shouldHideMessageForViewer>[0];
+      expect(shouldHideMessageForViewer(msg, "u2")).toBe(false);
+    },
+  );
+});

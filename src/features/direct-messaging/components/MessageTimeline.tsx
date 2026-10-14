@@ -17,6 +17,7 @@ import type { TimelineMessage } from "@/platform/timeline";
 
 import { shouldGroupWithPrevious } from "../delivery";
 import { calendarDaysAgo, isSameCalendarDay } from "../lib/calendar";
+import { useHydrated } from "../lib/use-hydrated";
 import { conversationTitle } from "../lib/titles";
 import type { ConversationDetail } from "../types";
 import type { PendingSend } from "../context/types";
@@ -68,6 +69,7 @@ function MessageTimelineInner({
   const format = useFormatter();
   const now = useNow({ updateInterval: 60_000 });
   const timeZone = useTimeZone() ?? "UTC";
+  const hydrated = useHydrated();
   const { state, retrySend, loadOlderMessages } = useMessaging();
   const stored = state.messagesByConversation[conversationId] ?? NO_MESSAGES;
   const pending = useMemo(
@@ -299,7 +301,9 @@ function MessageTimelineInner({
             <Fragment key={message.id}>
               {newDay ? (
                 <p className={styles.dayDivider}>
-                  <time dateTime={message.created_at}>{dayLabel(message.created_at)}</time>
+                  <time dateTime={message.created_at}>
+                    {hydrated ? dayLabel(message.created_at) : null}
+                  </time>
                 </p>
               ) : null}
               {showSeparator ? <p className={styles.unreadDivider}>{t("newMessages")}</p> : null}

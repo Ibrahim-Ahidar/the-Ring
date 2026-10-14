@@ -13,6 +13,7 @@ import ui from "@/shell/styles/ui.module.css";
 import { useMessaging } from "../context/MessagingProvider";
 import { useQueryHref } from "../hooks/useQueryHref";
 import { calendarDaysAgo } from "../lib/calendar";
+import { useHydrated } from "../lib/use-hydrated";
 import type { ConversationSummary } from "../types";
 import styles from "../direct-messaging.module.css";
 
@@ -69,6 +70,7 @@ function ConversationListInner({ activeConversationId }: Props) {
   const format = useFormatter();
   const now = useNow({ updateInterval: 60_000 });
   const timeZone = useTimeZone() ?? "UTC";
+  const hydrated = useHydrated();
   const searchParams = useSearchParams();
   const queryHref = useQueryHref();
   const folderId = searchParams.get("folder");
@@ -132,7 +134,7 @@ function ConversationListInner({ activeConversationId }: Props) {
                       dateTime={item.last_message_at}
                       data-unread={unread ? "true" : "false"}
                     >
-                      {listTime(item.last_message_at, now, timeZone, format, t)}
+                      {hydrated ? listTime(item.last_message_at, now, timeZone, format, t) : null}
                     </time>
                   ) : null}
                 </span>

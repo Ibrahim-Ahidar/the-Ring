@@ -58,6 +58,10 @@ type MessagingContextValue = {
 const MessagingContext = createContext<MessagingContextValue | null>(null);
 
 const INBOX_REFRESH_DEBOUNCE_MS = 400;
+/** Catch-up poll interval; only runs while the channel is not SUBSCRIBED. */
+const CATCH_UP_POLL_MS = 8000;
+/** Minimum gap between focus/visibility driven refetches. */
+const FOCUS_REFETCH_MIN_GAP_MS = 1500;
 
 function scheduleInboxRefresh(
   timerRef: MutableRefObject<ReturnType<typeof setTimeout> | null>,
@@ -146,6 +150,33 @@ export function MessagingProvider({
       return base;
     },
   );
+
+  // The reducer only seeds from props once; re-sync when the server hands this
+  // mounted provider a new page (router.refresh, switching conversations).
+  const seededMessagesRef = useRef(initialMessages);
+  useEffect(() => {
+    if (seededMessagesRef.current === initialMessages) {
+      return;
+    }
+    seededMessagesRef.current = initialMessages;
+    if (!initialConversationId || !initialMessages) {
+      return;
+    }
+    dispatch({
+      type: "messages/set",
+      conversationId: initialConversationId,
+      items: initialMessages,
+      hasMore: initialMessagesHasMore ?? false,
+      cursor: messagePageNextCursor(initialMessages),
+    });
+    if (initialDetail) {
+      dispatch({
+        type: "detail/set",
+        conversationId: initialConversationId,
+        detail: initialDetail,
+      });
+    }
+  }, [initialConversationId, initialDetail, initialMessages, initialMessagesHasMore]);
 
   useEffect(() => {
     dispatch({ type: "drafts/hydrate", drafts: readDraftsFromStorage() });
@@ -321,14 +352,92 @@ export function MessagingProvider({
     const supabase = createSupabaseBrowserClient();
     const topic = joinConversation(supabase, initialConversationId, userId);
 
+    let disposed = false;
+    let subscribed = false;
+    let everSubscribed = false;
+    let lastSyncAt = 0;
+    let syncing = false;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+    // Authoritative refetch of the open conversation: covers events missed
+    // while the socket was down, the tab was asleep, or auth lagged behind.
+    const syncOpenConversation = async () => {
+      if (syncing || disposed) {
+        return;
+      }
+      syncing = true;
+      lastSyncAt = Date.now();
+      try {
+        const page = await listMessagesAction({
+          conversationId: initialConversationId,
+        });
+        if (disposed || !page.ok) {
+          return;
+        }
+        dispatch({
+          type: "messages/set",
+          conversationId: initialConversationId,
+          items: page.value.items.map(mapMessageRow),
+          hasMore: page.value.hasMore,
+          cursor: messagePageNextCursor(page.value.items),
+        });
+        scheduleInboxRefresh(inboxRefreshTimerRef, refreshInboxList);
+      } finally {
+        syncing = false;
+      }
+    };
+
+    const stopPolling = () => {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    };
+    const startPolling = () => {
+      if (!pollTimer) {
+        pollTimer = setInterval(() => {
+          if (!subscribed) {
+            void syncOpenConversation();
+          }
+        }, CATCH_UP_POLL_MS);
+      }
+    };
+
+    const onWake = () => {
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
+        return;
+      }
+      if (Date.now() - lastSyncAt < FOCUS_REFETCH_MIN_GAP_MS) {
+        return;
+      }
+      void syncOpenConversation();
+    };
+    window.addEventListener("focus", onWake);
+    window.addEventListener("online", onWake);
+    document.addEventListener("visibilitychange", onWake);
+    // Until the first SUBSCRIBED arrives, treat the channel as not live.
+    startPolling();
+
     const offStatus = topic.onStatus((status) => {
       if (status === "SUBSCRIBED") {
+        const wasRecovering = everSubscribed && !subscribed;
+        subscribed = true;
+        everSubscribed = true;
+        stopPolling();
         dispatch({ type: "connection", status: "connected" });
+        if (wasRecovering) {
+          void syncOpenConversation();
+        }
       } else if (
         status === "CHANNEL_ERROR" ||
         status === "TIMED_OUT" ||
         status === "CLOSED"
       ) {
+        subscribed = false;
+        startPolling();
         dispatch({ type: "connection", status: "reconnecting" });
       }
     });
@@ -407,11 +516,16 @@ export function MessagingProvider({
     });
 
     return () => {
+      disposed = true;
+      stopPolling();
+      window.removeEventListener("focus", onWake);
+      window.removeEventListener("online", onWake);
+      document.removeEventListener("visibilitychange", onWake);
       offStatus();
       offChange();
       topic.leave();
     };
-  }, [initialConversationId, userId]);
+  }, [initialConversationId, refreshInboxList, userId]);
 
   useEffect(() => {
     if (!initialConversationId || !initialDetail || !initialMessages) {

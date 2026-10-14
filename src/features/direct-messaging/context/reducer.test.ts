@@ -146,3 +146,46 @@ describe("messagingReducer realtime", () => {
     expect(state.messagesByConversation.c1?.map((m) => m.id)).toEqual(["m2"]);
   });
 });
+
+describe("messagingReducer pending dedupe", () => {
+  const pending = {
+    clientId: "c-1",
+    conversationId: "conv-1",
+    body: "hi",
+    status: "pending" as const,
+    createdAt: "2026-01-01T00:00:00.000Z",
+  };
+
+  it("drops the optimistic item when the realtime echo of own message arrives", () => {
+    let state = createInitialState("me");
+    state = messagingReducer(state, { type: "pending/add", pending });
+    state = messagingReducer(state, {
+      type: "messages/upsert",
+      conversationId: "conv-1",
+      message: msg({ id: "m-1", sender_id: "me", client_id: "c-1" }),
+    });
+    expect(state.pendingSends).toHaveLength(0);
+    expect(state.messagesByConversation["conv-1"]).toHaveLength(1);
+  });
+
+  it("keeps pending items when another user's message arrives", () => {
+    let state = createInitialState("me");
+    state = messagingReducer(state, { type: "pending/add", pending });
+    state = messagingReducer(state, {
+      type: "messages/upsert",
+      conversationId: "conv-1",
+      message: msg({ id: "m-2", sender_id: "other", client_id: "c-9" }),
+    });
+    expect(state.pendingSends).toHaveLength(1);
+    expect(state.messagesByConversation["conv-1"]).toHaveLength(1);
+  });
+
+  it("applies a message from another user to the open conversation", () => {
+    const state = messagingReducer(createInitialState("me"), {
+      type: "messages/upsert",
+      conversationId: "conv-1",
+      message: msg({ id: "m-3", sender_id: "other" }),
+    });
+    expect(state.messagesByConversation["conv-1"]?.[0]?.id).toBe("m-3");
+  });
+});
