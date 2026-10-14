@@ -145,14 +145,16 @@ export function subscribeConversationReactions(
   };
 }
 
+const NO_REACTIONS: MessageReaction[] = [];
+
 export function useMessageReactions(
   conversationId: string,
   messageId: string,
 ): MessageReaction[] {
   return useSyncExternalStore(
     (listener) => subscribeConversationReactions(conversationId, listener),
-    () => getConversationReactionsState(conversationId).byMessage[messageId] ?? [],
-    () => [],
+    () => getConversationReactionsState(conversationId).byMessage[messageId] ?? NO_REACTIONS,
+    () => NO_REACTIONS,
   );
 }
 

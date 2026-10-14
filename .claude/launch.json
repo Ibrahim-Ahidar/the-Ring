@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "pulse-dev",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [".claude/dev.mjs"],
+      "port": 3000
+    }
+  ]
+}
