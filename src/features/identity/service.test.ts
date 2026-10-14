@@ -126,7 +126,7 @@ describe("verifySignupCode", () => {
 });
 
 describe("signUp", () => {
-  const input = { email: " new@b.co ", password: "secret-pass", username: "newbie" };
+  const input = { email: " new@b.co ", password: "secret-pass1", username: "newbie" };
 
   function stubSignUp(response: { data?: unknown; error?: AuthError }) {
     const signUpFn = vi.fn(async () => ({
