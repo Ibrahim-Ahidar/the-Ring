@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { RpcClient } from "@/platform/rpc";
 import { setTelemetrySink } from "@/platform/telemetry";
 
-import { resendSignupCode, signIn, verifySignupCode } from "./service";
+import { resendSignupCode, signIn, signUp, verifySignupCode } from "./service";
 
 type AuthError = { code?: string; status?: number; message?: string } | null;
 
@@ -122,6 +122,71 @@ describe("verifySignupCode", () => {
       p_device_label: null,
     });
     expect(result).toEqual({ ok: true, value: "fresh-id" });
+  });
+});
+
+describe("signUp", () => {
+  const input = { email: " new@b.co ", password: "secret-pass", username: "newbie" };
+
+  function stubSignUp(response: { data?: unknown; error?: AuthError }) {
+    const signUpFn = vi.fn(async () => ({
+      data: response.data ?? { user: null, session: null },
+      error: response.error ?? null,
+    }));
+    const client = { auth: { signUp: signUpFn } } as unknown as SupabaseClient;
+    const rpc = {
+      rpc: vi.fn(async () => ({ data: true, error: null })),
+    } as unknown as RpcClient;
+    const serverRpc = {
+      rpc: vi.fn(async () => ({ data: null, error: null })),
+    } as unknown as RpcClient;
+    return { signUpFn, client, rpc, serverRpc };
+  }
+
+  it("asks for the code when Supabase created an unconfirmed user", async () => {
+    const { signUpFn, client, rpc, serverRpc } = stubSignUp({
+      data: { user: { email_confirmed_at: null, identities: [{ id: "i" }] } },
+    });
+    const result = await signUp(client, rpc, input, serverRpc);
+    expect(result).toEqual({ ok: true, value: { needsEmailConfirmation: true } });
+    expect(signUpFn).toHaveBeenCalledWith(expect.objectContaining({ email: "new@b.co" }));
+  });
+
+  it("reports an already-registered email (user with no identities)", async () => {
+    const { client, rpc, serverRpc } = stubSignUp({
+      data: { user: { email_confirmed_at: null, identities: [] } },
+    });
+    expect(await signUp(client, rpc, input, serverRpc)).toEqual({
+      ok: false,
+      error: { code: "identity.email_registered" },
+    });
+  });
+
+  it.each([
+    [{ code: "weak_password", status: 422 }, "identity.password_weak"],
+    [{ code: "email_address_invalid", status: 400 }, "identity.email_invalid"],
+    [{ code: "email_address_not_authorized", status: 400 }, "identity.email_undeliverable"],
+    [{ code: "user_already_exists", status: 422 }, "identity.email_registered"],
+    [{ code: "over_email_send_rate_limit", status: 429 }, "platform.rate_limited"],
+    [{ code: "unexpected_failure", status: 500 }, "platform.unexpected"],
+  ])("maps %o to %s", async (error, expected) => {
+    setTelemetrySink({ captureError: vi.fn(), captureEvent: vi.fn() });
+    const { client, rpc, serverRpc } = stubSignUp({ error: { message: "x", ...error } });
+    expect(await signUp(client, rpc, input, serverRpc)).toEqual({
+      ok: false,
+      error: { code: expected },
+    });
+  });
+
+  it.each([
+    [{ password: "12345" }, "identity.password_weak"],
+    [{ email: "   " }, "identity.email_required"],
+  ])("rejects %o before calling Supabase", async (override, expected) => {
+    const { signUpFn, client, rpc, serverRpc } = stubSignUp({});
+    const result = await signUp(client, rpc, { ...input, ...override }, serverRpc);
+    expect(result).toEqual({ ok: false, error: { code: expected } });
+    expect(serverRpc.rpc).not.toHaveBeenCalled();
+    expect(signUpFn).not.toHaveBeenCalled();
   });
 });
 

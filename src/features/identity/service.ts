@@ -58,7 +58,16 @@ export async function signUp(
     return usernameCheck;
   }
 
-  const rate = await enforceSignupRateLimit(serverRpc, input.email);
+  // Cheap checks first: every Supabase call below counts against a rate limit.
+  const email = input.email.trim();
+  if (!email) {
+    return err("identity.email_required");
+  }
+  if (input.password.length < MIN_PASSWORD_LENGTH) {
+    return err("identity.password_weak");
+  }
+
+  const rate = await enforceSignupRateLimit(serverRpc, email);
   if (!rate.ok) {
     return rate;
   }
@@ -77,7 +86,7 @@ export async function signUp(
     input.displayName?.trim() || usernameCheck.value.display;
 
   const { data, error } = await supabase.auth.signUp({
-    email: input.email.trim(),
+    email,
     password: input.password,
     options: {
       data: {
@@ -91,11 +100,36 @@ export async function signUp(
     if (error.message.includes("identity.")) {
       return err(error.message);
     }
-    return err(await mapCommonAuthError(error, "identity.sign_up"));
+    return err(await mapSignUpError(error));
+  }
+
+  // With confirmation on, an already-confirmed email gets no error from Supabase:
+  // it returns an obfuscated user with no identities and sends nothing.
+  if (data.user && data.user.identities?.length === 0) {
+    return err("identity.email_registered");
   }
 
   const needsEmailConfirmation = !data.user?.email_confirmed_at;
   return ok({ needsEmailConfirmation });
+}
+
+/** Maps an `auth.signUp` error by its `AuthApiError` code. */
+export async function mapSignUpError(error: AuthFailure): Promise<string> {
+  switch (error.code) {
+    case "weak_password":
+      return "identity.password_weak";
+    case "email_address_invalid":
+    case "validation_failed":
+      return "identity.email_invalid";
+    // The built-in mailer only delivers to project team members.
+    case "email_address_not_authorized":
+      return "identity.email_undeliverable";
+    case "user_already_exists":
+    case "email_exists":
+      return "identity.email_registered";
+    default:
+      return mapCommonAuthError(error, "identity.sign_up");
+  }
 }
 
 /**

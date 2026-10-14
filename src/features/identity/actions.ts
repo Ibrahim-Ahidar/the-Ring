@@ -8,7 +8,10 @@ import { redirect } from "next/navigation";
 import { AVATARS_BUCKET, avatarObjectName } from "@/platform/avatars";
 import { getSessionContext, type SessionContext } from "@/platform/session";
 import { createSupabaseAdminClient } from "@/platform/supabase/admin";
-import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
+import {
+  tryCreateStatelessSupabaseClient,
+  tryCreateSupabaseServerClient,
+} from "@/platform/supabase/safe-server";
 import { asRpcClient } from "@/platform/rpc";
 import { err, ok, type Result } from "@/platform/result";
 
@@ -25,32 +28,27 @@ function appOrigin(): string {
   return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 }
 
-async function anonRpc() {
-  const supabase = await tryCreateSupabaseServerClient();
-  if (!supabase) {
-    return null;
-  }
-  return asRpcClient(supabase);
-}
-
 export async function signUpAction(input: {
   email: string;
   password: string;
   username: string;
   displayName?: string;
 }): Promise<Result<SignUpResult>> {
-  const supabase = await tryCreateSupabaseServerClient();
-  const rpc = await anonRpc();
-  if (!supabase || !rpc) {
+  const supabase = tryCreateStatelessSupabaseClient();
+  if (!supabase) {
     return err("platform.auth_unavailable");
   }
 
-  return identity.signUp(
-    supabase,
-    rpc,
-    input,
-    asRpcClient(createSupabaseAdminClient()),
-  );
+  try {
+    return await identity.signUp(
+      supabase,
+      asRpcClient(supabase),
+      input,
+      asRpcClient(createSupabaseAdminClient()),
+    );
+  } catch {
+    return err("platform.unexpected");
+  }
 }
 
 export async function signInAction(input: {
@@ -107,7 +105,7 @@ export async function verifySignupCodeAction(input: {
 export async function resendConfirmationAction(
   email: string,
 ): Promise<Result<void>> {
-  const supabase = await tryCreateSupabaseServerClient();
+  const supabase = tryCreateStatelessSupabaseClient();
   if (!supabase) {
     return err("platform.auth_unavailable");
   }

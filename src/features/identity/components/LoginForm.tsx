@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import ui from "@/shell/styles/ui.module.css";
 import { signInAction } from "../actions";
 import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-context";
+import { useHydrated } from "../hooks/useHydrated";
 import styles from "../identity.module.css";
 import { FormFeedback } from "./FormFeedback";
 import { SignupCodeEntry } from "./SignupCodeEntry";
@@ -15,6 +16,7 @@ import { SignupCodeEntry } from "./SignupCodeEntry";
 function LoginFormInner() {
   const t = useTranslations("identity");
   const router = useRouter();
+  const hydrated = useHydrated();
   const { submitting, errorCode, startSubmit, finishSubmit, clearFeedback } =
     useIdentityForm();
   const [email, setEmail] = useState("");
@@ -105,7 +107,7 @@ function LoginFormInner() {
       <button
         className={`${ui.btn} ${ui.btnPrimary} ${ui.btnBlock}`}
         type="submit"
-        disabled={submitting}
+        disabled={!hydrated || submitting}
       >
         {submitting ? t("submitting") : t("submitLogin")}
       </button>

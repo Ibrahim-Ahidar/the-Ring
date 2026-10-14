@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { memo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
 import { signUpAction } from "../actions";
 import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-context";
+import { useHydrated } from "../hooks/useHydrated";
 import styles from "../identity.module.css";
 import { FormFeedback, useErrorMessage } from "./FormFeedback";
 import { SignupCodeEntry } from "./SignupCodeEntry";
@@ -17,6 +19,8 @@ function isUsernameError(code: string): boolean {
 
 function SignupFormInner() {
   const t = useTranslations("identity");
+  const router = useRouter();
+  const hydrated = useHydrated();
   const { submitting, errorCode, startSubmit, finishSubmit, clearFeedback } =
     useIdentityForm();
   const [email, setEmail] = useState("");
@@ -31,12 +35,18 @@ function SignupFormInner() {
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     startSubmit();
-    const result = await signUpAction({
-      email,
-      password,
-      username,
-      displayName: displayName || undefined,
-    });
+    let result: Awaited<ReturnType<typeof signUpAction>>;
+    try {
+      result = await signUpAction({
+        email: email.trim(),
+        password,
+        username: username.trim(),
+        displayName: displayName.trim() || undefined,
+      });
+    } catch {
+      finishSubmit({ errorCode: "platform.unexpected" });
+      return;
+    }
     if (!result.ok) {
       finishSubmit({ errorCode: result.error.code });
       return;
@@ -46,7 +56,9 @@ function SignupFormInner() {
       finishSubmit({ successMessage: null });
       return;
     }
+    // Email confirmation is off: the account exists, so sign in instead of dead-ending.
     finishSubmit({ successMessage: null });
+    router.push("/login");
   }
 
   if (awaitingConfirm) {
@@ -144,10 +156,17 @@ function SignupFormInner() {
         </div>
       </div>
       <FormFeedback exclude={isUsernameError} />
+      {errorCode === "identity.email_registered" ? (
+        <p className={styles.authSwitch}>
+          <Link href="/login">
+            {t("loginInstead")}
+          </Link>
+        </p>
+      ) : null}
       <button
         className={`${ui.btn} ${ui.btnPrimary} ${ui.btnBlock}`}
         type="submit"
-        disabled={submitting}
+        disabled={!hydrated || submitting}
       >
         {submitting ? t("submitting") : t("submitSignup")}
       </button>
