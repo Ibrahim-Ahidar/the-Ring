@@ -124,7 +124,7 @@ describe("MessagingProvider sending", () => {
     expect(api().state.pendingSends).toEqual([]);
   }, 10_000);
 
-  it("queues while reconnecting and sends once after resubscribe", async () => {
+  it("sends immediately even while the realtime socket is reconnecting", async () => {
     let emitStatus: (status: string) => void = () => {};
     joinInbox.mockImplementation(() => ({
       onStatus: (listener: (status: string) => void) => {
@@ -142,15 +142,13 @@ describe("MessagingProvider sending", () => {
     await act(async () => {
       await api().sendMessage({ conversationId: "conv-1", body: "offline" });
     });
-    expect(sendTextAction).not.toHaveBeenCalled();
-    expect(api().state.pendingSends).toHaveLength(1);
+    expect(sendTextAction).toHaveBeenCalledTimes(1);
+    expect(api().state.pendingSends).toEqual([]);
 
     await act(async () => {
       emitStatus("SUBSCRIBED");
     });
-
     expect(sendTextAction).toHaveBeenCalledTimes(1);
-    expect(api().state.pendingSends).toEqual([]);
   }, 10_000);
 
   it("keeps the inbox realtime channel open across sends", async () => {

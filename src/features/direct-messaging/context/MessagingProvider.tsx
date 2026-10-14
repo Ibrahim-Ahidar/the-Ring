@@ -59,7 +59,7 @@ const MessagingContext = createContext<MessagingContextValue | null>(null);
 
 const INBOX_REFRESH_DEBOUNCE_MS = 400;
 /** Catch-up poll interval; only runs while the channel is not SUBSCRIBED. */
-const CATCH_UP_POLL_MS = 8000;
+const CATCH_UP_POLL_MS = 20000;
 /** Minimum gap between focus/visibility driven refetches. */
 const FOCUS_REFETCH_MIN_GAP_MS = 1500;
 
@@ -580,9 +580,7 @@ export function MessagingProvider({
       dispatch({ type: "pending/add", pending });
       dispatch({ type: "draft/set", conversationId: input.conversationId, text: "" });
 
-      if (connectionStatusRef.current !== "connected") {
-        return;
-      }
+      // Sending is a server action and does not depend on the realtime socket.
       await deliver(pending);
     },
     [deliver],
