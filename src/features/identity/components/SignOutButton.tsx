@@ -1,7 +1,7 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import { memo, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -34,4 +34,4 @@ function SignOutButtonInner() {
   );
 }
 
-export const SignOutButton = memo(SignOutButtonInner);
+export const SignOutButton = SignOutButtonInner;

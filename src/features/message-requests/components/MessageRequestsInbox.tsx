@@ -1,6 +1,5 @@
 "use client";
 
-import { memo } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -68,4 +67,4 @@ function MessageRequestsInboxInner() {
   );
 }
 
-export const MessageRequestsInbox = memo(MessageRequestsInboxInner);
+export const MessageRequestsInbox = MessageRequestsInboxInner;

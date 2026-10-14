@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { memo } from "react";
 import { Settings2, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -63,4 +62,4 @@ function GroupsPageViewInner({ groups }: Props) {
   );
 }
 
-export const GroupsPageView = memo(GroupsPageViewInner);
+export const GroupsPageView = GroupsPageViewInner;

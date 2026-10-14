@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AVATARS_BUCKET, avatarObjectName } from "@/platform/avatars";
+import { loginPath } from "@/platform/login-redirect";
 import { getSessionContext, type SessionContext } from "@/platform/session";
 import { createSupabaseAdminClient } from "@/platform/supabase/admin";
 import {
@@ -26,6 +27,24 @@ import type { DeviceSession, OwnProfile, SignUpResult } from "./types";
 
 function appOrigin(): string {
   return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
+}
+
+async function anonRpc() {
+  const supabase = await tryCreateSupabaseServerClient();
+  if (!supabase) {
+    return null;
+  }
+  return asRpcClient(supabase);
+}
+
+export async function checkUsernameAvailabilityAction(
+  username: string,
+): Promise<Result<boolean>> {
+  const rpc = await anonRpc();
+  if (!rpc) {
+    return err("platform.auth_unavailable");
+  }
+  return identity.checkUsernameAvailable(rpc, username);
 }
 
 export async function signUpAction(input: {
@@ -122,7 +141,7 @@ export async function signOutAction(): Promise<Result<void>> {
   const result = await identity.signOut(supabase);
   if (result.ok) {
     await clearDeviceId();
-    redirect("/login");
+    redirect(loginPath({ reason: "signed_out" }));
   }
   return result;
 }
@@ -174,6 +193,43 @@ export async function updatePasswordAction(
     return err("identity.reset_session_expired");
   }
   return identity.updatePassword(ctx.supabase, ctx.rpc, password, await readDeviceId());
+}
+
+export async function changePasswordAction(input: {
+  currentPassword: string;
+  newPassword: string;
+  signOutOthers: boolean;
+}): Promise<Result<void>> {
+  const ctx = await getSessionContext();
+  if (!ctx?.user.email) {
+    return err("platform.unauthenticated");
+  }
+  const result = await identity.changePassword(
+    ctx.supabase,
+    ctx.rpc,
+    { email: ctx.user.email, ...input },
+    await readDeviceId(),
+  );
+  if (!result.ok) {
+    return result;
+  }
+  await writeDeviceId(result.value);
+  return ok(undefined);
+}
+
+export async function changeEmailAction(
+  email: string,
+): Promise<Result<{ pendingEmail: string }>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+  return identity.changeEmail(
+    ctx.supabase,
+    ctx.user.email,
+    email,
+    `${appOrigin()}/auth/callback?next=/app/settings/account`,
+  );
 }
 
 export async function loadOwnProfileAction(): Promise<Result<OwnProfile | null>> {

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -141,4 +141,4 @@ function NewChatClientInner() {
   );
 }
 
-export const NewChatClient = memo(NewChatClientInner);
+export const NewChatClient = NewChatClientInner;

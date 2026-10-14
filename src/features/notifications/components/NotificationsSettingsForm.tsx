@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useId, useState, useTransition } from "react";
+import { useCallback, useId, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -95,4 +95,4 @@ function NotificationsSettingsFormInner({ initial }: Props) {
   );
 }
 
-export const NotificationsSettingsForm = memo(NotificationsSettingsFormInner);
+export const NotificationsSettingsForm = NotificationsSettingsFormInner;

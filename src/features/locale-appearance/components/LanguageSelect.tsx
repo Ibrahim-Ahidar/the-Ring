@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -51,4 +51,4 @@ function LanguageSelectInner() {
   );
 }
 
-export const LanguageSelect = memo(LanguageSelectInner);
+export const LanguageSelect = LanguageSelectInner;

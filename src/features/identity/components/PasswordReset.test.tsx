@@ -115,16 +115,16 @@ describe("ResetPasswordForm", () => {
   it("updates the password and lands in the app with a toast flag", async () => {
     updatePassword.mockResolvedValue({ ok: true, value: undefined });
     renderWith(<ResetPasswordForm />);
-    await fill("new-secret", "new-secret");
+    await fill("new-secret1", "new-secret1");
 
-    expect(updatePassword).toHaveBeenCalledWith("new-secret");
+    expect(updatePassword).toHaveBeenCalledWith("new-secret1");
     expect(replace).toHaveBeenCalledWith("/app");
     expect(window.sessionStorage.getItem(PASSWORD_UPDATED_FLAG)).toBe("1");
   });
 
   it("rejects mismatched passwords without calling the server", async () => {
     renderWith(<ResetPasswordForm />);
-    await fill("new-secret", "new-secreT");
+    await fill("new-secret1", "new-secreT1");
 
     expect(updatePassword).not.toHaveBeenCalled();
     expect(screen.getByRole("alert").textContent).toBe(en.errors.identity.password_mismatch);
@@ -136,7 +136,7 @@ describe("ResetPasswordForm", () => {
   it("shows the same-password error in Arabic", async () => {
     updatePassword.mockResolvedValue({ ok: false, error: { code: "identity.password_same" } });
     renderWith(<ResetPasswordForm />, "ar");
-    await fill("old-secret", "old-secret", "ar");
+    await fill("old-secret1", "old-secret1", "ar");
 
     expect(screen.getByRole("alert").textContent).toBe(ar.errors.identity.password_same);
     expect(replace).not.toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe("ResetPasswordForm", () => {
       error: { code: "identity.reset_session_expired" },
     });
     renderWith(<ResetPasswordForm />);
-    await fill("new-secret", "new-secret");
+    await fill("new-secret1", "new-secret1");
 
     expect(screen.getByRole("link", { name: en.requestNewCode }).getAttribute("href")).toBe(
       "/forgot-password",

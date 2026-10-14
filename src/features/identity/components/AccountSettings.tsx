@@ -2,7 +2,7 @@
 
 import { Camera, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { memo, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import {
@@ -23,6 +23,7 @@ import {
 } from "../actions";
 import styles from "../identity.module.css";
 import type { OwnProfile } from "../types";
+import { ChangeEmailCard } from "./ChangeEmailCard";
 
 const BIO_MAX = 160;
 const COOLDOWN_DAYS = 14;
@@ -59,9 +60,11 @@ function timeZoneOptions(current: string): string[] {
 
 type AccountSettingsProps = {
   profile: OwnProfile;
+  email: string;
+  pendingEmail: string | null;
 };
 
-function AccountSettingsInner({ profile }: AccountSettingsProps) {
+function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsProps) {
   const t = useTranslations("identity");
   const locale = useLocale();
   const [displayName, setDisplayName] = useState(profile.display_name ?? "");
@@ -410,6 +413,8 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
         </div>
       </form>
 
+      <ChangeEmailCard email={email} pendingEmail={pendingEmail} />
+
       <section className={ui.settingsCard} aria-labelledby="export-heading">
         <div className={ui.settingsCardHead}>
           <h2 id="export-heading" className={ui.settingsCardTitle}>
@@ -486,4 +491,4 @@ function AccountSettingsInner({ profile }: AccountSettingsProps) {
   );
 }
 
-export const AccountSettings = memo(AccountSettingsInner);
+export const AccountSettings = AccountSettingsInner;

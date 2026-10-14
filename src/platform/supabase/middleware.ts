@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { isHttpUrl } from "@/platform/env/validate";
+import { loginPath, parseLoginReason, safeNextPath } from "@/platform/login-redirect";
 
 function readMiddlewareEnv() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -14,16 +15,28 @@ function readMiddlewareEnv() {
   return { supabaseUrl, supabaseAnonKey };
 }
 
+/** Redirects while keeping any auth cookies Supabase refreshed on `carry`. */
+function redirectTo(request: NextRequest, target: string, carry?: NextResponse) {
+  const response = NextResponse.redirect(new URL(target, request.nextUrl.origin));
+  carry?.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
+  return response;
+}
+
+function loginWithNext(request: NextRequest): string {
+  const { pathname, search } = request.nextUrl;
+  return loginPath({ next: safeNextPath(`${pathname}${search}`, "/app") });
+}
+
 export async function updateSession(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+  const isAppPath = pathname === "/app" || pathname.startsWith("/app/");
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
+
   const env = readMiddlewareEnv();
   if (!env) {
-    if (request.nextUrl.pathname.startsWith("/app")) {
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = "/login";
-      loginUrl.search = "";
-      return NextResponse.redirect(loginUrl);
-    }
-    return NextResponse.next({ request });
+    return isAppPath
+      ? redirectTo(request, loginWithNext(request))
+      : NextResponse.next({ request });
   }
 
   let supabaseResponse = NextResponse.next({ request });
@@ -49,11 +62,27 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname.startsWith("/app")) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    loginUrl.search = "";
-    return NextResponse.redirect(loginUrl);
+  if (!user) {
+    return isAppPath
+      ? redirectTo(request, loginWithNext(request), supabaseResponse)
+      : supabaseResponse;
+  }
+
+  if (isAuthPage) {
+    const reason = parseLoginReason(searchParams.get("reason"));
+    // Server components cannot clear auth cookies, so a revoked session ends here.
+    if (reason === "identity.session_revoked") {
+      await supabase.auth.signOut({ scope: "local" });
+      return supabaseResponse;
+    }
+    // With a reason the app sent the member here on purpose; bouncing back would loop.
+    if (!reason) {
+      return redirectTo(
+        request,
+        safeNextPath(searchParams.get("next"), "/app"),
+        supabaseResponse,
+      );
+    }
   }
 
   return supabaseResponse;

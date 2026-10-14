@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -122,4 +122,4 @@ function GlobalSearchViewInner({ initialQuery }: Props) {
   );
 }
 
-export const GlobalSearchView = memo(GlobalSearchViewInner);
+export const GlobalSearchView = GlobalSearchViewInner;

@@ -8,7 +8,7 @@
 .shell-root {
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 100dvh;
   overflow: hidden;
   background: var(--color-bg);
@@ -20,6 +20,156 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+}
+
+/* ---------- Primary navigation ----------
+ * desktop >= 768px : vertical rail on the inline-start edge (flips in RTL)
+ * mobile   < 768px : bottom tab bar, hidden while a conversation is open
+ */
+
+.shell-nav {
+  flex: none;
+  display: flex;
+  width: 72px;
+  background: var(--color-panel);
+  border-inline-end: 1px solid var(--color-border);
+}
+
+.shell-nav__list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-12) 0;
+  list-style: none;
+}
+
+.shell-nav__item[data-end="true"] {
+  margin-block-start: auto;
+}
+
+.shell-nav__link {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-control);
+  color: var(--color-icon);
+  text-decoration: none;
+  transition: background-color var(--motion-fast) var(--motion-ease);
+}
+
+.shell-nav__link:hover {
+  background: var(--color-hover);
+}
+
+.shell-nav__link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.shell-nav__link[aria-current="page"] {
+  background: var(--color-selected);
+  color: var(--color-accent);
+}
+
+.shell-nav__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.shell-nav__badge {
+  position: absolute;
+  inset-block-start: -8px;
+  inset-inline-end: -12px;
+  line-height: 0;
+}
+
+.shell-nav__badge:empty {
+  display: none;
+}
+
+/* Rail: icon only, label kept for assistive tech; `title` gives the tooltip. */
+.shell-nav__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .shell-root {
+    flex-direction: column;
+  }
+
+  .shell-nav {
+    order: 1;
+    width: auto;
+    border-inline-end: 0;
+    border-block-start: 1px solid var(--color-border);
+    padding-block-end: env(safe-area-inset-bottom);
+  }
+
+  .shell-root[data-conversation-open="true"] .shell-nav {
+    display: none;
+  }
+
+  .shell-nav__list {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    padding: var(--space-4) 0;
+  }
+
+  .shell-nav__item {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .shell-nav__item[data-end="true"] {
+    margin-block-start: 0;
+  }
+
+  .shell-nav__link {
+    width: auto;
+    height: auto;
+    min-height: 52px;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-2);
+  }
+
+  .shell-nav__link[aria-current="page"] {
+    background: transparent;
+  }
+
+  .shell-nav__label {
+    position: static;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    overflow: hidden;
+    clip: auto;
+    text-overflow: ellipsis;
+    font-size: var(--text-xs);
+  }
+}
+
+/* Seven labelled tabs do not fit a narrow phone; keep icons, labels stay for assistive tech. */
+@media (max-width: 419px) {
+  .shell-nav__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 }
 
 .shell-right-pane {

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FileText, Link2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -172,4 +172,4 @@ function SharedMediaBrowserInner({ conversationId, initialTab }: Props) {
   );
 }
 
-export const SharedMediaBrowser = memo(SharedMediaBrowserInner);
+export const SharedMediaBrowser = SharedMediaBrowserInner;

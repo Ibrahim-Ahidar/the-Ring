@@ -116,10 +116,10 @@ describe("updatePassword", () => {
   it("sets the password, signs out other sessions and revokes other devices", async () => {
     const { auth, client } = stubSupabase();
     const rpc = stubRpc();
-    const result = await updatePassword(client, rpc, "new-secret", "this-device");
+    const result = await updatePassword(client, rpc, "new-secret1", "this-device");
 
     expect(result).toEqual({ ok: true, value: undefined });
-    expect(auth.updateUser).toHaveBeenCalledWith({ password: "new-secret" });
+    expect(auth.updateUser).toHaveBeenCalledWith({ password: "new-secret1" });
     expect(auth.signOut).toHaveBeenCalledWith({ scope: "others" });
     const revoked = vi
       .mocked(rpc.rpc)
@@ -136,7 +136,7 @@ describe("updatePassword", () => {
   ])("maps %o to %s and keeps other sessions", async (error, expected) => {
     setTelemetrySink({ captureError: vi.fn(), captureEvent: vi.fn() });
     const { auth, client } = stubSupabase(error);
-    const result = await updatePassword(client, stubRpc(), "new-secret", "this-device");
+    const result = await updatePassword(client, stubRpc(), "new-secret1", "this-device");
     expect(result).toEqual({ ok: false, error: { code: expected } });
     expect(auth.signOut).not.toHaveBeenCalled();
   });

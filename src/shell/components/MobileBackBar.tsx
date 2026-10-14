@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { memo, useMemo } from "react";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -53,4 +53,4 @@ function MobileBackBarInner({ href, label }: Props) {
   );
 }
 
-export const MobileBackBar = memo(MobileBackBarInner);
+export const MobileBackBar = MobileBackBarInner;

@@ -21,7 +21,11 @@ export default async function SettingsAccountPage() {
 
   return (
     <SettingsSection title={t("accountTitle")}>
-      <AccountSettings profile={profileResult.value} />
+      <AccountSettings
+        profile={profileResult.value}
+        email={ctx.user.email ?? ""}
+        pendingEmail={ctx.user.new_email ?? null}
+      />
     </SettingsSection>
   );
 }

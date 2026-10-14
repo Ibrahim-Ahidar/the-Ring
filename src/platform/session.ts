@@ -4,6 +4,7 @@ import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { loginPath } from "@/platform/login-redirect";
 import { asRpcClient, callRpc, type RpcClient } from "@/platform/rpc";
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 
@@ -15,7 +16,7 @@ export type SessionContext = {
 };
 
 export const SESSION_REVOKED_CODE = "identity.session_revoked";
-export const SESSION_REVOKED_LOGIN_PATH = `/login?reason=${SESSION_REVOKED_CODE}`;
+export const SESSION_REVOKED_LOGIN_PATH = loginPath({ reason: SESSION_REVOKED_CODE });
 
 export type SessionResolution =
   | { status: "active"; context: SessionContext }

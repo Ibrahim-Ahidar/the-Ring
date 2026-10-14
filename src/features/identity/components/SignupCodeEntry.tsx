@@ -19,6 +19,8 @@ type Props = {
   /** Login reaches this screen without a fresh email, so it asks for one first. */
   resendOnMount?: boolean;
   showLoginLink?: boolean;
+  /** Where to go once confirmed; already checked with `safeNextPath`. */
+  next?: string;
 };
 
 function SignupCodeEntryInner({
@@ -27,6 +29,7 @@ function SignupCodeEntryInner({
   intro,
   resendOnMount = false,
   showLoginLink = false,
+  next = "/app",
 }: Props) {
   const t = useTranslations("identity");
   const router = useRouter();
@@ -37,9 +40,9 @@ function SignupCodeEntryInner({
   );
   const resend = useCallback(() => resendConfirmationAction(email), [email]);
   const onVerified = useCallback(() => {
-    router.push("/app");
+    router.push(next);
     router.refresh();
-  }, [router]);
+  }, [router, next]);
 
   return (
     <CodeEntry
