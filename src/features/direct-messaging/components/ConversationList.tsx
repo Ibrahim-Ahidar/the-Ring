@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Ban, BellOff, Pin } from "lucide-react";
+import { Ban, BellOff, Check, CheckCheck, Pin } from "lucide-react";
 import { memo, useMemo } from "react";
 import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -102,6 +102,7 @@ function ConversationListInner({ activeConversationId }: Props) {
         const unread = item.unread_count > 0;
         const muted = isMuted(item, now);
         const deleted = item.last_message_deletion_scope === "everyone";
+        const receipt = state.receiptsByConversation[item.id];
         const menuCtx = {
           conversationId: item.id,
           conversationType: item.type,
@@ -144,6 +145,18 @@ function ConversationListInner({ activeConversationId }: Props) {
                     data-deleted={deleted ? "true" : "false"}
                   >
                     {deleted ? <Ban size={16} aria-hidden /> : null}
+                    {!deleted && receipt ? (
+                      receipt === "sent" ? (
+                        <Check size={16} aria-label={t("delivery.sent")} role="img" />
+                      ) : (
+                        <CheckCheck
+                          size={16}
+                          aria-label={t(`delivery.${receipt}`)}
+                          role="img"
+                          className={receipt === "read" ? styles.tickRead : undefined}
+                        />
+                      )
+                    ) : null}
                     <span>{previewText(item, t)}</span>
                   </span>
                   <span className={styles.chatRowMeta}>

@@ -21,8 +21,10 @@ import { getMessageAttachmentsAction } from "@/features/media/actions";
 
 import {
   getConversationAction,
+  getConversationReceiptsAction,
   listConversationsAction,
   listMessagesAction,
+  markDeliveredAction,
   markReadAction,
   sendTextAction,
 } from "../actions";
@@ -283,6 +285,8 @@ export function MessagingProvider({
   const inboxRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const refreshInboxList = useCallback(() => {
+    // Whatever reached this client counts as delivered to the sender.
+    void markDeliveredAction({});
     void listInbox().then((result) => {
       if (result.ok) {
         dispatch({
@@ -290,9 +294,23 @@ export function MessagingProvider({
           items: result.value.items,
           hasMore: result.value.hasMore,
         });
+        void getConversationReceiptsAction({
+          conversationIds: result.value.items
+            .filter((item) => item.type === "direct")
+            .map((item) => item.id),
+        }).then((receipts) => {
+          if (receipts.ok) {
+            dispatch({ type: "receipts/set", receipts: receipts.value });
+          }
+        });
       }
     });
   }, [listInbox]);
+
+  // Acknowledge delivery as soon as the app is open, before any event arrives.
+  useEffect(() => {
+    refreshInboxList();
+  }, [refreshInboxList]);
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -359,6 +377,46 @@ export function MessagingProvider({
     let syncing = false;
     let pollTimer: ReturnType<typeof setInterval> | null = null;
 
+    const refreshDetail = async () => {
+      const result = await getConversationAction({
+        conversationId: initialConversationId,
+      });
+      if (!disposed && result.ok) {
+        dispatch({
+          type: "detail/set",
+          conversationId: initialConversationId,
+          detail: result.value,
+        });
+      }
+    };
+
+    // Messages arriving while the chat is open are seen right away; ones that
+    // arrive while the tab is hidden are marked when it becomes visible again.
+    let lastSeenMarked: string | null = null;
+    let pendingSeenId: string | null = null;
+    const markSeen = (messageId: string) => {
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
+        pendingSeenId = messageId;
+        return;
+      }
+      pendingSeenId = null;
+      if (messageId === lastSeenMarked) {
+        return;
+      }
+      lastSeenMarked = messageId;
+      void markReadAction({
+        conversationId: initialConversationId,
+        messageId,
+      }).then((result) => {
+        if (!result.ok && lastSeenMarked === messageId) {
+          lastSeenMarked = null;
+        }
+      });
+    };
+
     // Authoritative refetch of the open conversation: covers events missed
     // while the socket was down, the tab was asleep, or auth lagged behind.
     const syncOpenConversation = async () => {
@@ -382,6 +440,13 @@ export function MessagingProvider({
           cursor: messagePageNextCursor(page.value.items),
         });
         scheduleInboxRefresh(inboxRefreshTimerRef, refreshInboxList);
+        const latestIncoming = page.value.items.find(
+          (row) => row.sender_id !== userId,
+        );
+        if (latestIncoming) {
+          markSeen(latestIncoming.id);
+        }
+        void refreshDetail();
       } finally {
         syncing = false;
       }
@@ -404,6 +469,9 @@ export function MessagingProvider({
     };
 
     const onWake = () => {
+      if (pendingSeenId) {
+        markSeen(pendingSeenId);
+      }
       if (
         typeof document !== "undefined" &&
         document.visibilityState === "hidden"
@@ -452,6 +520,9 @@ export function MessagingProvider({
         conversationId: initialConversationId,
         message,
       });
+      if (message.sender_id !== userId && message.deleted_at === null) {
+        markSeen(message.id);
+      }
       if (needsAttachmentFetch(message)) {
         void getMessageAttachmentsAction({ messageId: message.id }).then(
           (result) => {

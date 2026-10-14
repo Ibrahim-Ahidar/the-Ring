@@ -61,6 +61,7 @@
   "delivery": {
     "pending": "Envoi…",
     "failed": "Échec de l'envoi",
+    "delivered": "Distribué",
     "sent": "Envoyé",
     "read": "Lu"
   },

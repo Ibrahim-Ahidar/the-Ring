@@ -43,6 +43,8 @@ function deliveryLabel(
       return t("delivery.failed");
     case "read":
       return t("delivery.read");
+    case "delivered":
+      return t("delivery.delivered");
     default:
       return t("delivery.sent");
   }
@@ -57,6 +59,8 @@ function DeliveryIcon({ status, label }: { status: OutboundDelivery; label: stri
       return <CircleAlert {...common} className={styles.tickFailed} />;
     case "read":
       return <CheckCheck {...common} className={styles.tickRead} />;
+    case "delivered":
+      return <CheckCheck {...common} />;
     default:
       return <Check {...common} />;
   }

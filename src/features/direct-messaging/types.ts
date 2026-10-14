@@ -64,6 +64,7 @@ export type ConversationDetail = {
   other_last_read_message_id: string | null;
   other_last_read_created_at: string | null;
   other_send_read_receipts: boolean | null;
+  other_last_delivered_at: string | null;
   role: "owner" | "admin" | "member";
 };
 
@@ -74,6 +75,9 @@ export type ChatsViewer = {
   displayName: string | null;
   avatarUrl: string | null;
 };
+
+/** Status of the viewer's newest message in a direct chat, for the chat list. */
+export type ConversationReceiptStatus = "sent" | "delivered" | "read";
 
 export type MarkReadResult = {
   last_read_message_id: string | null;

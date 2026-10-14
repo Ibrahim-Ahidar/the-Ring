@@ -300,7 +300,9 @@ export function joinInbox(supabase: SupabaseClient, userId: string): TopicHandle
     supabase,
     inboxChannel(userId),
     [
-      { table: "conversation_members", filter: `user_id=eq.${userId}` },
+      // Unfiltered so the peer's read/delivered cursors reach the chat list;
+      // RLS limits rows to conversations the viewer belongs to.
+      { table: "conversation_members" },
       { table: "conversations" },
       { table: "notifications", filter: `recipient_id=eq.${userId}` },
     ],

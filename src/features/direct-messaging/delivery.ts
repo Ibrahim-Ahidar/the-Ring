@@ -1,7 +1,7 @@
 import type { ConversationDetail } from "./types";
 import type { TimelineMessage } from "@/platform/timeline";
 
-export type OutboundDelivery = "pending" | "failed" | "sent" | "read";
+export type OutboundDelivery = "pending" | "failed" | "sent" | "delivered" | "read";
 
 export function compareMessages(a: TimelineMessage, b: TimelineMessage): number {
   if (a.created_at !== b.created_at) {
@@ -28,11 +28,26 @@ export function outboundDeliveryStatus(
   if (localStatus === "failed") {
     return "failed";
   }
-  if (!detail?.other_send_read_receipts || !detail.other_last_read_message_id) {
+  if (!detail) {
     return "sent";
   }
+  if (
+    detail.other_send_read_receipts &&
+    detail.other_last_read_message_id &&
+    isReadBy(message, detail)
+  ) {
+    return "read";
+  }
+  const deliveredAt = detail.other_last_delivered_at;
+  if (deliveredAt && new Date(deliveredAt).getTime() >= new Date(message.created_at).getTime()) {
+    return "delivered";
+  }
+  return "sent";
+}
+
+function isReadBy(message: TimelineMessage, detail: ConversationDetail): boolean {
   const cursor: TimelineMessage = {
-    id: detail.other_last_read_message_id,
+    id: detail.other_last_read_message_id ?? "",
     conversation_id: message.conversation_id,
     sender_id: detail.other_user_id ?? "",
     client_id: "",
@@ -47,10 +62,7 @@ export function outboundDeliveryStatus(
     forwarded: false,
     metadata: null,
   };
-  if (isMessageAtOrBefore(message, cursor)) {
-    return "read";
-  }
-  return "sent";
+  return isMessageAtOrBefore(message, cursor);
 }
 
 export function firstUnreadMessageId(

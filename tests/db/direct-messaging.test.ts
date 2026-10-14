@@ -5,8 +5,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
   getConversation,
+  getConversationReceipts,
   listConversations,
   listMessages,
+  markDelivered,
   markRead,
   openDirect,
   sendText,
@@ -528,6 +530,67 @@ describe("review regressions", () => {
     expect(detail.value.other_send_read_receipts).toBe(false);
     expect(detail.value.other_last_read_message_id).toBeNull();
     expect(detail.value.other_last_read_created_at).toBeNull();
+  });
+
+  it("moves a sent message through delivered to read", async () => {
+    const a = await createTestUser({ username: "dl_a" });
+    const b = await createTestUser({ username: "dl_b" });
+    const aRpc = createRpcClient(db, a.id);
+    const bRpc = createRpcClient(db, b.id);
+    const opened = await openDirect(aRpc, { username: "dl_b" });
+    if (!opened.ok) throw new Error("open failed");
+    const conversationId = opened.value.conversationId;
+
+    const sent = await sendText(aRpc, {
+      conversationId,
+      clientId: randomUUID(),
+      body: "ping",
+    });
+    if (!sent.ok) throw new Error("send failed");
+
+    const before = await getConversationReceipts(aRpc, { conversationIds: [conversationId] });
+    expect(before).toEqual({ ok: true, value: { [conversationId]: "sent" } });
+    const detailBefore = await getConversation(aRpc, { conversationId });
+    if (!detailBefore.ok) throw new Error("detail failed");
+    expect(detailBefore.value.other_last_delivered_at).toBeNull();
+
+    expect((await markDelivered(bRpc, {})).ok).toBe(true);
+    const delivered = await getConversationReceipts(aRpc, {
+      conversationIds: [conversationId],
+    });
+    expect(delivered).toEqual({ ok: true, value: { [conversationId]: "delivered" } });
+    const detailDelivered = await getConversation(aRpc, { conversationId });
+    if (!detailDelivered.ok) throw new Error("detail failed");
+    expect(detailDelivered.value.other_last_delivered_at).not.toBeNull();
+
+    expect((await markRead(bRpc, { conversationId, messageId: sent.value.id })).ok).toBe(true);
+    const read = await getConversationReceipts(aRpc, { conversationIds: [conversationId] });
+    expect(read).toEqual({ ok: true, value: { [conversationId]: "read" } });
+
+    // The recipient's own list has no receipt: the newest message is not theirs.
+    const forB = await getConversationReceipts(bRpc, { conversationIds: [conversationId] });
+    expect(forB).toEqual({ ok: true, value: {} });
+  });
+
+  it("treats reading as delivery even without a delivery ack", async () => {
+    const a = await createTestUser({ username: "dr_a" });
+    const b = await createTestUser({ username: "dr_b" });
+    const aRpc = createRpcClient(db, a.id);
+    const bRpc = createRpcClient(db, b.id);
+    const opened = await openDirect(aRpc, { username: "dr_b" });
+    if (!opened.ok) throw new Error("open failed");
+    const conversationId = opened.value.conversationId;
+    const sent = await sendText(aRpc, {
+      conversationId,
+      clientId: randomUUID(),
+      body: "seen?",
+    });
+    if (!sent.ok) throw new Error("send failed");
+    await markRead(bRpc, { conversationId, messageId: sent.value.id });
+    const detail = await getConversation(aRpc, { conversationId });
+    if (!detail.ok) throw new Error("detail failed");
+    expect(detail.value.other_last_delivered_at).not.toBeNull();
+    expect(detail.value.other_last_read_message_id).toBe(sent.value.id);
   });
 
   it("previews the latest message the caller has not hidden", async () => {

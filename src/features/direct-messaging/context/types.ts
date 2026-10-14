@@ -1,6 +1,10 @@
 import type { TimelineMessage } from "@/platform/timeline";
 
-import type { ConversationDetail, ConversationSummary } from "../types";
+import type {
+  ConversationDetail,
+  ConversationReceiptStatus,
+  ConversationSummary,
+} from "../types";
 
 export type ConnectionStatus = "connected" | "reconnecting" | "disconnected";
 
@@ -25,6 +29,8 @@ export type MessagingState = {
   connectionStatus: ConnectionStatus;
   detailsByConversation: Record<string, ConversationDetail>;
   unreadSeparatorByConversation: Record<string, string | null>;
+  /** Delivery status of the viewer's newest message per direct chat. */
+  receiptsByConversation: Record<string, ConversationReceiptStatus>;
 };
 
 export type MessagingAction =
@@ -69,6 +75,7 @@ export type MessagingAction =
       conversationId: string;
       messageId: string | null;
     }
+  | { type: "receipts/set"; receipts: Record<string, ConversationReceiptStatus> }
   | { type: "drafts/hydrate"; drafts: Record<string, string> };
 
 export const DRAFTS_STORAGE_KEY = "pulse.messaging.drafts.v1";

@@ -38,6 +38,7 @@ export function createInitialState(userId: string): MessagingState {
     connectionStatus: "connected",
     detailsByConversation: {},
     unreadSeparatorByConversation: {},
+    receiptsByConversation: {},
   };
 }
 
@@ -52,6 +53,8 @@ export function messagingReducer(
         conversations: action.items,
         conversationsHasMore: action.hasMore,
       };
+    case "receipts/set":
+      return { ...state, receiptsByConversation: action.receipts };
     case "conversations/patch": {
       const idx = state.conversations.findIndex((c) => c.id === action.item.id);
       const conversations =

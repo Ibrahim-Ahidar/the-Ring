@@ -8,11 +8,14 @@ import {
   listConversations,
   listMessages,
   markRead,
+  markDelivered,
+  getConversationReceipts,
   openDirect,
   sendText,
 } from "./service";
 import type {
   ConversationDetail,
+  ConversationReceiptStatus,
   ListConversationsResult,
   ListMessagesResult,
 } from "./types";
@@ -81,6 +84,26 @@ export async function markReadAction(input: {
     return { ok: false, error: { code: "platform.unauthenticated" } };
   }
   return markRead(session.rpc, input);
+}
+
+export async function markDeliveredAction(input: {
+  conversationId?: string | null;
+}): Promise<Result<null>> {
+  const session = await requireRpc();
+  if (!session) {
+    return { ok: false, error: { code: "platform.unauthenticated" } };
+  }
+  return markDelivered(session.rpc, input);
+}
+
+export async function getConversationReceiptsAction(input: {
+  conversationIds: string[];
+}): Promise<Result<Record<string, ConversationReceiptStatus>>> {
+  const session = await requireRpc();
+  if (!session) {
+    return { ok: false, error: { code: "platform.unauthenticated" } };
+  }
+  return getConversationReceipts(session.rpc, input);
 }
 
 export async function getConversationAction(input: {
