@@ -28,7 +28,7 @@ import {
 } from "../actions";
 import { needsAttachmentFetch } from "../lib/realtime-message";
 import { firstUnreadMessageId } from "../delivery";
-import { messagePageNextCursor } from "../service";
+import { mapMessageRow, messagePageNextCursor } from "../service";
 import type { ConversationDetail, ConversationSummary } from "../types";
 import {
   inboxFiltersToListArgs,
@@ -138,9 +138,7 @@ export function MessagingProvider({
         base.messagesByConversation[initialConversationId] = initialMessages;
         base.messagesHasMore[initialConversationId] =
           initialMessagesHasMore ?? false;
-        base.messageCursors[initialConversationId] = messagePageNextCursor(
-          initialMessages as never,
-        );
+        base.messageCursors[initialConversationId] = messagePageNextCursor(initialMessages);
       }
       if (initialConversationId && initialDetail) {
         base.detailsByConversation[initialConversationId] = initialDetail;
@@ -243,7 +241,7 @@ export function MessagingProvider({
       dispatch({
         type: "messages/set",
         conversationId,
-        items: page.value.items as TimelineMessage[],
+        items: page.value.items.map(mapMessageRow),
         hasMore: page.value.hasMore,
         cursor: messagePageNextCursor(page.value.items),
       });
@@ -509,7 +507,7 @@ export function MessagingProvider({
       dispatch({
         type: "messages/mergePage",
         conversationId,
-        items: page.value.items as TimelineMessage[],
+        items: page.value.items.map(mapMessageRow),
         hasMore: page.value.hasMore,
         cursor: messagePageNextCursor(page.value.items),
       });
@@ -523,7 +521,7 @@ export function MessagingProvider({
       dispatch({
         type: "messages/set",
         conversationId,
-        items: page.value.items as TimelineMessage[],
+        items: page.value.items.map(mapMessageRow),
         hasMore: page.value.hasMore,
         cursor: messagePageNextCursor(page.value.items),
       });

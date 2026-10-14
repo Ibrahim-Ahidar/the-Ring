@@ -1,3 +1,5 @@
+import { encodeBase64Url } from "@/platform/base64url";
+
 import type {
   DeletionScope,
   MessageAttachment,
@@ -100,5 +102,5 @@ export function encodeConversationCursor(cursor: ConversationCursor): string {
   const pin = cursor.pinnedAt ?? "null";
   const last = cursor.lastMessageAt ?? "null";
   const payload = `${pin}${CURSOR_SEP}${last}${CURSOR_SEP}${cursor.id}`;
-  return Buffer.from(payload, "utf8").toString("base64url");
+  return encodeBase64Url(payload);
 }

@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useFormatter, useNow, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
 
 import { useGroupMemberDirectory } from "@/features/groups/hooks/useGroupMemberNames";
 import type { TimelineMessage } from "@/platform/timeline";
@@ -67,6 +67,7 @@ function MessageTimelineInner({
   const t = useTranslations("direct-messaging");
   const format = useFormatter();
   const now = useNow({ updateInterval: 60_000 });
+  const timeZone = useTimeZone() ?? "UTC";
   const { state, retrySend, loadOlderMessages } = useMessaging();
   const stored = state.messagesByConversation[conversationId] ?? NO_MESSAGES;
   const pending = useMemo(
@@ -245,7 +246,7 @@ function MessageTimelineInner({
 
   const dayLabel = (iso: string): string => {
     const date = new Date(iso);
-    const daysAgo = calendarDaysAgo(date, now);
+    const daysAgo = calendarDaysAgo(date, now, timeZone);
     if (daysAgo <= 0) {
       return t("today");
     }
@@ -288,7 +289,7 @@ function MessageTimelineInner({
         {timeline.length === 0 ? <p className={styles.systemNote}>{t("emptyThread")}</p> : null}
         {timeline.map((message, index) => {
           const previous = timeline[index - 1];
-          const newDay = !previous || !isSameCalendarDay(previous.created_at, message.created_at);
+          const newDay = !previous || !isSameCalendarDay(previous.created_at, message.created_at, timeZone);
           const showSeparator = separatorId === message.id;
           const grouped =
             !newDay && !showSeparator && shouldGroupWithPrevious(message, previous);

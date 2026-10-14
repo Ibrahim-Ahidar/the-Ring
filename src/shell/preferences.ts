@@ -7,10 +7,13 @@ import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 import {
   DEFAULT_LOCALE,
   DEFAULT_THEME,
+  DEFAULT_TIME_ZONE,
   isLocale,
   isTheme,
+  isTimeZone,
   LOCALE_COOKIE,
   THEME_COOKIE,
+  TIME_ZONE_COOKIE,
   type Locale,
   type Theme,
 } from "@/shell/locale";
@@ -86,4 +89,17 @@ export async function resolveTheme(): Promise<Theme> {
   }
 
   return DEFAULT_THEME;
+}
+
+/**
+ * The viewer's IANA time zone, as reported by the browser (see `TimeZoneSync`).
+ * Server and client must format dates in the same zone or hydration fails.
+ */
+export async function resolveTimeZone(): Promise<string> {
+  const cookieStore = await cookies();
+  const cookieValue = cookieStore.get(TIME_ZONE_COOKIE)?.value;
+  if (cookieValue && isTimeZone(cookieValue)) {
+    return cookieValue;
+  }
+  return DEFAULT_TIME_ZONE;
 }

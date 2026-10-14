@@ -22,3 +22,17 @@ export function isTheme(value: string): value is Theme {
 export function isRtl(locale: Locale): boolean {
   return locale === "ar";
 }
+
+export const TIME_ZONE_COOKIE = "pulse_tz";
+
+/** Used until the browser reports its zone (first visit). */
+export const DEFAULT_TIME_ZONE = "UTC";
+
+export function isTimeZone(value: string): boolean {
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: value });
+    return true;
+  } catch {
+    return false;
+  }
+}

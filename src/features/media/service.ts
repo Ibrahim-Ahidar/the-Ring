@@ -1,3 +1,4 @@
+import { encodeBase64Url } from "@/platform/base64url";
 import { callRpc, type RpcClient } from "@/platform/rpc";
 import { err, ok, type Result } from "@/platform/result";
 import type { MessageAttachment } from "@/platform/timeline";
@@ -193,5 +194,5 @@ export function sharedPageNextCursor(items: SharedItem[]): string | null {
   }
   const last = items[items.length - 1]!;
   const payload = `${last.created_at}|${last.message_id}`;
-  return Buffer.from(payload, "utf8").toString("base64url");
+  return encodeBase64Url(payload);
 }

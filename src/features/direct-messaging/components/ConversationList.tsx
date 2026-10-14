@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Ban, BellOff, Pin } from "lucide-react";
 import { memo, useMemo } from "react";
-import { useFormatter, useNow, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
 import { Avatar } from "@/shell/components/Avatar";
@@ -37,9 +37,15 @@ function previewText(item: ConversationSummary, t: Translator): string {
   return item.last_message_preview ?? t("noPreview");
 }
 
-function listTime(iso: string, now: Date, format: Formatter, t: Translator): string {
+function listTime(
+  iso: string,
+  now: Date,
+  timeZone: string,
+  format: Formatter,
+  t: Translator,
+): string {
   const date = new Date(iso);
-  const daysAgo = calendarDaysAgo(date, now);
+  const daysAgo = calendarDaysAgo(date, now, timeZone);
   if (daysAgo <= 0) {
     return format.dateTime(date, { hour: "numeric", minute: "numeric" });
   }
@@ -62,6 +68,7 @@ function ConversationListInner({ activeConversationId }: Props) {
   const tFeature = useTranslations();
   const format = useFormatter();
   const now = useNow({ updateInterval: 60_000 });
+  const timeZone = useTimeZone() ?? "UTC";
   const searchParams = useSearchParams();
   const queryHref = useQueryHref();
   const folderId = searchParams.get("folder");
@@ -125,7 +132,7 @@ function ConversationListInner({ activeConversationId }: Props) {
                       dateTime={item.last_message_at}
                       data-unread={unread ? "true" : "false"}
                     >
-                      {listTime(item.last_message_at, now, format, t)}
+                      {listTime(item.last_message_at, now, timeZone, format, t)}
                     </time>
                   ) : null}
                 </span>

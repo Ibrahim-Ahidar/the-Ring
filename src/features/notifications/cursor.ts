@@ -1,3 +1,5 @@
+import { decodeBase64Url, encodeBase64Url } from "@/platform/base64url";
+
 import type { NotificationCursor } from "./types";
 
 export const NOTIFICATION_PAGE_SIZE = 30;
@@ -8,14 +10,14 @@ export function encodeNotificationCursor(
   cursor: NotificationCursor,
 ): string {
   const payload = `${cursor.createdAt}${CURSOR_SEPARATOR}${cursor.id}`;
-  return Buffer.from(payload, "utf8").toString("base64url");
+  return encodeBase64Url(payload);
 }
 
 export function decodeNotificationCursor(
   encoded: string,
 ): NotificationCursor | null {
   try {
-    const payload = Buffer.from(encoded, "base64url").toString("utf8");
+    const payload = decodeBase64Url(encoded);
     const sep = payload.indexOf(CURSOR_SEPARATOR);
     if (sep <= 0) {
       return null;
