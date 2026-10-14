@@ -27,8 +27,7 @@ export default async function RootLayout({
     <html lang={locale} dir={isRtl(locale) ? "rtl" : "ltr"} data-theme={theme}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
-          <TimeZoneSync timeZone={timeZone} />
-          {children}
+          <TimeZoneSync timeZone={timeZone}>{children}</TimeZoneSync>
         </NextIntlClientProvider>
       </body>
     </html>
