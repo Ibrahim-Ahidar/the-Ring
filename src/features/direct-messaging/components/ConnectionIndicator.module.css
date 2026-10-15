@@ -1,0 +1,38 @@
+.bar {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-12);
+  background: var(--color-warning);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  pointer-events: none;
+  animation: bar-in 0.2s ease-out;
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes bar-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}

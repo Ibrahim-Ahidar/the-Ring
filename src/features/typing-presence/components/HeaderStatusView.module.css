@@ -1,7 +1,10 @@
 .root {
   display: block;
   overflow: hidden;
+  min-block-size: 1.25em;
   color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.25em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -11,6 +14,43 @@
   color: var(--color-accent);
 }
 
-.typing::after {
-  content: "…";
+.dots {
+  display: inline-flex;
+  gap: var(--space-2);
+  margin-inline-start: var(--space-2);
+}
+
+.dots span {
+  inline-size: 3px;
+  block-size: 3px;
+  border-radius: var(--radius-pill);
+  background: currentcolor;
+  animation: dot-bounce 1.2s infinite ease-in-out;
+}
+
+.dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes dot-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+
+  30% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dots span {
+    animation: none;
+    opacity: 0.7;
+  }
 }
