@@ -19,16 +19,18 @@ export function useErrorMessage(errorCode: string | null): string | null {
 type Props = {
   /** Codes the form shows next to a field instead of in this banner. */
   exclude?: (errorCode: string) => boolean;
+  /** Lets fields point `aria-describedby` at the banner. */
+  id?: string;
 };
 
-function FormFeedbackInner({ exclude }: Props) {
+function FormFeedbackInner({ exclude, id }: Props) {
   const { errorCode, successMessage } = useIdentityForm();
   const shown = errorCode && !exclude?.(errorCode) ? errorCode : null;
   const message = useErrorMessage(shown);
 
   if (message) {
     return (
-      <p className={styles.error} role="alert">
+      <p id={id} className={styles.error} role="alert">
         {message}
       </p>
     );
@@ -36,7 +38,7 @@ function FormFeedbackInner({ exclude }: Props) {
 
   if (successMessage) {
     return (
-      <p className={styles.success} role="status">
+      <p id={id} className={styles.success} role="status">
         {successMessage}
       </p>
     );

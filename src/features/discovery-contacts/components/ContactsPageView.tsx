@@ -1,7 +1,5 @@
 "use client";
 
-import { memo } from "react";
-
 import { DiscoveryProvider } from "../context/DiscoveryContext";
 import type { FavoriteContact, RecentSearch } from "../types";
 import styles from "../discovery-contacts.module.css";
@@ -32,4 +30,4 @@ function ContactsPageViewInner({
   );
 }
 
-export const ContactsPageView = memo(ContactsPageViewInner);
+export const ContactsPageView = ContactsPageViewInner;

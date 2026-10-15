@@ -12,12 +12,12 @@ afterEach(() => {
   process.env.TZ = original;
 });
 
-const lateUtc = new Date("2026-10-14T23:30:00Z"); // 00:30 on the 15th in Casablanca
+const lateUtc = new Date("2026-10-14T23:30:00Z"); // 08:30 on the 15th in Tokyo
 const nextMorning = new Date("2026-10-15T08:00:00Z");
 
 describe("calendarDaysAgo", () => {
   it("counts days in the given time zone, not the process's", () => {
-    expect(calendarDaysAgo(lateUtc, nextMorning, "Africa/Casablanca")).toBe(0);
+    expect(calendarDaysAgo(lateUtc, nextMorning, "Asia/Tokyo")).toBe(0);
     expect(calendarDaysAgo(lateUtc, nextMorning, "UTC")).toBe(1);
   });
 
@@ -32,7 +32,7 @@ describe("isSameCalendarDay", () => {
   it("compares days in the given time zone", () => {
     const a = "2026-10-14T23:30:00Z";
     const b = "2026-10-15T08:00:00Z";
-    expect(isSameCalendarDay(a, b, "Africa/Casablanca")).toBe(true);
+    expect(isSameCalendarDay(a, b, "Asia/Tokyo")).toBe(true);
     expect(isSameCalendarDay(a, b, "UTC")).toBe(false);
   });
 });

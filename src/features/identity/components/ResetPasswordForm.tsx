@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { memo, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
 import { updatePasswordAction } from "../actions";
 import { MIN_PASSWORD_LENGTH } from "../password-policy";
+import { newPasswordError } from "../validation";
 import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-context";
 import styles from "../identity.module.css";
 import { FormFeedback } from "./FormFeedback";
+import { PasswordInput } from "./PasswordInput";
 import { PASSWORD_UPDATED_FLAG } from "./PasswordUpdatedToast";
 
 
@@ -22,13 +24,16 @@ function ResetPasswordFormInner() {
   const [confirm, setConfirm] = useState("");
   const mismatch = errorCode === "identity.password_mismatch";
   const rejected =
-    errorCode === "identity.password_weak" || errorCode === "identity.password_same";
+    errorCode === "identity.password_weak" ||
+    errorCode === "identity.password_required" ||
+    errorCode === "identity.password_same";
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     startSubmit();
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      finishSubmit({ errorCode: "identity.password_weak" });
+    const weak = newPasswordError(password);
+    if (weak) {
+      finishSubmit({ errorCode: weak });
       return;
     }
     if (password !== confirm) {
@@ -53,10 +58,8 @@ function ResetPasswordFormInner() {
           <label className={ui.fieldLabel} htmlFor="reset-password">
             {t("newPasswordLabel")}
           </label>
-          <input
+          <PasswordInput
             id="reset-password"
-            className={ui.input}
-            type="password"
             autoComplete="new-password"
             required
             minLength={MIN_PASSWORD_LENGTH}
@@ -73,10 +76,8 @@ function ResetPasswordFormInner() {
           <label className={ui.fieldLabel} htmlFor="reset-password-confirm">
             {t("confirmPasswordLabel")}
           </label>
-          <input
+          <PasswordInput
             id="reset-password-confirm"
-            className={ui.input}
-            type="password"
             autoComplete="new-password"
             required
             aria-invalid={mismatch || undefined}
@@ -110,5 +111,5 @@ function ResetPasswordFormRoot() {
   );
 }
 
-export const ResetPasswordForm = memo(ResetPasswordFormRoot);
+export const ResetPasswordForm = ResetPasswordFormRoot;
 

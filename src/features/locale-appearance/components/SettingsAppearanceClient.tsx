@@ -1,6 +1,5 @@
 "use client";
 
-import { memo } from "react";
 import { useTranslations } from "next-intl";
 
 import { ThemeOptionList } from "@/features/locale-appearance/components/ThemeOptionList";
@@ -33,4 +32,4 @@ function SettingsAppearanceClientInner({
   );
 }
 
-export const SettingsAppearanceClient = memo(SettingsAppearanceClientInner);
+export const SettingsAppearanceClient = SettingsAppearanceClientInner;

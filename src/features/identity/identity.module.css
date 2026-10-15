@@ -111,6 +111,74 @@
   text-align: center;
 }
 
+/* The toggle sits at the inline end, so it moves to the left in RTL. */
+.passwordField {
+  position: relative;
+}
+
+.passwordField input {
+  padding-inline-end: calc(var(--space-16) + 32px);
+}
+
+.passwordToggle {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: var(--space-4);
+  display: grid;
+  place-items: center;
+  width: 36px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.passwordToggle:hover {
+  color: var(--color-text);
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -4px;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.checkRow input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent);
+}
+
+.usernameStatus {
+  font-size: 12px;
+}
+
+.usernameStatus[data-state="available"] {
+  color: var(--color-accent);
+}
+
+.usernameStatus[data-state="checking"] {
+  color: var(--color-text-muted);
+}
+
+.reasonBanner {
+  padding: var(--space-12);
+  border-inline-start: 3px solid var(--color-accent);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+
 .authNoticeTitle {
   color: var(--color-text);
   font-size: var(--text-lg);

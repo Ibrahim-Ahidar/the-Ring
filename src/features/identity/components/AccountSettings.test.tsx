@@ -54,7 +54,7 @@ function renderSettings(
   return render(
     <div dir={locale === "ar" ? "rtl" : "ltr"}>
       <NextIntlClientProvider locale={locale} messages={{ identity: messages }}>
-        <AccountSettings profile={value} />
+        <AccountSettings profile={value} email="me@pulse.test" pendingEmail={null} />
       </NextIntlClientProvider>
     </div>,
   );

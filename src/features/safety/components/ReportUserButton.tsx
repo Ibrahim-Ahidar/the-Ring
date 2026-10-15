@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { useCallback } from "react";
 import { Flag } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -14,7 +14,7 @@ type ReportUserButtonProps = {
   subjectLabel?: string | null;
 };
 
-export const ReportUserButton = memo(function ReportUserButton({
+export function ReportUserButton({
   userId,
   subjectLabel,
 }: ReportUserButtonProps) {
@@ -33,4 +33,4 @@ export const ReportUserButton = memo(function ReportUserButton({
       <span className={ui.settingBody}>{t("report.action")}</span>
     </button>
   );
-});
+}

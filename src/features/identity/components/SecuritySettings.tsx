@@ -2,7 +2,7 @@
 
 import { LogOut, Monitor, Smartphone, Tablet } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { memo, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import ui from "@/shell/styles/ui.module.css";
@@ -16,6 +16,7 @@ import { describeDeviceLabel, type DeviceKind } from "../device-label";
 import styles from "../identity.module.css";
 import { formatLastActive, orderSessions } from "../session-display";
 import type { DeviceSession } from "../types";
+import { ChangePasswordCard } from "./ChangePasswordCard";
 import { FormFeedback } from "./FormFeedback";
 import { SessionConfirmDialog } from "./SessionConfirmDialog";
 
@@ -127,6 +128,8 @@ function SecuritySettingsInner({
 
   return (
     <>
+      <ChangePasswordCard />
+
       <section className={ui.settingsCard} aria-labelledby="sessions-heading">
         <div className={ui.settingsCardHead}>
           <h2 id="sessions-heading" className={ui.settingsCardTitle}>
@@ -214,4 +217,4 @@ function SecuritySettingsRoot(props: SecuritySettingsProps) {
   );
 }
 
-export const SecuritySettings = memo(SecuritySettingsRoot);
+export const SecuritySettings = SecuritySettingsRoot;

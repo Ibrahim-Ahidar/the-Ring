@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { LogOut, MessageCircle } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -440,4 +440,4 @@ function GroupAdminClientInner({ group, currentUserId }: Props) {
   );
 }
 
-export const GroupAdminClient = memo(GroupAdminClientInner);
+export const GroupAdminClient = GroupAdminClientInner;

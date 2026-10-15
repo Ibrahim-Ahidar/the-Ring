@@ -15,7 +15,8 @@
     "settings": "Paramètres",
     "back": "Retour",
     "backToChats": "Retour aux discussions",
-    "profileAndSettings": "Profil et paramètres"
+    "profileAndSettings": "Profil et paramètres",
+    "primary": "Navigation principale"
   },
   "settings": {
     "title": "Paramètres",

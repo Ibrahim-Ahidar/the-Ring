@@ -7,21 +7,40 @@ import styles from "../identity.module.css";
 
 /** Set by the reset form right before it navigates to /app. */
 export const PASSWORD_UPDATED_FLAG = "pulse.passwordUpdated";
+const PASSWORD_UPDATED_EVENT = "pulse:password-updated";
 const TOAST_MS = 4000;
 
-/** App-shell overlay: one "Password updated" toast after a password reset. */
+/**
+ * Shows the toast now when it is mounted, or on its next mount when the page is
+ * rebuilt or navigated first. The flag is consumed once, so it never shows twice.
+ */
+export function announcePasswordUpdated() {
+  window.sessionStorage.setItem(PASSWORD_UPDATED_FLAG, "1");
+  window.dispatchEvent(new Event(PASSWORD_UPDATED_EVENT));
+}
+
+/** App-shell overlay: one "Password updated" toast after a password reset or change. */
 function PasswordUpdatedToastInner() {
   const t = useTranslations("identity");
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (window.sessionStorage.getItem(PASSWORD_UPDATED_FLAG) !== "1") {
-      return;
+    let timer: number | undefined;
+    function show() {
+      if (window.sessionStorage.getItem(PASSWORD_UPDATED_FLAG) !== "1") {
+        return;
+      }
+      window.sessionStorage.removeItem(PASSWORD_UPDATED_FLAG);
+      setVisible(true);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setVisible(false), TOAST_MS);
     }
-    window.sessionStorage.removeItem(PASSWORD_UPDATED_FLAG);
-    setVisible(true);
-    const timer = window.setTimeout(() => setVisible(false), TOAST_MS);
-    return () => window.clearTimeout(timer);
+    show();
+    window.addEventListener(PASSWORD_UPDATED_EVENT, show);
+    return () => {
+      window.removeEventListener(PASSWORD_UPDATED_EVENT, show);
+      window.clearTimeout(timer);
+    };
   }, []);
 
   if (!visible) {

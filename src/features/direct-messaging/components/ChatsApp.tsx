@@ -1,7 +1,5 @@
 "use client";
 
-import { memo } from "react";
-
 import type { TimelineMessage } from "@/platform/timeline";
 
 import { MessagingProvider } from "../context/MessagingProvider";
@@ -43,4 +41,4 @@ function ChatsAppInner(props: Props) {
   );
 }
 
-export const ChatsApp = memo(ChatsAppInner);
+export const ChatsApp = ChatsAppInner;
