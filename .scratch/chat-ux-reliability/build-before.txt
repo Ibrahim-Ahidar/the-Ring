@@ -1,0 +1,72 @@
+
+> pulse@0.1.0 prebuild
+> npm run gen:features
+
+
+> pulse@0.1.0 gen:features
+> node scripts/gen-features.mjs
+
+Wrote D:\study-main\0 full-stack\Projects\chatapp-wt-base\src\shell\generated\features.ts (14 feature(s))
+
+> pulse@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.27
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (113kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (103kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (268kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled successfully in 63s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/10) ...
+   Generating static pages (2/10) 
+   Generating static pages (4/10) 
+   Generating static pages (7/10) 
+ ✓ Generating static pages (10/10)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      297 B         227 kB
+├ ƒ /_not-found                             1 kB         104 kB
+├ ƒ /app                                   133 B         103 kB
+├ ƒ /app/chats                             146 B         243 kB
+├ ƒ /app/chats/[conversationId]            146 B         243 kB
+├ ƒ /app/chats/new                       2.81 kB         233 kB
+├ ƒ /app/chats/requests                    792 B         228 kB
+├ ƒ /app/contacts                        3.71 kB         230 kB
+├ ƒ /app/groups                           1.4 kB         228 kB
+├ ƒ /app/groups/[groupId]                4.48 kB         231 kB
+├ ƒ /app/groups/new                      1.73 kB         229 kB
+├ ƒ /app/media/[conversationId]           2.2 kB         229 kB
+├ ƒ /app/notifications                   2.88 kB         230 kB
+├ ƒ /app/profile/[username]              2.96 kB         230 kB
+├ ƒ /app/search                          3.04 kB         230 kB
+├ ƒ /app/settings                          297 B         227 kB
+├ ƒ /app/settings/account                4.27 kB         231 kB
+├ ƒ /app/settings/appearance             1.67 kB         228 kB
+├ ƒ /app/settings/language               1.69 kB         228 kB
+├ ƒ /app/settings/notifications          1.79 kB         229 kB
+├ ƒ /app/settings/privacy                6.99 kB         127 kB
+├ ƒ /app/settings/security                4.2 kB         231 kB
+├ ƒ /auth/callback                         133 B         103 kB
+├ ƒ /forgot-password                     3.15 kB         230 kB
+├ ƒ /legal/privacy                         290 B         227 kB
+├ ƒ /legal/terms                           290 B         227 kB
+├ ƒ /login                               3.55 kB         230 kB
+├ ƒ /reset-password                      2.25 kB         229 kB
+├ ƒ /signup                              3.78 kB         231 kB
+└ ƒ /username/[username]                 4.34 kB         124 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/8597-d08e1e3745666611.js      46.7 kB
+  ├ chunks/ad573773-96d4b2d4473eb8a8.js  54.2 kB
+  └ other shared chunks (total)          2.06 kB
+
+
+ƒ Middleware                              140 kB
+
+ƒ  (Dynamic)  server-rendered on demand
+
