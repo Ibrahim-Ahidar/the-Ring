@@ -4,5 +4,8 @@
   "lastSeenToday": "Last seen today at {time}",
   "lastSeenYesterday": "Last seen yesterday at {time}",
   "typingOne": "{name} is typing",
-  "typingMany": "{count, plural, one {# person is typing} other {# people are typing}}"
+  "typingMany": "{count, plural, one {# person is typing} other {# people are typing}}",
+  "typing": "typing…",
+  "lastSeenRelative": "last seen {when}",
+  "lastSeenJustNow": "last seen just now"
 }

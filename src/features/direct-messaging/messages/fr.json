@@ -63,7 +63,8 @@
     "failed": "Échec de l'envoi",
     "delivered": "Distribué",
     "sent": "Envoyé",
-    "read": "Lu"
+    "read": "Lu",
+    "queued": "En attente du réseau"
   },
   "errors": {
     "messaging": {
@@ -88,5 +89,14 @@
     "removed": "Vous ne pouvez pas envoyer de messages car vous n'êtes plus membre de ce groupe.",
     "restricted": "Vous n'avez pas l'autorisation d'envoyer des messages ici."
   },
-  "opening": "Ouverture de la discussion…"
+  "opening": "Ouverture de la discussion…",
+  "connection": {
+    "waitingForNetwork": "En attente du réseau…",
+    "connecting": "Connexion…"
+  },
+  "discardSend": "Supprimer",
+  "failedActions": "Message non envoyé. Réessayez ou supprimez-le.",
+  "list": {
+    "typing": "écrit…"
+  }
 }
