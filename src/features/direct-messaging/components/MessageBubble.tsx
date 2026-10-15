@@ -30,6 +30,8 @@ type Props = {
   quoteAuthor?: string | null;
   quoteText?: string;
   onRetry?: (clientId: string) => void;
+  /** Ref for the message row; lets the read tracker see when it is on screen. */
+  rowRef?: (el: Element | null) => void;
 };
 
 function deliveryLabel(
@@ -80,6 +82,7 @@ function MessageBubbleInner({
   quoteAuthor,
   quoteText,
   onRetry,
+  rowRef,
 }: Props) {
   const t = useTranslations("direct-messaging");
   const format = useFormatter();
@@ -116,6 +119,7 @@ function MessageBubbleInner({
 
   return (
     <div
+      ref={rowRef}
       className={styles.msg}
       data-mine={isMine ? "true" : "false"}
       data-first={grouped ? "false" : "true"}

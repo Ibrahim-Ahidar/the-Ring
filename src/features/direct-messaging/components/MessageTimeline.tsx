@@ -17,6 +17,7 @@ import type { TimelineMessage } from "@/platform/timeline";
 
 import { shouldGroupWithPrevious } from "../delivery";
 import { calendarDaysAgo, isSameCalendarDay } from "../lib/calendar";
+import { useReadTracker } from "../hooks/useReadReceipts";
 import { useHydrated } from "../lib/use-hydrated";
 import { conversationTitle } from "../lib/titles";
 import type { ConversationDetail } from "../types";
@@ -79,6 +80,7 @@ function MessageTimelineInner({
   const separatorId =
     state.unreadSeparatorByConversation[conversationId] ?? null;
   const scrollRef = useRef<HTMLDivElement>(null);
+  const track = useReadTracker(conversationId, scrollRef);
   const stickToBottom = useRef(true);
   const scrolledConversation = useRef<string | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
@@ -321,6 +323,7 @@ function MessageTimelineInner({
                 quoteAuthor={quote?.author}
                 quoteText={quote?.text}
                 onRetry={retrySend}
+                rowRef={track(message)}
               />
             </Fragment>
           );

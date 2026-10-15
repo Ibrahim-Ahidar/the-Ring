@@ -16,6 +16,9 @@ let mockState: Record<string, unknown>;
 vi.mock("../context/MessagingProvider", () => ({
   useMessaging: () => ({ state: mockState, retrySend: vi.fn(), loadOlderMessages }),
 }));
+vi.mock("../hooks/useReadReceipts", () => ({
+  useReadTracker: () => () => () => {},
+}));
 vi.mock("@/features/groups/hooks/useGroupMemberNames", () => ({
   useGroupMemberDirectory: () => new Map(),
 }));
