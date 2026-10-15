@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 
 import { isRtl } from "@/shell/locale";
+import { StaleBuildReload } from "@/shell/components/StaleBuildReload";
 import { TimeZoneSync } from "@/shell/components/TimeZoneSync";
 import { resolveLocale, resolveTheme, resolveTimeZone } from "@/shell/preferences";
 
@@ -26,6 +27,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={isRtl(locale) ? "rtl" : "ltr"} data-theme={theme}>
       <body>
+        <StaleBuildReload />
         <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
           <TimeZoneSync timeZone={timeZone}>{children}</TimeZoneSync>
         </NextIntlClientProvider>
