@@ -12,12 +12,9 @@
   "currentLocale": "Current language: {locale}",
   "saveError": "Could not save preference.",
   "cmdChats": "Go to chats",
-  "cmdSearch": "Go to search",
   "cmdContacts": "Go to contacts",
-  "cmdNotifications": "Go to notifications",
   "cmdSettings": "Go to settings",
   "cmdGroups": "Go to groups",
-  "cmdRequests": "Go to message requests",
   "paletteTitle": "Command palette",
   "palettePlaceholder": "Type to filter commands…",
   "paletteEmpty": "No matching commands",
@@ -25,7 +22,6 @@
   "shortcutHelpClose": "Close shortcut help",
   "shortcutPalette": "Open command palette",
   "shortcutChats": "Go to chats",
-  "shortcutSearch": "Go to search",
   "shortcutSettings": "Go to settings",
   "shortcutHelp": "Show keyboard shortcuts"
 }

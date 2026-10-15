@@ -14,7 +14,6 @@ import {
 const SHORTCUT_LABEL_KEYS: Record<string, string> = {
   palette: "shortcutPalette",
   chats: "shortcutChats",
-  search: "shortcutSearch",
   settings: "shortcutSettings",
   help: "shortcutHelp",
 };

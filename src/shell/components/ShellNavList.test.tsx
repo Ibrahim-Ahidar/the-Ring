@@ -1,14 +1,9 @@
 // @vitest-environment jsdom
 
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { Bell, MailQuestion } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import notificationsAr from "@/features/notifications/messages/ar.json";
-import notificationsEn from "@/features/notifications/messages/en.json";
-import requestsAr from "@/features/message-requests/messages/ar.json";
-import requestsEn from "@/features/message-requests/messages/en.json";
 import shellAr from "../messages/ar.json";
 import shellEn from "../messages/en.json";
 import { AppShell, isConversationRoute } from "./AppShell";
@@ -23,39 +18,15 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/shell/slots", () => ({
-  getContributions: (kind: string) => {
-    if (kind !== "nav") return [];
-    return [
-      {
-        id: "message-requests",
-        labelKey: "message-requests.navLabel",
-        href: "/app/chats/requests",
-        icon: MailQuestion,
-        order: 35,
-        badge: () => <span data-testid="requests-badge">2</span>,
-      },
-      {
-        id: "notifications",
-        labelKey: "notifications.navLabel",
-        href: "/app/notifications",
-        icon: Bell,
-        order: 50,
-        badge: () => <span data-testid="notifications-badge">5</span>,
-      },
-    ];
-  },
+  getContributions: () => [],
 }));
 
 const LOCALES = {
   en: {
     shell: shellEn,
-    notifications: notificationsEn,
-    "message-requests": requestsEn,
   },
   ar: {
     shell: shellAr,
-    notifications: notificationsAr,
-    "message-requests": requestsAr,
   },
 } as const;
 
@@ -86,10 +57,7 @@ describe("ShellNavList", () => {
       const expected: [string, string][] = [
         [s.shell.nav.chats, "/app/chats"],
         [s.shell.nav.groups, "/app/groups"],
-        [s.shell.nav.search, "/app/search"],
-        [s["message-requests"].navLabel, "/app/chats/requests"],
         [s.shell.nav.contacts, "/app/contacts"],
-        [s.notifications.navLabel, "/app/notifications"],
         [s.shell.nav.settings, "/app/settings"],
       ];
       const links = within(region).getAllByRole("link");
@@ -102,12 +70,6 @@ describe("ShellNavList", () => {
         expect(link.getAttribute("title")).toBe(name);
       }
     });
-
-    it(`shows notification and request badges from Chats (${locale})`, () => {
-      renderNav(locale);
-      expect(screen.getByTestId("notifications-badge")).toBeTruthy();
-      expect(screen.getByTestId("requests-badge")).toBeTruthy();
-    });
   }
 
   it("marks only the active destination with aria-current", () => {
@@ -118,23 +80,14 @@ describe("ShellNavList", () => {
     expect(current.map((link) => link.getAttribute("href"))).toEqual(["/app/chats"]);
   });
 
-  it("prefers the most specific destination for nested routes", () => {
-    nav.pathname = "/app/chats/requests";
-    renderNav("en");
-    const current = screen
-      .getAllByRole("link")
-      .filter((link) => link.getAttribute("aria-current") === "page");
-    expect(current.map((link) => link.getAttribute("href"))).toEqual(["/app/chats/requests"]);
-  });
-
   it("activeNavId picks the longest matching href", () => {
     const entries = [
       { id: "chats", href: "/app/chats" },
-      { id: "requests", href: "/app/chats/requests" },
+      { id: "new", href: "/app/chats/new" },
       { id: "settings", href: "/app/settings" },
     ];
     expect(activeNavId("/app/chats/abc", entries)).toBe("chats");
-    expect(activeNavId("/app/chats/requests", entries)).toBe("requests");
+    expect(activeNavId("/app/chats/new", entries)).toBe("new");
     expect(activeNavId("/app/settings/privacy", entries)).toBe("settings");
     expect(activeNavId("/app/chatsx", entries)).toBeNull();
   });
@@ -170,7 +123,7 @@ describe("AppShell navigation", () => {
   it("isConversationRoute only matches conversation screens", () => {
     expect(isConversationRoute("/app/chats")).toBe(false);
     expect(isConversationRoute("/app/chats/new")).toBe(false);
-    expect(isConversationRoute("/app/chats/requests")).toBe(false);
+    expect(isConversationRoute("/app/chats/new")).toBe(false);
     expect(isConversationRoute("/app/groups/new")).toBe(false);
     expect(isConversationRoute("/app/settings/privacy")).toBe(false);
     expect(isConversationRoute("/app/chats/abc")).toBe(true);

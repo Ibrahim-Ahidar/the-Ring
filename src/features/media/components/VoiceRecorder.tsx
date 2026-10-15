@@ -57,9 +57,12 @@ function VoiceRecorderInner({ disabled, onBlob }: Props) {
       recorder.onstop = () => {
         stream.getTracks().forEach((track) => track.stop());
         const durationMs = clampRecordingMs(Date.now() - startedAt.current);
-        const blob = new Blob(chunks.current, { type: recorder.mimeType || "audio/webm" });
-        const file = new File([blob], `voice-${Date.now()}.webm`, {
-          type: blob.type,
+        // Browsers report e.g. "audio/webm;codecs=opus"; the server only accepts the bare type.
+        const mimeType = (recorder.mimeType || "audio/webm").split(";")[0].trim().toLowerCase();
+        const extension = mimeType === "audio/mp4" ? "m4a" : mimeType === "audio/ogg" ? "ogg" : "webm";
+        const blob = new Blob(chunks.current, { type: mimeType });
+        const file = new File([blob], `voice-${Date.now()}.${extension}`, {
+          type: mimeType,
         });
         onBlob(file, durationMs);
       };

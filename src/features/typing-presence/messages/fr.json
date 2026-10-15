@@ -1,5 +1,6 @@
 {
   "online": "En ligne",
+  "offline": "Hors ligne",
   "lastSeen": "Vu pour la dernière fois {when}",
   "lastSeenToday": "Vu aujourd'hui à {time}",
   "lastSeenYesterday": "Vu hier à {time}",

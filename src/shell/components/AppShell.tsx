@@ -8,7 +8,7 @@ import { ShellNavList } from "./ShellNavList";
 import { ShellOverlays } from "./ShellOverlays";
 import { SkipLink } from "./SkipLink";
 
-const NOT_CONVERSATIONS = new Set(["new", "requests"]);
+const NOT_CONVERSATIONS = new Set(["new"]);
 
 /**
  * True on screens that show a single open conversation (or its media), where

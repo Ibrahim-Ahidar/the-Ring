@@ -294,7 +294,7 @@ export function joinConversation(
   );
 }
 
-/** `inbox:{userId}`: membership, conversation summary, and notification rows. */
+/** `inbox:{userId}`: membership and conversation summary rows. */
 export function joinInbox(supabase: SupabaseClient, userId: string): TopicHandle {
   return join(
     supabase,
@@ -304,7 +304,6 @@ export function joinInbox(supabase: SupabaseClient, userId: string): TopicHandle
       // RLS limits rows to conversations the viewer belongs to.
       { table: "conversation_members" },
       { table: "conversations" },
-      { table: "notifications", filter: `recipient_id=eq.${userId}` },
     ],
     userId,
   );

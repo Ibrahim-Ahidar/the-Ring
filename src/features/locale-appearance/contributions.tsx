@@ -17,34 +17,16 @@ export const contributions: FeatureContributions = {
       order: 10,
     },
     {
-      id: "go-search",
-      labelKey: "cmdSearch",
-      href: "/app/search",
-      order: 20,
-    },
-    {
       id: "go-contacts",
       labelKey: "cmdContacts",
       href: "/app/contacts",
       order: 30,
     },
     {
-      id: "go-notifications",
-      labelKey: "cmdNotifications",
-      href: "/app/notifications",
-      order: 40,
-    },
-    {
       id: "go-groups",
       labelKey: "cmdGroups",
       href: "/app/groups",
       order: 42,
-    },
-    {
-      id: "go-requests",
-      labelKey: "cmdRequests",
-      href: "/app/chats/requests",
-      order: 44,
     },
     {
       id: "go-settings",

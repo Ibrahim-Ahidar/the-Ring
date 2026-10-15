@@ -1,5 +1,6 @@
 {
   "online": "متصل",
+  "offline": "غير متصل",
   "lastSeen": "آخر ظهور {when}",
   "lastSeenToday": "آخر ظهور اليوم عند {time}",
   "lastSeenYesterday": "آخر ظهور أمس عند {time}",

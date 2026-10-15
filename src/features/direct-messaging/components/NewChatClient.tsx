@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { getContributions } from "@/shell/slots";
 import ui from "@/shell/styles/ui.module.css";
 
 import { openDirectAction } from "../actions";
@@ -28,11 +27,9 @@ function NewChatClientInner() {
   const fromQuery = params.get("username");
   const [username, setUsername] = useState(fromQuery ?? "");
   const [error, setError] = useState<string | null>(null);
-  const [targetUsername, setTargetUsername] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [autoOpening, setAutoOpening] = useState(Boolean(fromQuery));
   const inFlight = useRef(false);
-  const requestSlots = useMemo(() => getContributions("requestRequired"), []);
 
   const open = async (target: string, navigate: "push" | "replace") => {
     if (inFlight.current) {
@@ -52,9 +49,6 @@ function NewChatClientInner() {
           router.push(href);
         }
         return;
-      }
-      if (result.error.code === "messaging.request_required") {
-        setTargetUsername(target);
       }
       setError(result.error.code);
     } catch {
@@ -79,20 +73,10 @@ function NewChatClientInner() {
     await open(username.trim().replace(/^@/, ""), "push");
   };
 
-  if (error === "messaging.request_required" && targetUsername) {
-    const slot = requestSlots[0];
-    if (slot?.Component) {
-      return (
-        <slot.Component
-          targetUsername={targetUsername}
-          onDone={() => router.push("/app/chats")}
-        />
-      );
-    }
+  const visibleError = error && error !== "messaging.request_required" ? error : null;
+  if (error === "messaging.request_required") {
     return <p className={ui.notice}>{t("requestRequired")}</p>;
   }
-
-  const visibleError = error && error !== "messaging.request_required" ? error : null;
 
   if (autoOpening && !visibleError) {
     return (

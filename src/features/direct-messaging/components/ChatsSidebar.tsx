@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { MessageSquarePlus, Search } from "lucide-react";
-import { memo, Suspense, useCallback, useState, type FormEvent } from "react";
+import { MessageSquarePlus } from "lucide-react";
+import { memo, Suspense } from "react";
 import { useTranslations } from "next-intl";
 
 import { Avatar } from "@/shell/components/Avatar";
@@ -21,17 +20,6 @@ type Props = {
 
 function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
   const t = useTranslations("direct-messaging");
-  const router = useRouter();
-  const [query, setQuery] = useState("");
-
-  const onSearch = useCallback(
-    (event: FormEvent) => {
-      event.preventDefault();
-      const trimmed = query.trim();
-      router.push(trimmed ? `/app/search?q=${encodeURIComponent(trimmed)}` : "/app/search");
-    },
-    [query, router],
-  );
 
   const viewerName = viewer ? (viewer.displayName ?? viewer.username) : null;
 
@@ -66,25 +54,6 @@ function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
         }
       />
       <div className="pane-tools">
-        <form
-          className={styles.searchForm}
-          role="search"
-          action="/app/search"
-          onSubmit={onSearch}
-        >
-          <label className={ui.search}>
-            <Search size={16} aria-hidden />
-            <input
-              type="search"
-              name="q"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={t("searchPlaceholder")}
-              aria-label={t("searchLabel")}
-              autoComplete="off"
-            />
-          </label>
-        </form>
         <div id="conversation-folders" className={styles.foldersHost} />
       </div>
       <div className="pane-body scroll">

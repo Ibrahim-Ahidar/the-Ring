@@ -72,8 +72,12 @@ function AudioMessageRendererInner({ message }: Props) {
       setPlaying(false);
       return;
     }
-    await el.play();
-    setPlaying(true);
+    try {
+      await el.play();
+      setPlaying(true);
+    } catch {
+      setPlaying(false);
+    }
   };
 
   return (

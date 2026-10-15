@@ -37,5 +37,10 @@
       "rate_limited": "Too many searches. Wait a moment and try again.",
       "unauthenticated": "Sign in to search."
     }
+  },
+  "prompt": {
+    "question": "Add {name} to your contacts?",
+    "yes": "Add",
+    "no": "Not now"
   }
 }

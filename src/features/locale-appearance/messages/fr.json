@@ -12,12 +12,9 @@
   "currentLocale": "Langue actuelle : {locale}",
   "saveError": "Impossible d’enregistrer la préférence.",
   "cmdChats": "Aller aux discussions",
-  "cmdSearch": "Aller à la recherche",
   "cmdContacts": "Aller aux contacts",
-  "cmdNotifications": "Aller aux notifications",
   "cmdSettings": "Aller aux paramètres",
   "cmdGroups": "Aller aux groupes",
-  "cmdRequests": "Aller aux demandes de message",
   "paletteTitle": "Palette de commandes",
   "palettePlaceholder": "Tapez pour filtrer les commandes…",
   "paletteEmpty": "Aucune commande correspondante",
@@ -25,7 +22,6 @@
   "shortcutHelpClose": "Fermer l’aide des raccourcis",
   "shortcutPalette": "Ouvrir la palette de commandes",
   "shortcutChats": "Aller aux discussions",
-  "shortcutSearch": "Aller à la recherche",
   "shortcutSettings": "Aller aux paramètres",
   "shortcutHelp": "Afficher les raccourcis clavier"
 }

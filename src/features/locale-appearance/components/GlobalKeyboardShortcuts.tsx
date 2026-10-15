@@ -8,7 +8,6 @@ import { findMatchingShortcut } from "@/features/locale-appearance/shortcuts";
 
 const NAV_TARGETS: Record<string, string> = {
   chats: "/app/chats",
-  search: "/app/search",
   settings: "/app/settings/account",
 };
 

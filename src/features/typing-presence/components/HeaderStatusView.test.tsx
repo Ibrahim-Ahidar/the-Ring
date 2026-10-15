@@ -121,17 +121,8 @@ describe("HeaderStatusView", () => {
     expect(container.textContent).toContain("Ada is typing");
   });
 
-  it("shows a relative last seen and refreshes it every minute", () => {
+  it("shows only Offline when the user is not online", () => {
     const { container } = view();
-    expect(container.textContent).toMatch(/last seen 1 hour ago/);
-    ctx.value.subjectPresence = row({ last_seen_at: "2026-10-15T11:59:50.000Z" });
-    const second = view();
-    expect(second.container.textContent).toContain("last seen just now");
-  });
-
-  it("falls back to a date after a week", () => {
-    ctx.value.subjectPresence = row({ last_seen_at: "2026-09-01T11:00:00.000Z" });
-    const { container } = view();
-    expect(container.textContent).toMatch(/Last seen Sep 1, 2026/);
+    expect(container.textContent).toBe("Offline");
   });
 });

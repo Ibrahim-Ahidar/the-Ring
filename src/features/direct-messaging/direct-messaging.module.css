@@ -1,9 +1,5 @@
 /* ---------- Sidebar ---------- */
 
-.searchForm {
-  display: block;
-}
-
 .foldersHost:empty {
   display: none;
 }

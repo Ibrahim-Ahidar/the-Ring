@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AtSign, Keyboard, MessageSquarePlus, Users } from "lucide-react";
+import { Keyboard, MessageSquarePlus, Users } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -45,12 +45,6 @@ function ChatsWelcomeInner() {
             <Users size={24} />
           </span>
           {t("newGroup")}
-        </Link>
-        <Link className={styles.quickAction} href="/app/contacts">
-          <span className={styles.quickActionIcon} aria-hidden>
-            <AtSign size={24} />
-          </span>
-          {t("findByUsername")}
         </Link>
       </div>
       <p className={styles.welcomeFoot}>

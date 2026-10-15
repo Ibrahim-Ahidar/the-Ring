@@ -1,5 +1,6 @@
 {
   "online": "Online",
+  "offline": "Offline",
   "lastSeen": "Last seen {when}",
   "lastSeenToday": "Last seen today at {time}",
   "lastSeenYesterday": "Last seen yesterday at {time}",

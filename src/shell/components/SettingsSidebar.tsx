@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
   ChevronRight,
   Globe,
   KeyRound,
@@ -71,12 +70,6 @@ function SettingsSidebarInner({ profile, footer }: Props) {
         icon: KeyRound,
         title: t("routes.settingsSecurity"),
         desc: t("settings.securityDesc"),
-      },
-      {
-        href: "/app/settings/notifications",
-        icon: Bell,
-        title: t("routes.settingsNotifications"),
-        desc: t("settings.notificationsDesc"),
       },
       {
         href: "/app/settings/appearance",

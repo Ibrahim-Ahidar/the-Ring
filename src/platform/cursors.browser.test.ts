@@ -25,16 +25,6 @@ describe("cursor codecs under the browser Buffer polyfill", () => {
     expect(decodeMessageCursor(encodeMessageCursor({ createdAt, id }))).toEqual({ createdAt, id });
   });
 
-  it("notification cursor round-trips", async () => {
-    const { encodeNotificationCursor, decodeNotificationCursor } = await import(
-      "@/features/notifications/cursor"
-    );
-    expect(decodeNotificationCursor(encodeNotificationCursor({ createdAt, id }))).toEqual({
-      createdAt,
-      id,
-    });
-  });
-
   it("conversation cursor encodes", async () => {
     const { encodeConversationCursor } = await import("@/features/direct-messaging/types");
     expect(encodeConversationCursor({ pinnedAt: null, lastMessageAt: createdAt, id })).toBe(

@@ -29,8 +29,6 @@
   "directFallback": "Discussion directe",
   "groupFallback": "Groupe",
   "unreadCount": "{count, plural, =0 {Aucun message non lu} one {# message non lu} other {# messages non lus}}",
-  "searchPlaceholder": "Rechercher ou démarrer une discussion",
-  "searchLabel": "Rechercher des personnes et des messages",
   "profileAndSettings": "Profil et paramètres",
   "backToChats": "Retour aux discussions",
   "conversationWith": "Discussion avec {name}",
@@ -56,7 +54,6 @@
   "welcomeTitle": "Bienvenue sur Pulse",
   "welcomeText": "Trouvez des personnes par leur nom d'utilisateur et lancez une conversation. Choisissez une discussion dans la liste pour reprendre là où vous en étiez.",
   "newGroup": "Nouveau groupe",
-  "findByUsername": "Trouver par nom d'utilisateur",
   "paletteHint": "Appuyez sur <keys></keys> pour ouvrir la palette de commandes",
   "delivery": {
     "pending": "Envoi…",

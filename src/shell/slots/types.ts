@@ -151,17 +151,6 @@ export type ListItemMenuContribution = {
 };
 
 /**
- * UI shown when `decideInteraction` returns `request` for messaging.
- */
-export type RequestRequiredContribution = {
-  id: string;
-  Component: ComponentType<{
-    targetUsername: string;
-    onDone: () => void;
-  }>;
-};
-
-/**
  * Command palette entry: navigates to `href`. Contributed by any feature.
  */
 export type CommandContribution = {
@@ -182,7 +171,6 @@ export type FeatureContributions = {
   headerStatus?: HeaderStatusContribution[];
   rightPanelTab?: RightPanelTabContribution[];
   listItemMenu?: ListItemMenuContribution[];
-  requestRequired?: RequestRequiredContribution[];
   command?: CommandContribution[];
 };
 
@@ -196,7 +184,6 @@ export const CONTRIBUTION_KINDS = [
   "headerStatus",
   "rightPanelTab",
   "listItemMenu",
-  "requestRequired",
   "command",
 ] as const;
 
@@ -212,7 +199,6 @@ export type ContributionKindMap = {
   headerStatus: HeaderStatusContribution;
   rightPanelTab: RightPanelTabContribution;
   listItemMenu: ListItemMenuContribution;
-  requestRequired: RequestRequiredContribution;
   command: CommandContribution;
 };
 

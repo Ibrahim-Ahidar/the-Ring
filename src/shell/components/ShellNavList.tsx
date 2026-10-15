@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
   MessageCircle,
-  Search,
   Settings,
   UserRound,
   Users,
@@ -34,7 +32,7 @@ function matches(pathname: string, href: string) {
 
 /**
  * Id of the entry whose href is the longest prefix of the current path, so
- * `/app/chats/requests` lights up Requests rather than Chats.
+ * `/app/chats/new` lights up New chat rather than Chats.
  */
 export function activeNavId(
   pathname: string,
@@ -64,15 +62,7 @@ function ShellNavListInner() {
     const shellItems: NavEntry[] = [
       { id: "chats", href: "/app/chats", label: t("chats"), icon: MessageCircle, order: 10 },
       { id: "groups", href: "/app/groups", label: t("groups"), icon: Users, order: 20 },
-      { id: "search", href: "/app/search", label: t("search"), icon: Search, order: 30 },
       { id: "contacts", href: "/app/contacts", label: t("contacts"), icon: UserRound, order: 40 },
-      {
-        id: "notifications",
-        href: "/app/notifications",
-        label: t("notifications"),
-        icon: Bell,
-        order: 50,
-      },
       {
         id: "settings",
         href: "/app/settings",

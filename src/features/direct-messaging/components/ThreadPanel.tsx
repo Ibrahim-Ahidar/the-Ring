@@ -10,6 +10,7 @@ import { MobileBackBar } from "@/shell/components/MobileBackBar";
 import { getContributions } from "@/shell/slots";
 import ui from "@/shell/styles/ui.module.css";
 
+import { AddContactPrompt } from "@/features/discovery-contacts/components/AddContactPrompt";
 import { useMessaging } from "../context/MessagingProvider";
 import { useQueryHref } from "../hooks/useQueryHref";
 import { conversationTitle } from "../lib/titles";
@@ -71,9 +72,6 @@ function ThreadPanelInner({ conversationId, detail, currentUserId }: Props) {
           <div className={styles.convInfoText}>
             <h2 className={styles.convTitle}>{title}</h2>
             <div className={styles.convSubtitle}>
-              {state.connectionStatus === "reconnecting" ? (
-                <span className={styles.reconnecting}>{t("reconnecting")}</span>
-              ) : null}
               {headerStatuses.map((entry) => (
                 <entry.Component
                   key={entry.id}
@@ -114,6 +112,13 @@ function ThreadPanelInner({ conversationId, detail, currentUserId }: Props) {
           })}
         </div>
       </header>
+      {detail.type === "direct" && detail.other_user_id && detail.other_username ? (
+        <AddContactPrompt
+          userId={detail.other_user_id}
+          username={detail.other_username}
+          displayName={detail.other_display_name}
+        />
+      ) : null}
       <PinnedBar conversationId={conversationId} />
       <MessageJumpTarget conversationId={conversationId} />
       <MessageTimeline

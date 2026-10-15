@@ -29,8 +29,6 @@
   "directFallback": "Direct chat",
   "groupFallback": "Group chat",
   "unreadCount": "{count, plural, =0 {No unread messages} one {# unread message} other {# unread messages}}",
-  "searchPlaceholder": "Search or start a new chat",
-  "searchLabel": "Search people and messages",
   "profileAndSettings": "Profile and settings",
   "backToChats": "Back to chats",
   "conversationWith": "Conversation with {name}",
@@ -56,7 +54,6 @@
   "welcomeTitle": "Welcome to Pulse",
   "welcomeText": "Find people by their username and start a conversation. Pick a chat on the list to continue where you left off.",
   "newGroup": "New group",
-  "findByUsername": "Find by username",
   "paletteHint": "Press <keys></keys> to open the command palette",
   "delivery": {
     "pending": "Sending…",

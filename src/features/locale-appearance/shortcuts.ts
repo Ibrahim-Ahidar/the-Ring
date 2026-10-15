@@ -10,7 +10,6 @@ export type ShortcutDef = {
 export const GLOBAL_SHORTCUTS: readonly ShortcutDef[] = [
   { id: "palette", key: "k", mod: true, allowInField: true },
   { id: "chats", key: "1", mod: true, shift: true },
-  { id: "search", key: "2", mod: true, shift: true },
   { id: "settings", key: "3", mod: true, shift: true },
   { id: "help", key: "/", mod: true, shift: true },
 ] as const;

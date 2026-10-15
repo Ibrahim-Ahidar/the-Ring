@@ -37,5 +37,10 @@
       "rate_limited": "Trop de recherches. Patientez un instant.",
       "unauthenticated": "Connectez-vous pour rechercher."
     }
+  },
+  "prompt": {
+    "question": "Ajouter {name} à vos contacts ?",
+    "yes": "Ajouter",
+    "no": "Non merci"
   }
 }
