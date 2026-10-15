@@ -2,7 +2,6 @@
 
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -15,27 +14,26 @@ import { onComposerActivity } from "@/platform/composer-events";
 import { asRpcClient } from "@/platform/rpc";
 import { joinConversation, type TopicHandle } from "@/platform/realtime-hub";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
+import { clearTyping, setTypingEvent } from "@/platform/typing-store";
 
 import {
   fetchSubjectPresence,
   touchLastSeenForMember,
 } from "@/features/typing-presence/service";
-import {
-  initialTypingState,
-  reduceTyping,
-  type TypingState,
-} from "@/features/typing-presence/typing-reducer";
 import type { SubjectPresenceRow } from "@/features/typing-presence/presence";
 
 const TYPING_IDLE_MS = 3000;
 const TYPING_BROADCAST_THROTTLE_MS = 3000;
 const PRESENCE_HEARTBEAT_MS = 60_000;
+const HIDDEN_UNTRACK_MS = 30_000;
+const SUBJECT_REFETCH_DEBOUNCE_MS = 1000;
 
+/** Typing lives in `@/platform/typing-store`, so it never re-renders this context. */
 type TypingPresenceContextValue = {
-  typing: TypingState;
   subjectPresence: SubjectPresenceRow | null;
   subjectOnline: boolean;
   viewerId: string | null;
+  conversationId: string;
 };
 
 const TypingPresenceContext = createContext<TypingPresenceContextValue | null>(
@@ -57,17 +55,11 @@ type ProviderProps = {
 };
 
 type Action =
-  | {
-      type: "typing";
-      event: Parameters<typeof reduceTyping>[1];
-      now: number;
-    }
   | { type: "presence_row"; row: SubjectPresenceRow | null }
   | { type: "online_set"; userIds: Set<string> }
   | { type: "viewer"; userId: string };
 
 type State = {
-  typing: TypingState;
   subjectPresence: SubjectPresenceRow | null;
   onlineUserIds: Set<string>;
   viewerId: string | null;
@@ -75,19 +67,12 @@ type State = {
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case "typing":
-      return {
-        ...state,
-        typing: reduceTyping(
-          state.typing,
-          action.event,
-          action.now,
-          state.viewerId ?? undefined,
-        ),
-      };
     case "presence_row":
       return { ...state, subjectPresence: action.row };
     case "online_set":
+      if (state.onlineUserIds.size === 0 && action.userIds.size === 0) {
+        return state;
+      }
       return { ...state, onlineUserIds: action.userIds };
     case "viewer":
       return { ...state, viewerId: action.userId };
@@ -106,33 +91,21 @@ export function TypingPresenceProvider({
   const channelRef = useRef<TopicHandle | null>(null);
 
   const [state, dispatch] = useReducer(reducer, {
-    typing: initialTypingState,
     subjectPresence: null,
     onlineUserIds: new Set<string>(),
     viewerId: null,
   });
 
-  const nameCacheRef = useRef(new Map<string, string>());
+  // The channel effect reads these through refs so it never re-runs (and the
+  // peer never sees us flap) when the subject row or peer id changes.
+  const otherUserIdRef = useRef(otherUserId);
+  const subjectPresenceRef = useRef(state.subjectPresence);
+  useEffect(() => {
+    otherUserIdRef.current = otherUserId;
+    subjectPresenceRef.current = state.subjectPresence;
+  });
 
-  const resolveDisplayName = useCallback(
-    async (userId: string): Promise<string> => {
-      const cached = nameCacheRef.current.get(userId);
-      if (cached) {
-        return cached;
-      }
-      if (otherUserId === userId && state.subjectPresence?.display_name) {
-        nameCacheRef.current.set(userId, state.subjectPresence.display_name);
-        return state.subjectPresence.display_name;
-      }
-      const result = await fetchSubjectPresence(rpc, conversationId, userId);
-      if (result.ok && result.value?.display_name) {
-        nameCacheRef.current.set(userId, result.value.display_name);
-        return result.value.display_name;
-      }
-      return userId.slice(0, 8);
-    },
-    [conversationId, otherUserId, rpc, state.subjectPresence?.display_name],
-  );
+  const nameCacheRef = useRef(new Map<string, string>());
 
   useEffect(() => {
     let cancelled = false;
@@ -176,80 +149,189 @@ export function TypingPresenceProvider({
     const viewerId = state.viewerId;
     const handle = joinConversation(supabase, conversationId, viewerId);
     channelRef.current = handle;
+    let disposed = false;
     let subscribed = false;
+    let tracked = false;
+    let prevHadPeer = false;
+    let hiddenTimer: ReturnType<typeof setTimeout> | null = null;
+    let refetchTimer: ReturnType<typeof setTimeout> | null = null;
+    // Bumped on every stop so a slow name lookup cannot resurrect a typer.
+    const stopSeq = new Map<string, number>();
 
     const touch = () => {
       void touchLastSeenForMember(rpc);
     };
 
-    touch();
+    const track = () => {
+      if (!subscribed || tracked || disposed) {
+        return;
+      }
+      tracked = true;
+      void handle.track({ online: true, at: Date.now() });
+    };
+
+    const untrack = () => {
+      if (!tracked) {
+        return;
+      }
+      tracked = false;
+      void handle.untrack();
+    };
+
+    const refetchSubject = () => {
+      const peer = otherUserIdRef.current;
+      if (!peer) {
+        return;
+      }
+      void fetchSubjectPresence(rpc, conversationId, peer).then((result) => {
+        if (!disposed && result.ok) {
+          dispatch({ type: "presence_row", row: result.value });
+        }
+      });
+    };
+
+    const cachedName = (userId: string): string | null => {
+      const cached = nameCacheRef.current.get(userId);
+      if (cached) {
+        return cached;
+      }
+      const subject = subjectPresenceRef.current?.display_name;
+      if (otherUserIdRef.current === userId && subject) {
+        nameCacheRef.current.set(userId, subject);
+        return subject;
+      }
+      return null;
+    };
 
     const removeBroadcast = handle.onBroadcast((event, payload) => {
       const userId = payload.userId;
-      if (typeof userId !== "string") {
+      if (typeof userId !== "string" || userId === viewerId) {
         return;
       }
-      const now = Date.now();
       if (event === "typing.started") {
-        void resolveDisplayName(userId).then((displayName) => {
-          dispatch({
-            type: "typing",
-            event: { type: "started", userId, displayName },
-            now,
+        const name = cachedName(userId);
+        if (name) {
+          // Synchronous when cached, so a later "stopped" cannot be overtaken.
+          setTypingEvent(conversationId, {
+            type: "started",
+            userId,
+            displayName: name,
+          });
+          return;
+        }
+        const seq = stopSeq.get(userId) ?? 0;
+        void fetchSubjectPresence(rpc, conversationId, userId).then((result) => {
+          const fetched = result.ok ? result.value?.display_name : null;
+          if (fetched) {
+            nameCacheRef.current.set(userId, fetched);
+          }
+          if (disposed || (stopSeq.get(userId) ?? 0) !== seq) {
+            return;
+          }
+          setTypingEvent(conversationId, {
+            type: "started",
+            userId,
+            displayName: fetched || userId.slice(0, 8),
           });
         });
       } else if (event === "typing.stopped") {
-        dispatch({
-          type: "typing",
-          event: { type: "stopped", userId },
-          now,
-        });
+        stopSeq.set(userId, (stopSeq.get(userId) ?? 0) + 1);
+        setTypingEvent(conversationId, { type: "stopped", userId });
       }
     });
 
     const removePresence = handle.onPresence((presenceState) => {
-      const ids = new Set<string>();
-      for (const key of Object.keys(presenceState)) {
-        ids.add(key);
+      if (!subscribed) {
+        return;
       }
+      const ids = new Set(Object.keys(presenceState));
       dispatch({ type: "online_set", userIds: ids });
+
+      const peer = otherUserIdRef.current;
+      const hasPeer = peer != null && ids.has(peer);
+      if (prevHadPeer && !hasPeer) {
+        // The peer just went offline: their last_seen_at moved, refresh once.
+        if (refetchTimer !== null) {
+          clearTimeout(refetchTimer);
+        }
+        refetchTimer = setTimeout(() => {
+          refetchTimer = null;
+          refetchSubject();
+        }, SUBJECT_REFETCH_DEBOUNCE_MS);
+      }
+      prevHadPeer = hasPeer;
     });
 
     const removeStatus = handle.onStatus((status) => {
-      if (status === "SUBSCRIBED" && !subscribed) {
+      if (status === "SUBSCRIBED") {
         subscribed = true;
-        void handle.track({ online: true, at: Date.now() });
+        tracked = false;
+        if (document.visibilityState !== "hidden") {
+          track();
+        }
         touch();
+        refetchSubject();
+        return;
       }
+      subscribed = false;
+      tracked = false;
+      prevHadPeer = false;
+      dispatch({ type: "online_set", userIds: new Set() });
     });
 
+    const onPageHide = () => {
+      untrack();
+    };
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        track();
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        if (hiddenTimer === null) {
+          hiddenTimer = setTimeout(() => {
+            hiddenTimer = null;
+            untrack();
+          }, HIDDEN_UNTRACK_MS);
+        }
+        return;
+      }
+      if (hiddenTimer !== null) {
+        clearTimeout(hiddenTimer);
+        hiddenTimer = null;
+      }
+      track();
+    };
+
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    touch();
     const heartbeat = window.setInterval(touch, PRESENCE_HEARTBEAT_MS);
 
     return () => {
+      disposed = true;
       window.clearInterval(heartbeat);
+      if (hiddenTimer !== null) {
+        clearTimeout(hiddenTimer);
+      }
+      if (refetchTimer !== null) {
+        clearTimeout(refetchTimer);
+      }
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisibility);
       removeBroadcast();
       removePresence();
       removeStatus();
-      void handle.untrack();
+      untrack();
       handle.leave();
       channelRef.current = null;
+      clearTyping(conversationId);
     };
-  }, [conversationId, rpc, resolveDisplayName, state.viewerId, supabase]);
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      const now = Date.now();
-      dispatch({
-        type: "typing",
-        event: { type: "expire", now },
-        now,
-      });
-    }, 500);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, []);
+  }, [conversationId, rpc, state.viewerId, supabase]);
 
   useEffect(() => {
     if (!state.viewerId) {
@@ -302,14 +384,7 @@ export function TypingPresenceProvider({
         return;
       }
 
-      if (activity.kind === "closed") {
-        clearIdle();
-        isComposing = false;
-        sendStopped();
-        return;
-      }
-
-      if (activity.kind === "sent") {
+      if (activity.kind === "closed" || activity.kind === "sent") {
         clearIdle();
         isComposing = false;
         sendStopped();
@@ -326,12 +401,8 @@ export function TypingPresenceProvider({
           return;
         }
 
-        if (!isComposing) {
-          isComposing = true;
-          sendStarted();
-        } else {
-          sendStarted();
-        }
+        isComposing = true;
+        sendStarted();
         scheduleIdle();
       }
     });
@@ -352,12 +423,12 @@ export function TypingPresenceProvider({
 
   const value = useMemo(
     (): TypingPresenceContextValue => ({
-      typing: state.typing,
       subjectPresence: state.subjectPresence,
       subjectOnline,
       viewerId: state.viewerId,
+      conversationId,
     }),
-    [state.typing, state.subjectPresence, state.viewerId, subjectOnline],
+    [state.subjectPresence, state.viewerId, subjectOnline, conversationId],
   );
 
   return (

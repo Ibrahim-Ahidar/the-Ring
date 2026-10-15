@@ -1,14 +1,15 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import { memo, useEffect, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 
-import { canShowPresence } from "@/features/typing-presence/presence";
+import { useTyping } from "@/platform/typing-store";
+
 import { useTypingPresence } from "@/features/typing-presence/context/typing-presence-context";
 import {
-  typerCount,
-  visibleTypers,
-} from "@/features/typing-presence/typing-reducer";
+  deriveSubtitle,
+  lastSeenBucket,
+} from "@/features/typing-presence/subtitle";
 import styles from "@/features/typing-presence/components/HeaderStatusView.module.css";
 
 type Props = {
@@ -16,12 +17,19 @@ type Props = {
   otherUserId?: string;
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const LAST_SEEN_TICK_MS = 60_000;
 
-function daysAgo(date: Date, now: Date): number {
-  const start = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  return Math.round((start(now) - start(date)) / DAY_MS);
+/** Re-renders once a minute while `active`, so relative times stay fresh. */
+function useNow(active: boolean): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!active) {
+      return;
+    }
+    const id = window.setInterval(() => setNow(Date.now()), LAST_SEEN_TICK_MS);
+    return () => window.clearInterval(id);
+  }, [active]);
+  return now;
 }
 
 export const HeaderStatusView = memo(function HeaderStatusView({
@@ -30,82 +38,62 @@ export const HeaderStatusView = memo(function HeaderStatusView({
 }: Props) {
   const t = useTranslations("typing-presence");
   const format = useFormatter();
-  const { typing, subjectPresence, subjectOnline, viewerId } =
+  const { subjectPresence, subjectOnline, viewerId, conversationId } =
     useTypingPresence();
-  const now = Date.now();
-  const typers = visibleTypers(typing, now, viewerId ?? undefined);
-  const count = typerCount(typing, now, viewerId ?? undefined);
+  const typers = useTyping(conversationId, viewerId);
 
-  const typingLabel = useMemo(() => {
-    if (count === 0) {
-      return null;
-    }
-    if (count === 1) {
-      const name = typers[0]?.displayName ?? "";
-      return t("typingOne", { name });
-    }
-    return t("typingMany", { count });
-  }, [count, t, typers]);
-
-  const presenceVisibility = canShowPresence(
-    subjectPresence?.presence_allowed ? "allow" : "deny",
-    subjectPresence?.show_last_seen ?? false,
-  );
-
-  const presenceLine = useMemo(() => {
-    if (conversationType !== "direct" || !otherUserId || !subjectPresence) {
-      return null;
-    }
-    if (presenceVisibility.showOnline && subjectOnline) {
-      return <span className={styles.online}>{t("online")}</span>;
-    }
-    if (presenceVisibility.showLastSeen && subjectPresence.last_seen_at) {
-      const seen = new Date(subjectPresence.last_seen_at);
-      const time = format.dateTime(seen, { timeStyle: "short" });
-      const ago = daysAgo(seen, new Date());
-      const label =
-        ago === 0
-          ? t("lastSeenToday", { time })
-          : ago === 1
-            ? t("lastSeenYesterday", { time })
-            : t("lastSeen", {
-                when: format.dateTime(seen, {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                }),
-              });
-      return <span>{label}</span>;
-    }
-    return null;
-  }, [
+  const subtitle = deriveSubtitle({
     conversationType,
-    format,
     otherUserId,
-    presenceVisibility.showLastSeen,
-    presenceVisibility.showOnline,
-    subjectOnline,
+    viewerId,
+    typers,
     subjectPresence,
-    t,
-  ]);
+    subjectOnline,
+  });
+  const now = useNow(subtitle.kind === "lastSeen");
 
-  if (!typingLabel && !presenceLine) {
-    return null;
+  let content: React.ReactNode = null;
+
+  if (subtitle.kind === "typing") {
+    content = (
+      <span
+        className={styles.typing}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {t(subtitle.key, subtitle.values)}
+        <span className={styles.dots} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+      </span>
+    );
+  } else if (subtitle.kind === "online") {
+    content = <span className={styles.online}>{t("online")}</span>;
+  } else if (subtitle.kind === "lastSeen") {
+    const nowDate = new Date(now);
+    const bucket = lastSeenBucket(subtitle.at, nowDate);
+    content = (
+      <span>
+        {bucket === "justNow"
+          ? t("lastSeenJustNow")
+          : bucket === "relative"
+            ? t("lastSeenRelative", {
+                when: format.relativeTime(subtitle.at, nowDate),
+              })
+            : t("lastSeen", {
+                when: format.dateTime(subtitle.at, { dateStyle: "medium" }),
+              })}
+      </span>
+    );
   }
 
+  // The root is always rendered with a fixed height so the header never jumps.
   return (
-    <span className={styles.root}>
-      {typingLabel ? (
-        <span
-          className={styles.typing}
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {typingLabel}
-        </span>
-      ) : (
-        presenceLine
-      )}
+    <span className={styles.root} data-kind={subtitle.kind}>
+      {content}
     </span>
   );
 });
