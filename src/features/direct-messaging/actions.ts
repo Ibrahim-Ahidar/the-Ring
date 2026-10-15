@@ -15,7 +15,7 @@ import {
 } from "./service";
 import type {
   ConversationDetail,
-  ConversationReceiptStatus,
+  ConversationReceipt,
   ListConversationsResult,
   ListMessagesResult,
 } from "./types";
@@ -98,7 +98,7 @@ export async function markDeliveredAction(input: {
 
 export async function getConversationReceiptsAction(input: {
   conversationIds: string[];
-}): Promise<Result<Record<string, ConversationReceiptStatus>>> {
+}): Promise<Result<Record<string, ConversationReceipt>>> {
   const session = await requireRpc();
   if (!session) {
     return { ok: false, error: { code: "platform.unauthenticated" } };

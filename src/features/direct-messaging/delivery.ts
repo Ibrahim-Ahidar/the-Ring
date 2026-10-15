@@ -104,3 +104,83 @@ export function shouldGroupWithPrevious(
     new Date(previous.created_at).getTime();
   return gap >= 0 && gap <= 5 * 60 * 1000;
 }
+
+/** Ordering of delivery states; `failed` is local only and never ranked. */
+export function rankDelivery(status: OutboundDelivery): number {
+  switch (status) {
+    case "pending":
+      return 0;
+    case "sent":
+      return 1;
+    case "delivered":
+      return 2;
+    case "read":
+      return 3;
+    default:
+      return -1;
+  }
+}
+
+function laterBy(
+  prevAt: string | null,
+  prevId: string | null,
+  nextAt: string | null,
+  nextId: string | null,
+): "prev" | "next" {
+  if (!prevId) return "next";
+  if (!nextId) return "prev";
+  const a = prevAt ?? "";
+  const b = nextAt ?? "";
+  if (a !== b) return a > b ? "prev" : "next";
+  return prevId >= nextId ? "prev" : "next";
+}
+
+/**
+ * Merge a freshly fetched detail into the current one without ever moving a
+ * receipt backwards. A stale fetch must not un-deliver or un-read a message;
+ * the only legitimate regression is the other user turning read receipts off.
+ */
+export function mergeDetailMonotonic(
+  prev: ConversationDetail | undefined,
+  next: ConversationDetail,
+): ConversationDetail {
+  if (!prev) return next;
+
+  const merged: ConversationDetail = { ...next };
+
+  const prevDelivered = prev.other_last_delivered_at;
+  const nextDelivered = next.other_last_delivered_at;
+  if (
+    prevDelivered &&
+    (!nextDelivered ||
+      new Date(prevDelivered).getTime() > new Date(nextDelivered).getTime())
+  ) {
+    merged.other_last_delivered_at = prevDelivered;
+  }
+
+  if (next.other_send_read_receipts !== false) {
+    const pick = laterBy(
+      prev.other_last_read_created_at,
+      prev.other_last_read_message_id,
+      next.other_last_read_created_at,
+      next.other_last_read_message_id,
+    );
+    if (pick === "prev") {
+      merged.other_last_read_message_id = prev.other_last_read_message_id;
+      merged.other_last_read_created_at = prev.other_last_read_created_at;
+    }
+  }
+
+  // The own cursor has no created_at; last_read_at is the server write time of
+  // a monotonically advancing cursor, so the later timestamp wins.
+  if (
+    prev.last_read_message_id &&
+    (!next.last_read_message_id ||
+      (prev.last_read_at ?? "") > (next.last_read_at ?? ""))
+  ) {
+    merged.last_read_message_id = prev.last_read_message_id;
+    merged.last_read_at = prev.last_read_at;
+  }
+
+  return merged;
+}

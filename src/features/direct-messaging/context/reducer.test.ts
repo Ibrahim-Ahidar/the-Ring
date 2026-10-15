@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { TimelineMessage } from "@/platform/timeline";
 
+import type { ConversationDetail } from "../types";
 import { createInitialState, messagingReducer } from "./reducer";
 
 function msg(overrides: Partial<TimelineMessage> = {}): TimelineMessage {
@@ -187,5 +188,130 @@ describe("messagingReducer pending dedupe", () => {
       message: msg({ id: "m-3", sender_id: "other" }),
     });
     expect(state.messagesByConversation["conv-1"]?.[0]?.id).toBe("m-3");
+  });
+});
+
+function detailFor(
+  overrides: Partial<ConversationDetail> = {},
+): ConversationDetail {
+  return {
+    id: "c1",
+    type: "direct",
+    title: null,
+    last_message_at: null,
+    last_message_id: null,
+    last_read_message_id: null,
+    last_read_at: null,
+    pinned_at: null,
+    archived_at: null,
+    muted_until: null,
+    other_user_id: "peer",
+    other_username: "peer",
+    other_display_name: null,
+    other_avatar_url: null,
+    other_last_read_message_id: null,
+    other_last_read_created_at: null,
+    other_send_read_receipts: true,
+    other_last_delivered_at: null,
+    role: "member",
+    ...overrides,
+  };
+}
+
+describe("messagingReducer monotonic receipts", () => {
+  it("keeps delivered and read when a stale detail arrives", () => {
+    let state = createInitialState("me");
+    state = messagingReducer(state, {
+      type: "detail/set",
+      conversationId: "c1",
+      detail: detailFor({
+        other_last_delivered_at: "2026-01-02T00:00:05.000Z",
+        other_last_read_message_id: "m2",
+        other_last_read_created_at: "2026-01-02T00:00:04.000Z",
+      }),
+    });
+    state = messagingReducer(state, {
+      type: "detail/set",
+      conversationId: "c1",
+      detail: detailFor(),
+    });
+    const d = state.detailsByConversation["c1"]!;
+    expect(d.other_last_delivered_at).toBe("2026-01-02T00:00:05.000Z");
+    expect(d.other_last_read_message_id).toBe("m2");
+  });
+
+  it("clears the read cursor when the peer turns receipts off", () => {
+    let state = createInitialState("me");
+    state = messagingReducer(state, {
+      type: "detail/set",
+      conversationId: "c1",
+      detail: detailFor({
+        other_last_read_message_id: "m2",
+        other_last_read_created_at: "2026-01-02T00:00:04.000Z",
+      }),
+    });
+    state = messagingReducer(state, {
+      type: "detail/set",
+      conversationId: "c1",
+      detail: detailFor({ other_send_read_receipts: false }),
+    });
+    expect(
+      state.detailsByConversation["c1"]!.other_last_read_message_id,
+    ).toBeNull();
+  });
+
+  it("patchOwnRead sets the own cursor and no-ops without a detail", () => {
+    const empty = createInitialState("me");
+    const patch = {
+      type: "detail/patchOwnRead" as const,
+      conversationId: "c1",
+      lastReadMessageId: "m1",
+      lastReadAt: "2026-01-02T00:00:00.000Z",
+    };
+    expect(messagingReducer(empty, patch)).toBe(empty);
+    let state = messagingReducer(empty, {
+      type: "detail/set",
+      conversationId: "c1",
+      detail: detailFor(),
+    });
+    state = messagingReducer(state, patch);
+    expect(state.detailsByConversation["c1"]!.last_read_message_id).toBe("m1");
+  });
+
+  it("receipts/set keeps the higher rank for the same message and restarts for a new one", () => {
+    let state = createInitialState("me");
+    state = messagingReducer(state, {
+      type: "receipts/set",
+      receipts: { c1: { status: "read", messageId: "m1" } },
+    });
+    state = messagingReducer(state, {
+      type: "receipts/set",
+      receipts: { c1: { status: "sent", messageId: "m1" } },
+    });
+    expect(state.receiptsByConversation["c1"]).toEqual({
+      status: "read",
+      messageId: "m1",
+    });
+    state = messagingReducer(state, {
+      type: "receipts/set",
+      receipts: { c1: { status: "sent", messageId: "m2" } },
+    });
+    expect(state.receiptsByConversation["c1"]).toEqual({
+      status: "sent",
+      messageId: "m2",
+    });
+  });
+
+  it("returns the same state for no-op actions", () => {
+    const state = createInitialState("me");
+    expect(
+      messagingReducer(state, {
+        type: "connection",
+        status: state.connectionStatus,
+      }),
+    ).toBe(state);
+    expect(
+      messagingReducer(state, { type: "pending/remove", clientId: "nope" }),
+    ).toBe(state);
   });
 });

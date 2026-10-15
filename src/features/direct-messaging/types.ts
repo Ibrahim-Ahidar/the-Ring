@@ -79,6 +79,12 @@ export type ChatsViewer = {
 /** Status of the viewer's newest message in a direct chat, for the chat list. */
 export type ConversationReceiptStatus = "sent" | "delivered" | "read";
 
+/** Receipt status plus the id of the viewer's newest message it refers to. */
+export type ConversationReceipt = {
+  status: ConversationReceiptStatus;
+  messageId: string;
+};
+
 export type MarkReadResult = {
   last_read_message_id: string | null;
   last_read_at: string | null;

@@ -10,6 +10,7 @@ import type { TimelineMessage } from "@/platform/timeline";
 import {
   encodeConversationCursor,
   type ConversationDetail,
+  type ConversationReceipt,
   type ConversationReceiptStatus,
   type ConversationSummary,
   type ListConversationsResult,
@@ -148,11 +149,17 @@ export async function markDelivered(
 export async function getConversationReceipts(
   rpc: RpcClient,
   input: { conversationIds: string[] },
-): Promise<Result<Record<string, ConversationReceiptStatus>>> {
+): Promise<Result<Record<string, ConversationReceipt>>> {
   if (input.conversationIds.length === 0) {
     return ok({});
   }
-  const result = await callRpc<{ conversation_id: string; status: ConversationReceiptStatus }[]>(
+  const result = await callRpc<
+    {
+      conversation_id: string;
+      status: ConversationReceiptStatus;
+      message_id: string;
+    }[]
+  >(
     rpc,
     "conversation_receipts",
     { p_conversation_ids: input.conversationIds },
@@ -160,9 +167,9 @@ export async function getConversationReceipts(
   if (!result.ok) {
     return result;
   }
-  const map: Record<string, ConversationReceiptStatus> = {};
+  const map: Record<string, ConversationReceipt> = {};
   for (const row of result.value ?? []) {
-    map[row.conversation_id] = row.status;
+    map[row.conversation_id] = { status: row.status, messageId: row.message_id };
   }
   return ok(map);
 }

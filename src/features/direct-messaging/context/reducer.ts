@@ -1,9 +1,11 @@
 import type { TimelineMessage } from "@/platform/timeline";
 
+import { mergeDetailMonotonic, rankDelivery } from "../delivery";
 import {
   mergeRealtimeMessage,
   shouldApplyRealtimeMessage,
 } from "../lib/realtime-message";
+import type { ConversationReceipt } from "../types";
 import type { MessagingAction, MessagingState } from "./types";
 
 function mergeMessages(
@@ -53,8 +55,29 @@ export function messagingReducer(
         conversations: action.items,
         conversationsHasMore: action.hasMore,
       };
-    case "receipts/set":
-      return { ...state, receiptsByConversation: action.receipts };
+    case "receipts/set": {
+      const next: Record<string, ConversationReceipt> = {};
+      let changed =
+        Object.keys(action.receipts).length !==
+        Object.keys(state.receiptsByConversation).length;
+      for (const [id, incoming] of Object.entries(action.receipts)) {
+        const prev = state.receiptsByConversation[id];
+        const keep =
+          prev &&
+          prev.messageId === incoming.messageId &&
+          rankDelivery(prev.status) > rankDelivery(incoming.status);
+        const value = keep ? prev : incoming;
+        next[id] = value;
+        if (
+          !prev ||
+          prev.status !== value.status ||
+          prev.messageId !== value.messageId
+        ) {
+          changed = true;
+        }
+      }
+      return changed ? { ...state, receiptsByConversation: next } : state;
+    }
     case "conversations/patch": {
       const idx = state.conversations.findIndex((c) => c.id === action.item.id);
       const conversations =
@@ -151,15 +174,46 @@ export function messagingReducer(
         ...state,
         detailsByConversation: {
           ...state.detailsByConversation,
-          [action.conversationId]: action.detail,
+          [action.conversationId]: mergeDetailMonotonic(
+            state.detailsByConversation[action.conversationId],
+            action.detail,
+          ),
         },
       };
+    case "detail/patchOwnRead": {
+      const current = state.detailsByConversation[action.conversationId];
+      if (
+        !current ||
+        (current.last_read_message_id === action.lastReadMessageId &&
+          current.last_read_at === action.lastReadAt)
+      ) {
+        return state;
+      }
+      return {
+        ...state,
+        detailsByConversation: {
+          ...state.detailsByConversation,
+          [action.conversationId]: {
+            ...current,
+            last_read_message_id: action.lastReadMessageId,
+            last_read_at: action.lastReadAt,
+          },
+        },
+      };
+    }
     case "pending/add":
       return {
         ...state,
         pendingSends: [...state.pendingSends, action.pending],
       };
     case "pending/update":
+      if (
+        !state.pendingSends.some(
+          (p) => p.clientId === action.clientId && p.status !== action.status,
+        )
+      ) {
+        return state;
+      }
       return {
         ...state,
         pendingSends: state.pendingSends.map((p) =>
@@ -167,6 +221,9 @@ export function messagingReducer(
         ),
       };
     case "pending/remove":
+      if (!state.pendingSends.some((p) => p.clientId === action.clientId)) {
+        return state;
+      }
       return {
         ...state,
         pendingSends: state.pendingSends.filter(
@@ -174,6 +231,9 @@ export function messagingReducer(
         ),
       };
     case "draft/set":
+      if ((state.drafts[action.conversationId] ?? "") === action.text) {
+        return state;
+      }
       return {
         ...state,
         drafts: { ...state.drafts, [action.conversationId]: action.text },
@@ -181,8 +241,16 @@ export function messagingReducer(
     case "drafts/hydrate":
       return { ...state, drafts: action.drafts };
     case "connection":
-      return { ...state, connectionStatus: action.status };
+      return state.connectionStatus === action.status
+        ? state
+        : { ...state, connectionStatus: action.status };
     case "unreadSeparator/set":
+      if (
+        (state.unreadSeparatorByConversation[action.conversationId] ?? null) ===
+        action.messageId
+      ) {
+        return state;
+      }
       return {
         ...state,
         unreadSeparatorByConversation: {

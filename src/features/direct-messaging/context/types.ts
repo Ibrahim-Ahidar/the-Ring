@@ -2,11 +2,11 @@ import type { TimelineMessage } from "@/platform/timeline";
 
 import type {
   ConversationDetail,
-  ConversationReceiptStatus,
+  ConversationReceipt,
   ConversationSummary,
 } from "../types";
 
-export type ConnectionStatus = "connected" | "reconnecting" | "disconnected";
+export type ConnectionStatus = "connected" | "reconnecting" | "disconnected" | "offline";
 
 export type PendingSend = {
   clientId: string;
@@ -30,7 +30,7 @@ export type MessagingState = {
   detailsByConversation: Record<string, ConversationDetail>;
   unreadSeparatorByConversation: Record<string, string | null>;
   /** Delivery status of the viewer's newest message per direct chat. */
-  receiptsByConversation: Record<string, ConversationReceiptStatus>;
+  receiptsByConversation: Record<string, ConversationReceipt>;
 };
 
 export type MessagingAction =
@@ -61,6 +61,12 @@ export type MessagingAction =
       messageId: string;
     }
   | { type: "detail/set"; conversationId: string; detail: ConversationDetail }
+  | {
+      type: "detail/patchOwnRead";
+      conversationId: string;
+      lastReadMessageId: string | null;
+      lastReadAt: string | null;
+    }
   | { type: "pending/add"; pending: PendingSend }
   | {
       type: "pending/update";
@@ -75,7 +81,7 @@ export type MessagingAction =
       conversationId: string;
       messageId: string | null;
     }
-  | { type: "receipts/set"; receipts: Record<string, ConversationReceiptStatus> }
+  | { type: "receipts/set"; receipts: Record<string, ConversationReceipt> }
   | { type: "drafts/hydrate"; drafts: Record<string, string> };
 
 export const DRAFTS_STORAGE_KEY = "pulse.messaging.drafts.v1";

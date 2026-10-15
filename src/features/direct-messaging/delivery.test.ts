@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import type { TimelineMessage } from "@/platform/timeline";
 
-import { outboundDeliveryStatus } from "./delivery";
+import {
+  mergeDetailMonotonic,
+  outboundDeliveryStatus,
+  rankDelivery,
+} from "./delivery";
 import type { ConversationDetail } from "./types";
 
 function message(id: string, createdAt: string): TimelineMessage {
@@ -86,5 +90,70 @@ describe("outboundDeliveryStatus", () => {
       other_last_delivered_at: first.created_at,
     });
     expect(outboundDeliveryStatus(first, d)).toBe("delivered");
+  });
+});
+
+describe("rankDelivery", () => {
+  it("orders pending < sent < delivered < read", () => {
+    expect(rankDelivery("pending")).toBeLessThan(rankDelivery("sent"));
+    expect(rankDelivery("sent")).toBeLessThan(rankDelivery("delivered"));
+    expect(rankDelivery("delivered")).toBeLessThan(rankDelivery("read"));
+  });
+});
+
+describe("mergeDetailMonotonic", () => {
+  it("returns next when there is no previous detail", () => {
+    const next = detail({});
+    expect(mergeDetailMonotonic(undefined, next)).toBe(next);
+  });
+
+  it("never moves the delivered cursor back", () => {
+    const prev = detail({ other_last_delivered_at: "2026-10-14T10:05:00Z" });
+    const stale = detail({ other_last_delivered_at: "2026-10-14T10:00:00Z" });
+    expect(mergeDetailMonotonic(prev, stale).other_last_delivered_at).toBe(
+      "2026-10-14T10:05:00Z",
+    );
+    expect(mergeDetailMonotonic(prev, detail({})).other_last_delivered_at).toBe(
+      "2026-10-14T10:05:00Z",
+    );
+  });
+
+  it("never moves the peer read cursor back", () => {
+    const prev = detail({
+      other_last_read_message_id: "m2",
+      other_last_read_created_at: second.created_at,
+    });
+    const stale = detail({
+      other_last_read_message_id: "m1",
+      other_last_read_created_at: first.created_at,
+    });
+    expect(mergeDetailMonotonic(prev, stale).other_last_read_message_id).toBe(
+      "m2",
+    );
+    expect(
+      mergeDetailMonotonic(prev, detail({})).other_last_read_message_id,
+    ).toBe("m2");
+  });
+
+  it("clears the read cursor when the peer turns receipts off", () => {
+    const prev = detail({
+      other_last_read_message_id: "m2",
+      other_last_read_created_at: second.created_at,
+    });
+    const merged = mergeDetailMonotonic(
+      prev,
+      detail({ other_send_read_receipts: false }),
+    );
+    expect(merged.other_last_read_message_id).toBeNull();
+  });
+
+  it("keeps the later own read cursor", () => {
+    const prev = detail({
+      last_read_message_id: "m2",
+      last_read_at: "2026-10-14T10:06:00Z",
+    });
+    expect(mergeDetailMonotonic(prev, detail({})).last_read_message_id).toBe(
+      "m2",
+    );
   });
 });
