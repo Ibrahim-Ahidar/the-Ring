@@ -549,7 +549,7 @@ describe("review regressions", () => {
     if (!sent.ok) throw new Error("send failed");
 
     const before = await getConversationReceipts(aRpc, { conversationIds: [conversationId] });
-    expect(before).toEqual({ ok: true, value: { [conversationId]: "sent" } });
+    expect(before).toEqual({ ok: true, value: { [conversationId]: { status: "sent", messageId: sent.value.id } } });
     const detailBefore = await getConversation(aRpc, { conversationId });
     if (!detailBefore.ok) throw new Error("detail failed");
     expect(detailBefore.value.other_last_delivered_at).toBeNull();
@@ -558,14 +558,14 @@ describe("review regressions", () => {
     const delivered = await getConversationReceipts(aRpc, {
       conversationIds: [conversationId],
     });
-    expect(delivered).toEqual({ ok: true, value: { [conversationId]: "delivered" } });
+    expect(delivered).toEqual({ ok: true, value: { [conversationId]: { status: "delivered", messageId: sent.value.id } } });
     const detailDelivered = await getConversation(aRpc, { conversationId });
     if (!detailDelivered.ok) throw new Error("detail failed");
     expect(detailDelivered.value.other_last_delivered_at).not.toBeNull();
 
     expect((await markRead(bRpc, { conversationId, messageId: sent.value.id })).ok).toBe(true);
     const read = await getConversationReceipts(aRpc, { conversationIds: [conversationId] });
-    expect(read).toEqual({ ok: true, value: { [conversationId]: "read" } });
+    expect(read).toEqual({ ok: true, value: { [conversationId]: { status: "read", messageId: sent.value.id } } });
 
     // The recipient's own list has no receipt: the newest message is not theirs.
     const forB = await getConversationReceipts(bRpc, { conversationIds: [conversationId] });

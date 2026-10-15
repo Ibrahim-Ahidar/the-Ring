@@ -31,7 +31,12 @@ import {
 import { needsAttachmentFetch } from "../lib/realtime-message";
 import { firstUnreadMessageId } from "../delivery";
 import { mapMessageRow, messagePageNextCursor } from "../service";
-import type { ConversationDetail, ConversationSummary } from "../types";
+import type {
+  ConversationDetail,
+  ConversationReceipt,
+  ConversationReceiptStatus,
+  ConversationSummary,
+} from "../types";
 import {
   inboxFiltersToListArgs,
   type InboxFilters,
@@ -40,24 +45,70 @@ import { rowToTimelineMessage } from "./map-row";
 import { createInitialState, messagingReducer } from "./reducer";
 import {
   DRAFTS_STORAGE_KEY,
+  type ConnectionStatus,
   type MessagingState,
   type PendingSend,
 } from "./types";
 
-type MessagingContextValue = {
-  state: MessagingState;
+type LegacyMessagingState = Omit<MessagingState, "receiptsByConversation"> & {
+  /** Status only; `useInbox().receipts` carries the message id as well. */
+  receiptsByConversation: Record<string, ConversationReceiptStatus>;
+};
+
+export type MessagingActions = {
   sendMessage: (input: {
     conversationId: string;
     body: string;
     replyToId?: string | null;
   }) => Promise<void>;
   retrySend: (clientId: string) => Promise<void>;
+  discardSend: (clientId: string) => void;
   setDraft: (conversationId: string, text: string) => void;
   loadOlderMessages: (conversationId: string) => Promise<void>;
   refreshConversation: (conversationId: string) => Promise<void>;
 };
 
+type MessagingContextValue = Omit<MessagingActions, "discardSend"> & {
+  state: LegacyMessagingState;
+};
+
+type MessagesSlice = Pick<
+  MessagingState,
+  | "messagesByConversation"
+  | "pendingSends"
+  | "detailsByConversation"
+  | "unreadSeparatorByConversation"
+  | "messagesHasMore"
+>;
+
+export type ConversationView = {
+  messages: TimelineMessage[];
+  pending: PendingSend[];
+  detail: ConversationDetail | undefined;
+  hasMore: boolean;
+  separatorId: string | null;
+};
+
+export type InboxSlice = {
+  conversations: ConversationSummary[];
+  hasMore: boolean;
+  receipts: Record<string, ConversationReceipt>;
+};
+
+export type MarkSeenUpTo = (
+  conversationId: string,
+  message: TimelineMessage,
+) => Promise<boolean>;
+
 const MessagingContext = createContext<MessagingContextValue | null>(null);
+const ActionsContext = createContext<MessagingActions | null>(null);
+const MarkSeenContext = createContext<MarkSeenUpTo | null>(null);
+const MessagesSliceContext = createContext<MessagesSlice | null>(null);
+const DraftsContext = createContext<Record<string, string> | null>(null);
+const ConnectionContext = createContext<{ status: ConnectionStatus } | null>(
+  null,
+);
+const InboxContext = createContext<InboxSlice | null>(null);
 
 const INBOX_REFRESH_DEBOUNCE_MS = 400;
 /** Catch-up poll interval; only runs while the channel is not SUBSCRIBED. */
@@ -188,6 +239,8 @@ export function MessagingProvider({
     writeDraftsToStorage(state.drafts);
   }, [state.drafts]);
 
+  const cursorsRef = useRef(state.messageCursors);
+  cursorsRef.current = state.messageCursors;
   const pendingSendsRef = useRef(state.pendingSends);
   const connectionStatusRef = useRef(state.connectionStatus);
   const inFlightRef = useRef(new Set<string>());
@@ -197,11 +250,36 @@ export function MessagingProvider({
     connectionStatusRef.current = state.connectionStatus;
   }, [state.pendingSends, state.connectionStatus]);
 
+  // Socket health and browser connectivity are tracked apart: "offline" wins
+  // while the browser has no network, and the socket status resumes after.
+  const socketStatusRef = useRef<"connected" | "reconnecting">("connected");
+  const offlineRef = useRef(false);
+
+  const setSocketStatus = useCallback((status: "connected" | "reconnecting") => {
+    socketStatusRef.current = status;
+    if (!offlineRef.current) {
+      dispatch({ type: "connection", status });
+    }
+  }, []);
+
   const deliver = useCallback(async (pending: PendingSend) => {
     if (inFlightRef.current.has(pending.clientId)) {
       return;
     }
+    if (offlineRef.current) {
+      return;
+    }
     inFlightRef.current.add(pending.clientId);
+    const markFailed = () => {
+      pendingSendsRef.current = pendingSendsRef.current.map((p) =>
+        p.clientId === pending.clientId ? { ...p, status: "failed" } : p,
+      );
+      dispatch({
+        type: "pending/update",
+        clientId: pending.clientId,
+        status: "failed",
+      });
+    };
     try {
       const result = await sendTextAction({
         conversationId: pending.conversationId,
@@ -210,14 +288,7 @@ export function MessagingProvider({
         replyToId: pending.replyToId,
       });
       if (!result.ok) {
-        pendingSendsRef.current = pendingSendsRef.current.map((p) =>
-          p.clientId === pending.clientId ? { ...p, status: "failed" } : p,
-        );
-        dispatch({
-          type: "pending/update",
-          clientId: pending.clientId,
-          status: "failed",
-        });
+        markFailed();
         return;
       }
       pendingSendsRef.current = pendingSendsRef.current.filter(
@@ -233,6 +304,12 @@ export function MessagingProvider({
         kind: "sent",
         conversationId: pending.conversationId,
       });
+    } catch {
+      // A thrown action (network drop mid-request) is retryable by the user,
+      // unless the browser went offline: then it stays queued for `online`.
+      if (typeof navigator === "undefined" || navigator.onLine !== false) {
+        markFailed();
+      }
     } finally {
       inFlightRef.current.delete(pending.clientId);
     }
@@ -322,7 +399,7 @@ export function MessagingProvider({
         if (connectionStatusRef.current === "reconnecting") {
           void reconcile();
         }
-        dispatch({ type: "connection", status: "connected" });
+        setSocketStatus("connected");
         return;
       }
       if (
@@ -330,7 +407,7 @@ export function MessagingProvider({
         status === "TIMED_OUT" ||
         status === "CLOSED"
       ) {
-        dispatch({ type: "connection", status: "reconnecting" });
+        setSocketStatus("reconnecting");
       }
     });
 
@@ -361,7 +438,7 @@ export function MessagingProvider({
       offChange();
       inbox.leave();
     };
-  }, [reconcile, refreshInboxList, userId]);
+  }, [reconcile, refreshInboxList, setSocketStatus, userId]);
 
   useEffect(() => {
     if (!initialConversationId) {
@@ -390,33 +467,6 @@ export function MessagingProvider({
       }
     };
 
-    // Messages arriving while the chat is open are seen right away; ones that
-    // arrive while the tab is hidden are marked when it becomes visible again.
-    let lastSeenMarked: string | null = null;
-    let pendingSeenId: string | null = null;
-    const markSeen = (messageId: string) => {
-      if (
-        typeof document !== "undefined" &&
-        document.visibilityState === "hidden"
-      ) {
-        pendingSeenId = messageId;
-        return;
-      }
-      pendingSeenId = null;
-      if (messageId === lastSeenMarked) {
-        return;
-      }
-      lastSeenMarked = messageId;
-      void markReadAction({
-        conversationId: initialConversationId,
-        messageId,
-      }).then((result) => {
-        if (!result.ok && lastSeenMarked === messageId) {
-          lastSeenMarked = null;
-        }
-      });
-    };
-
     // Authoritative refetch of the open conversation: covers events missed
     // while the socket was down, the tab was asleep, or auth lagged behind.
     const syncOpenConversation = async () => {
@@ -440,12 +490,6 @@ export function MessagingProvider({
           cursor: messagePageNextCursor(page.value.items),
         });
         scheduleInboxRefresh(inboxRefreshTimerRef, refreshInboxList);
-        const latestIncoming = page.value.items.find(
-          (row) => row.sender_id !== userId,
-        );
-        if (latestIncoming) {
-          markSeen(latestIncoming.id);
-        }
         void refreshDetail();
       } finally {
         syncing = false;
@@ -469,9 +513,6 @@ export function MessagingProvider({
     };
 
     const onWake = () => {
-      if (pendingSeenId) {
-        markSeen(pendingSeenId);
-      }
       if (
         typeof document !== "undefined" &&
         document.visibilityState === "hidden"
@@ -495,7 +536,7 @@ export function MessagingProvider({
         subscribed = true;
         everSubscribed = true;
         stopPolling();
-        dispatch({ type: "connection", status: "connected" });
+        setSocketStatus("connected");
         if (wasRecovering) {
           void syncOpenConversation();
         }
@@ -506,7 +547,7 @@ export function MessagingProvider({
       ) {
         subscribed = false;
         startPolling();
-        dispatch({ type: "connection", status: "reconnecting" });
+        setSocketStatus("reconnecting");
       }
     });
 
@@ -520,9 +561,6 @@ export function MessagingProvider({
         conversationId: initialConversationId,
         message,
       });
-      if (message.sender_id !== userId && message.deleted_at === null) {
-        markSeen(message.id);
-      }
       if (needsAttachmentFetch(message)) {
         void getMessageAttachmentsAction({ messageId: message.id }).then(
           (result) => {
@@ -596,7 +634,7 @@ export function MessagingProvider({
       offChange();
       topic.leave();
     };
-  }, [initialConversationId, refreshInboxList, userId]);
+  }, [initialConversationId, refreshInboxList, setSocketStatus, userId]);
 
   useEffect(() => {
     if (!initialConversationId || !initialDetail || !initialMessages) {
@@ -612,25 +650,6 @@ export function MessagingProvider({
       conversationId: initialConversationId,
       messageId: separator,
     });
-    const latest = initialMessages[0];
-    if (latest) {
-      void markReadAction({
-        conversationId: initialConversationId,
-        messageId: latest.id,
-      }).then((result) => {
-        if (result.ok && initialDetail) {
-          dispatch({
-            type: "detail/set",
-            conversationId: initialConversationId,
-            detail: {
-              ...initialDetail,
-              last_read_message_id: result.value.last_read_message_id,
-              last_read_at: result.value.last_read_at,
-            },
-          });
-        }
-      });
-    }
   }, [initialConversationId, initialDetail, initialMessages, userId]);
 
   const sendMessage = useCallback(
@@ -673,13 +692,20 @@ export function MessagingProvider({
     [deliver],
   );
 
+  const discardSend = useCallback((clientId: string) => {
+    pendingSendsRef.current = pendingSendsRef.current.filter(
+      (p) => p.clientId !== clientId,
+    );
+    dispatch({ type: "pending/remove", clientId });
+  }, []);
+
   const setDraft = useCallback((conversationId: string, text: string) => {
     dispatch({ type: "draft/set", conversationId, text });
   }, []);
 
   const loadOlderMessages = useCallback(
     async (conversationId: string) => {
-      const cursor = state.messageCursors[conversationId];
+      const cursor = cursorsRef.current[conversationId];
       if (!cursor) {
         return;
       }
@@ -695,7 +721,7 @@ export function MessagingProvider({
         cursor: messagePageNextCursor(page.value.items),
       });
     },
-    [state.messageCursors],
+    [],
   );
 
   const refreshConversation = useCallback(async (conversationId: string) => {
@@ -711,9 +737,115 @@ export function MessagingProvider({
     }
   }, []);
 
-  const value = useMemo(
+  const markSeenUpTo = useCallback(
+    async (conversationId: string, message: TimelineMessage) => {
+      const result = await markReadAction({
+        conversationId,
+        messageId: message.id,
+      });
+      if (result.ok) {
+        dispatch({
+          type: "detail/patchOwnRead",
+          conversationId,
+          lastReadMessageId: result.value.last_read_message_id,
+          lastReadAt: result.value.last_read_at,
+        });
+      }
+      return result.ok;
+    },
+    [],
+  );
+
+  // Browser connectivity: queue sends while offline, flush when back online.
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const goOffline = () => {
+      offlineRef.current = true;
+      dispatch({ type: "connection", status: "offline" });
+    };
+    const goOnline = () => {
+      offlineRef.current = false;
+      dispatch({ type: "connection", status: socketStatusRef.current });
+      void flushPending();
+    };
+    if (navigator.onLine === false) {
+      goOffline();
+    }
+    window.addEventListener("offline", goOffline);
+    window.addEventListener("online", goOnline);
+    return () => {
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", goOnline);
+    };
+  }, [flushPending]);
+
+  const actions = useMemo<MessagingActions>(
     () => ({
-      state,
+      sendMessage,
+      retrySend,
+      discardSend,
+      setDraft,
+      loadOlderMessages,
+      refreshConversation,
+    }),
+    [
+      discardSend,
+      loadOlderMessages,
+      refreshConversation,
+      retrySend,
+      sendMessage,
+      setDraft,
+    ],
+  );
+
+  const messagesSlice = useMemo<MessagesSlice>(
+    () => ({
+      messagesByConversation: state.messagesByConversation,
+      pendingSends: state.pendingSends,
+      detailsByConversation: state.detailsByConversation,
+      unreadSeparatorByConversation: state.unreadSeparatorByConversation,
+      messagesHasMore: state.messagesHasMore,
+    }),
+    [
+      state.detailsByConversation,
+      state.messagesByConversation,
+      state.messagesHasMore,
+      state.pendingSends,
+      state.unreadSeparatorByConversation,
+    ],
+  );
+
+  const connection = useMemo(
+    () => ({ status: state.connectionStatus }),
+    [state.connectionStatus],
+  );
+
+  const inbox = useMemo<InboxSlice>(
+    () => ({
+      conversations: state.conversations,
+      hasMore: state.conversationsHasMore,
+      receipts: state.receiptsByConversation,
+    }),
+    [
+      state.conversations,
+      state.conversationsHasMore,
+      state.receiptsByConversation,
+    ],
+  );
+
+  const legacyReceipts = useMemo(() => {
+    const map: Record<string, ConversationReceiptStatus> = {};
+    for (const [id, receipt] of Object.entries(state.receiptsByConversation)) {
+      map[id] = receipt.status;
+    }
+    return map;
+  }, [state.receiptsByConversation]);
+
+  const value = useMemo<MessagingContextValue>(
+    () => ({
+      state: { ...state, receiptsByConversation: legacyReceipts },
       sendMessage,
       retrySend,
       setDraft,
@@ -721,6 +853,7 @@ export function MessagingProvider({
       refreshConversation,
     }),
     [
+      legacyReceipts,
       loadOlderMessages,
       refreshConversation,
       retrySend,
@@ -731,14 +864,80 @@ export function MessagingProvider({
   );
 
   return (
-    <MessagingContext.Provider value={value}>{children}</MessagingContext.Provider>
+    <MessagingContext.Provider value={value}>
+      <ActionsContext.Provider value={actions}>
+        <MarkSeenContext.Provider value={markSeenUpTo}>
+          <MessagesSliceContext.Provider value={messagesSlice}>
+            <DraftsContext.Provider value={state.drafts}>
+              <ConnectionContext.Provider value={connection}>
+                <InboxContext.Provider value={inbox}>
+                  {children}
+                </InboxContext.Provider>
+              </ConnectionContext.Provider>
+            </DraftsContext.Provider>
+          </MessagesSliceContext.Provider>
+        </MarkSeenContext.Provider>
+      </ActionsContext.Provider>
+    </MessagingContext.Provider>
   );
 }
 
-export function useMessaging() {
-  const ctx = useContext(MessagingContext);
-  if (!ctx) {
-    throw new Error("useMessaging must be used within MessagingProvider");
+function useRequired<T>(ctx: T | null, name: string): T {
+  if (ctx === null) {
+    throw new Error(`${name} must be used within MessagingProvider`);
   }
   return ctx;
+}
+
+export function useMessaging() {
+  return useRequired(useContext(MessagingContext), "useMessaging");
+}
+
+/** Stable action callbacks; never re-renders on state changes. */
+export function useMessagingActions(): MessagingActions {
+  return useRequired(useContext(ActionsContext), "useMessagingActions");
+}
+
+/** Marks a conversation read up to `message`; used by `useReadTracker`. */
+export function useMarkSeenUpTo(): MarkSeenUpTo {
+  return useRequired(useContext(MarkSeenContext), "useMarkSeenUpTo");
+}
+
+const NO_MESSAGES: TimelineMessage[] = [];
+const NO_PENDING: PendingSend[] = [];
+
+export function useConversationView(conversationId: string): ConversationView {
+  const slice = useRequired(
+    useContext(MessagesSliceContext),
+    "useConversationView",
+  );
+  const messages = slice.messagesByConversation[conversationId] ?? NO_MESSAGES;
+  const allPending = slice.pendingSends;
+  const pending = useMemo(() => {
+    const filtered = allPending.filter(
+      (p) => p.conversationId === conversationId,
+    );
+    return filtered.length === 0 ? NO_PENDING : filtered;
+  }, [allPending, conversationId]);
+  const detail = slice.detailsByConversation[conversationId];
+  const hasMore = slice.messagesHasMore[conversationId] ?? false;
+  const separatorId =
+    slice.unreadSeparatorByConversation[conversationId] ?? null;
+  return useMemo(
+    () => ({ messages, pending, detail, hasMore, separatorId }),
+    [messages, pending, detail, hasMore, separatorId],
+  );
+}
+
+export function useDraft(conversationId: string): string {
+  const drafts = useRequired(useContext(DraftsContext), "useDraft");
+  return drafts[conversationId] ?? "";
+}
+
+export function useConnection(): { status: ConnectionStatus } {
+  return useRequired(useContext(ConnectionContext), "useConnection");
+}
+
+export function useInbox(): InboxSlice {
+  return useRequired(useContext(InboxContext), "useInbox");
 }

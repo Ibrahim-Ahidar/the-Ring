@@ -3,7 +3,12 @@
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MessagingProvider, useMessaging } from "./MessagingProvider";
+import {
+  MessagingProvider,
+  useConversationView,
+  useMessaging,
+  useMessagingActions,
+} from "./MessagingProvider";
 
 const sendTextAction = vi.fn();
 const joinInbox = vi.fn();
@@ -167,5 +172,98 @@ describe("MessagingProvider sending", () => {
 
     expect(joinInbox).toHaveBeenCalledTimes(1);
     expect(inboxLeave).not.toHaveBeenCalled();
+  });
+});
+
+function ActionsCapture({
+  onReady,
+}: {
+  onReady: (actions: ReturnType<typeof useMessagingActions>) => void;
+}) {
+  onReady(useMessagingActions());
+  return null;
+}
+
+describe("MessagingProvider failures and offline", () => {
+  it("marks a send failed when the action throws", async () => {
+    sendTextAction.mockRejectedValue(new Error("network"));
+    const api = renderProvider();
+    await act(async () => {
+      await api().sendMessage({ conversationId: "conv-1", body: "boom" });
+    });
+    expect(api().state.pendingSends).toHaveLength(1);
+    expect(api().state.pendingSends[0]?.status).toBe("failed");
+  });
+
+  it("keeps sends pending while offline and flushes them when back online", async () => {
+    const api = renderProvider();
+    await act(async () => {
+      window.dispatchEvent(new Event("offline"));
+    });
+    expect(api().state.connectionStatus).toBe("offline");
+    await act(async () => {
+      await api().sendMessage({ conversationId: "conv-1", body: "later" });
+    });
+    expect(sendTextAction).not.toHaveBeenCalled();
+    expect(api().state.pendingSends[0]?.status).toBe("pending");
+
+    await act(async () => {
+      window.dispatchEvent(new Event("online"));
+    });
+    expect(sendTextAction).toHaveBeenCalledTimes(1);
+    expect(api().state.pendingSends).toEqual([]);
+  });
+
+  it("discardSend removes a failed send", async () => {
+    sendTextAction.mockRejectedValue(new Error("network"));
+    let latest: Api | null = null;
+    let actions: ReturnType<typeof useMessagingActions> | null = null;
+    render(
+      <MessagingProvider
+        userId="user-1"
+        initialConversations={[]}
+        initialConversationsHasMore={false}
+      >
+        <Capture onReady={(value) => (latest = value)} />
+        <ActionsCapture onReady={(a) => (actions = a)} />
+      </MessagingProvider>,
+    );
+    await act(async () => {
+      await latest!.sendMessage({ conversationId: "conv-1", body: "x" });
+    });
+    const clientId = latest!.state.pendingSends[0]!.clientId;
+    await act(async () => {
+      actions!.discardSend(clientId);
+    });
+    expect(latest!.state.pendingSends).toEqual([]);
+  });
+
+  it("a draft change does not change the conversation view or the actions", async () => {
+    const views: unknown[] = [];
+    const actionRefs: unknown[] = [];
+    let setDraft: (id: string, text: string) => void = () => {};
+    function Probe() {
+      views.push(useConversationView("conv-1"));
+      const actions = useMessagingActions();
+      actionRefs.push(actions);
+      setDraft = actions.setDraft;
+      return null;
+    }
+    render(
+      <MessagingProvider
+        userId="user-1"
+        initialConversations={[]}
+        initialConversationsHasMore={false}
+      >
+        <Probe />
+      </MessagingProvider>,
+    );
+    const view = views[views.length - 1];
+    const actions = actionRefs[actionRefs.length - 1];
+    await act(async () => {
+      setDraft("conv-1", "typing");
+    });
+    expect(views[views.length - 1]).toBe(view);
+    expect(actionRefs[actionRefs.length - 1]).toBe(actions);
   });
 });
