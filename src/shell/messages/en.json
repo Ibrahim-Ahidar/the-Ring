@@ -44,6 +44,7 @@
     "appearanceDesc": "Light, dark or system theme"
   },
   "skipLink": "Skip to content",
+  "loading": "Loading",
   "routes": {
     "login": "Log in",
     "signup": "Sign up",
