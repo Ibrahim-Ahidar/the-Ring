@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { memo, useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import { PaneLayout } from "@/shell/components/PaneLayout";
@@ -36,7 +36,7 @@ type Props = {
  * the app-wide store, so a conversation seen before shows with no round trip;
  * the routed page (`children`) only fills the store.
  */
-function ChatsShellInner({ userId, viewer, inbox, children }: Props) {
+export function ChatsShell({ userId, viewer, inbox, children }: Props) {
   const t = useTranslations("direct-messaging");
   const searchParams = useSearchParams();
   const seeding = useMessagingSeeding();
@@ -121,4 +121,3 @@ function ChatsShellInner({ userId, viewer, inbox, children }: Props) {
   );
 }
 
-export const ChatsShell = memo(ChatsShellInner);

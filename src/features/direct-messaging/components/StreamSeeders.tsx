@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { memo, Suspense, use, useEffect } from "react";
+import { Suspense, use, useEffect } from "react";
 
 import { ErrorScreen } from "@/shell/components/ErrorScreen";
 
@@ -42,13 +42,13 @@ function InboxSeedReader({ inbox, enabled }: InboxSeedProps) {
   return null;
 }
 
-export const InboxSeed = memo(function InboxSeed(props: InboxSeedProps) {
+export function InboxSeed(props: InboxSeedProps) {
   return (
     <Suspense fallback={null}>
       <InboxSeedReader {...props} />
     </Suspense>
   );
-});
+}
 
 type ThreadSeedProps = {
   conversationId: string;
@@ -88,7 +88,7 @@ function MessagesSeedReader({
  * Rendered by the conversation page. A conversation already in the store is not
  * read again; otherwise the streamed first page fills the store.
  */
-export const ThreadSeed = memo(function ThreadSeed({
+export function ThreadSeed({
   conversationId,
   detail,
   thread,
@@ -108,4 +108,4 @@ export const ThreadSeed = memo(function ThreadSeed({
       <MessagesSeedReader conversationId={conversationId} thread={thread} />
     </Suspense>
   );
-});
+}
