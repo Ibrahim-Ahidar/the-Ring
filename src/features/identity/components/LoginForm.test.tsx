@@ -89,7 +89,7 @@ describe("LoginForm", () => {
   });
 
   it("goes to the deep link after signing in", async () => {
-    signIn.mockResolvedValue({ ok: true, value: undefined });
+    signIn.mockResolvedValue({ ok: true, value: { mfaRequired: false } });
     const user = userEvent.setup();
     renderLogin({ next: "/app/chats/123" });
 

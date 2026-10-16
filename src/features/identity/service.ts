@@ -230,7 +230,181 @@ export async function signIn(
     return err(await mapSignInError(error));
   }
 
+  // A member with a verified factor must pass /login/verify before the device is
+  // registered; until then the session is AAL1 and the app refuses it.
+  if (await needsSecondFactor(supabase)) {
+    return err(MFA_REQUIRED);
+  }
+
   return registerSignedInDevice(supabase, rpc, input.deviceLabel, deviceId, newDeviceId);
+}
+
+export const MFA_REQUIRED = "identity.mfa_required";
+const TOTP_CODE = /^\d{6}$/;
+
+/** True when the session is AAL1 but the member has a verified factor to step up with. */
+export async function needsSecondFactor(supabase: SupabaseClient): Promise<boolean> {
+  const mfa = supabase.auth.mfa;
+  if (!mfa) {
+    return false;
+  }
+  const { data, error } = await mfa.getAuthenticatorAssuranceLevel();
+  if (error || !data) {
+    return false;
+  }
+  return data.nextLevel === "aal2" && data.currentLevel !== "aal2";
+}
+
+/** Maps an MFA error by its `AuthApiError` code, never its message. */
+export async function mapMfaError(error: AuthFailure): Promise<string> {
+  if (
+    error.code === "mfa_verification_failed" ||
+    error.code === "validation_failed" ||
+    error.code === "mfa_challenge_expired"
+  ) {
+    return "identity.mfa_code_wrong";
+  }
+  return mapCommonAuthError(error, "identity.mfa");
+}
+
+export type MfaFactor = { id: string; friendlyName: string };
+export type MfaEnrollment = { factorId: string; qrCode: string; secret: string };
+
+export const MAX_TOTP_FACTORS = 2;
+
+async function verifiedFactors(supabase: SupabaseClient): Promise<Result<MfaFactor[]>> {
+  const { data, error } = await supabase.auth.mfa.listFactors();
+  if (error || !data) {
+    return err(await mapMfaError(error ?? {}));
+  }
+  return ok(
+    data.totp.map((factor) => ({
+      id: factor.id,
+      friendlyName: factor.friendly_name ?? "",
+    })),
+  );
+}
+
+export async function listMfaFactors(supabase: SupabaseClient): Promise<Result<MfaFactor[]>> {
+  return verifiedFactors(supabase);
+}
+
+async function challengeAndVerify(
+  supabase: SupabaseClient,
+  factorId: string,
+  code: string,
+): Promise<Result<void>> {
+  const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
+  return error ? err(await mapMfaError(error)) : ok(undefined);
+}
+
+/** Starts enrolling a TOTP factor. Stale half-finished enrollments are removed first. */
+export async function enrollTotp(
+  supabase: SupabaseClient,
+  friendlyName: string,
+): Promise<Result<MfaEnrollment>> {
+  const verified = await verifiedFactors(supabase);
+  if (!verified.ok) {
+    return verified;
+  }
+  if (verified.value.length >= MAX_TOTP_FACTORS) {
+    return err("identity.mfa_limit");
+  }
+
+  const { data: all } = await supabase.auth.mfa.listFactors();
+  for (const factor of all?.all ?? []) {
+    if (factor.status === "unverified") {
+      await supabase.auth.mfa.unenroll({ factorId: factor.id });
+    }
+  }
+
+  const name = friendlyName.trim().slice(0, 40) || undefined;
+  const { data, error } = await supabase.auth.mfa.enroll({
+    factorType: "totp",
+    friendlyName: name,
+  });
+  if (error || !data) {
+    return err(await mapMfaError(error ?? {}));
+  }
+  return ok({
+    factorId: data.id,
+    qrCode: data.totp.qr_code,
+    secret: data.totp.secret,
+  });
+}
+
+/** Confirms a new factor with its first code. */
+export async function verifyTotpEnrollment(
+  supabase: SupabaseClient,
+  factorId: string,
+  code: string,
+): Promise<Result<void>> {
+  if (!TOTP_CODE.test(code.trim())) {
+    return err("identity.mfa_code_invalid");
+  }
+  return challengeAndVerify(supabase, factorId, code.trim());
+}
+
+/** Drops an enrollment the member abandoned before confirming it. */
+export async function cancelTotpEnrollment(
+  supabase: SupabaseClient,
+  factorId: string,
+): Promise<Result<void>> {
+  const { error } = await supabase.auth.mfa.unenroll({ factorId });
+  return error ? err(await mapMfaError(error)) : ok(undefined);
+}
+
+/** Removing a factor needs a fresh code from that factor, which lifts the session to AAL2 first. */
+export async function removeTotpFactor(
+  supabase: SupabaseClient,
+  factorId: string,
+  code: string,
+): Promise<Result<void>> {
+  if (!TOTP_CODE.test(code.trim())) {
+    return err("identity.mfa_code_invalid");
+  }
+  const verified = await challengeAndVerify(supabase, factorId, code.trim());
+  if (!verified.ok) {
+    return verified;
+  }
+  const { error } = await supabase.auth.mfa.unenroll({ factorId });
+  return error ? err(await mapMfaError(error)) : ok(undefined);
+}
+
+/**
+ * Second step of sign-in: tries the code against each verified factor (the member may
+ * have a primary and a backup), then registers the device and returns its id.
+ */
+export async function verifySignInMfa(
+  supabase: SupabaseClient,
+  rpc: RpcClient,
+  code: string,
+  deviceLabel: string | undefined,
+  deviceId: string | undefined,
+  newDeviceId?: () => string,
+): Promise<Result<string>> {
+  if (!TOTP_CODE.test(code.trim())) {
+    return err("identity.mfa_code_invalid");
+  }
+  const factors = await verifiedFactors(supabase);
+  if (!factors.ok) {
+    return factors;
+  }
+  if (factors.value.length === 0) {
+    return err("platform.unauthenticated");
+  }
+
+  let last: Result<void> = err("identity.mfa_code_wrong");
+  for (const factor of factors.value) {
+    last = await challengeAndVerify(supabase, factor.id, code.trim());
+    if (last.ok) {
+      return registerSignedInDevice(supabase, rpc, deviceLabel, deviceId, newDeviceId);
+    }
+    if (last.error.code !== "identity.mfa_code_wrong") {
+      return last;
+    }
+  }
+  return last as Result<never>;
 }
 
 const SIGNUP_CODE = /^\d{6}$/;
@@ -439,6 +613,8 @@ export async function changePassword(
   rpc: RpcClient,
   input: { email: string; currentPassword: string; newPassword: string; signOutOthers: boolean },
   deviceId: string | undefined,
+  /** Cookie-less client used to check the current password without replacing an AAL2 session. */
+  stateless?: SupabaseClient,
 ): Promise<Result<string>> {
   if (!input.currentPassword) {
     return err("identity.password_required");
@@ -453,12 +629,34 @@ export async function changePassword(
   const { data: before } = await supabase.auth.getSession();
   const replacedToken = before.session?.access_token;
 
-  const reauth = await signIn(
-    supabase,
-    rpc,
-    { email: input.email, password: input.currentPassword },
-    deviceId,
-  );
+  // A second sign-in would drop an enrolled member back to AAL1, so check the password
+  // on a throwaway client and keep the AAL2 session.
+  const { data: level } = (await supabase.auth.mfa?.getAuthenticatorAssuranceLevel()) ?? {
+    data: null,
+  };
+  const keepSession = level?.currentLevel === "aal2" && stateless;
+  let reauth: Result<string>;
+  if (keepSession) {
+    const { error: passwordError } = await stateless.auth.signInWithPassword({
+      email: input.email.trim(),
+      password: input.currentPassword,
+    });
+    if (passwordError) {
+      return err(
+        passwordError.code === "invalid_credentials"
+          ? "identity.current_password_wrong"
+          : await mapSignInError(passwordError),
+      );
+    }
+    reauth = await registerDevice(rpc, deviceId);
+  } else {
+    reauth = await signIn(
+      supabase,
+      rpc,
+      { email: input.email, password: input.currentPassword },
+      deviceId,
+    );
+  }
   if (!reauth.ok) {
     return reauth.error.code === "identity.credentials_rejected"
       ? err("identity.current_password_wrong")
@@ -472,7 +670,7 @@ export async function changePassword(
 
   if (input.signOutOthers) {
     await signOutOtherDevices(supabase, rpc, reauth.value);
-  } else if (replacedToken) {
+  } else if (replacedToken && !keepSession) {
     // The session the sign-in replaced has no cookie left; end it rather than let it linger.
     const { error: endError } = await supabase.auth.admin.signOut(replacedToken, "local");
     if (endError) {

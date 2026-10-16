@@ -86,7 +86,9 @@ function LoginFormInner({ next = "/app" }: Props) {
       return;
     }
     finishSubmit({ successMessage: null });
-    router.push(next);
+    router.push(
+      result.value.mfaRequired ? `/login/verify?next=${encodeURIComponent(next)}` : next,
+    );
     router.refresh();
   }
 

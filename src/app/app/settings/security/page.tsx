@@ -19,12 +19,18 @@ export default async function SettingsSecurityPage() {
   const sessionsResult = await identity.listSessions(ctx.rpc);
   const sessions = sessionsResult.ok ? sessionsResult.value : [];
   const currentDeviceId = await readDeviceId();
+  const factorsResult = await identity.listMfaFactors(ctx.supabase);
+  const mfaFactors = factorsResult.ok ? factorsResult.value : [];
 
   const t = await getTranslations("identity");
 
   return (
     <SettingsSection title={t("securityTitle")}>
-      <SecuritySettings sessions={sessions} currentDeviceId={currentDeviceId} />
+      <SecuritySettings
+        sessions={sessions}
+        currentDeviceId={currentDeviceId}
+        mfaFactors={mfaFactors}
+      />
     </SettingsSection>
   );
 }
