@@ -11,7 +11,7 @@ import {
 
 import type { FeatureContributions } from "@/shell/slots/types";
 
-import { MessageActionsOverlays } from "./components/MessageActionsOverlays";
+import { MessageActionsOverlays } from "@/shell/components/LazyOverlays";
 import { ReplyComposerTool } from "./components/ReplyComposerTool";
 import { TextMessageWithLinksRenderer } from "./components/TextMessageWithLinksRenderer";
 import { copyTextToClipboard } from "./lib/copy-text";

@@ -2,7 +2,7 @@ import { Flag } from "lucide-react";
 
 import type { FeatureContributions } from "@/shell/slots/types";
 
-import { SafetyOverlays } from "@/features/safety/components/SafetyOverlays";
+import { SafetyOverlays } from "@/shell/components/LazyOverlays";
 import { requestReportDialog } from "@/features/safety/safety-events";
 
 export const contributions: FeatureContributions = {

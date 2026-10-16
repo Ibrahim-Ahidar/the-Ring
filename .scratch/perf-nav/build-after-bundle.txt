@@ -1,0 +1,41 @@
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                    1.16 kB         212 kB
+├ ƒ /_not-found                          1.38 kB         104 kB
+├ ƒ /app                                   135 B         103 kB
+├ ƒ /app/chats                             262 B         211 kB
+├ ƒ /app/chats/[conversationId]          2.92 kB         214 kB
+├ ƒ /app/chats/new                       1.99 kB         213 kB
+├ ƒ /app/chats/requests                  2.01 kB         213 kB
+├ ƒ /app/contacts                        3.88 kB         215 kB
+├ ƒ /app/groups                          1.56 kB         213 kB
+├ ƒ /app/groups/[groupId]                4.45 kB         216 kB
+├ ƒ /app/groups/new                      1.67 kB         213 kB
+├ ƒ /app/media/[conversationId]          2.15 kB         213 kB
+├ ƒ /app/profile/[username]              3.05 kB         214 kB
+├ ƒ /app/settings                          273 B         211 kB
+├ ƒ /app/settings/account                5.77 kB         217 kB
+├ ƒ /app/settings/appearance             1.63 kB         213 kB
+├ ƒ /app/settings/language               1.67 kB         213 kB
+├ ƒ /app/settings/privacy                4.74 kB         216 kB
+├ ƒ /app/settings/security               8.46 kB         220 kB
+├ ƒ /auth/callback                         135 B         103 kB
+├ ƒ /forgot-password                     3.17 kB         214 kB
+├ ○ /icon.svg                                0 B            0 B
+├ ƒ /legal/privacy                       1.15 kB         212 kB
+├ ƒ /legal/terms                         1.15 kB         212 kB
+├ ƒ /login                                1.9 kB         217 kB
+├ ƒ /login/verify                        3.33 kB         214 kB
+├ ƒ /reset-password                       3.3 kB         214 kB
+├ ƒ /signup                              2.54 kB         218 kB
+└ ƒ /username/[username]                  2.8 kB         214 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/1703-cbd3a00e02b2c948.js      46.5 kB
+  ├ chunks/d6a62e69-f8969b30c03e4dfd.js  54.2 kB
+  └ other shared chunks (total)          2.12 kB
+
+
+ƒ Middleware                              141 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

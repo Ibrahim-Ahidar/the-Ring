@@ -2,7 +2,7 @@ import { MoreVertical } from "lucide-react";
 
 import type { FeatureContributions } from "@/shell/slots/types";
 
-import { OrganizationOverlays } from "./components/OrganizationOverlays";
+import { OrganizationOverlays } from "@/shell/components/LazyOverlays";
 import { requestOrganizationMenu } from "./organization-events";
 
 export const contributions: FeatureContributions = {
