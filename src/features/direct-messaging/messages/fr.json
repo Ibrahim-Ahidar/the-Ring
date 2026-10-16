@@ -95,5 +95,7 @@
   "failedActions": "Message non envoyé. Réessayez ou supprimez-le.",
   "list": {
     "typing": "écrit…"
-  }
+  },
+  "loadingChats": "Chargement des discussions",
+  "loadingMessages": "Chargement des messages"
 }
