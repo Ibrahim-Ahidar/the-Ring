@@ -108,12 +108,14 @@ test.describe("primary navigation (needs E2E_SUPABASE)", () => {
         nav.getByRole("link", { name: labels.chats }),
       ).toHaveAttribute("aria-current", "page");
       for (const [key, href] of [
-        ["groups", "/app/groups"],
+        ["groups", "/app/chats?filter=groups"],
         ["contacts", "/app/contacts"],
         ["settings", "/app/settings"],
       ] as const) {
         await nav.getByRole("link", { name: labels[key] }).click();
-        await expect(page).toHaveURL(new RegExp(`${href}$`));
+        await expect(page).toHaveURL(
+          new RegExp(`${href.replace("?", "\\?")}$`),
+        );
         await page.goto("/app/chats");
       }
       await context.close();

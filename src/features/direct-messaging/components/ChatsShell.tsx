@@ -12,7 +12,11 @@ import {
   useMessaging,
   useMessagingSeeding,
 } from "../context/MessagingProvider";
-import { inboxFiltersToListArgs, parseInboxFilters } from "../lib/inbox-filters";
+import {
+  DEFAULT_INBOX_FILTERS,
+  inboxFiltersToListArgs,
+  parseInboxFilters,
+} from "../lib/inbox-filters";
 import type { InboxPage } from "../lib/streamed-pages";
 import type { ChatsViewer } from "../types";
 import { ChatsSidebar } from "./ChatsSidebar";
@@ -45,18 +49,20 @@ export function ChatsShell({ userId, viewer, inbox, children }: Props) {
 
   const includeArchived = searchParams.get("archived") === "1";
   const folderId = searchParams.get("folder")?.trim() || null;
-  const filtered = includeArchived || folderId !== null;
+  const groupsOnly = searchParams.get("filter") === "groups";
+  const filtered = includeArchived || folderId !== null || groupsOnly;
 
   // The layout streams the unfiltered list; any filter is read client-side so
   // the layout does not re-render (and refetch) when the filter changes.
   const seenKey = useRef<string | null>(null);
-  const filterKey = `${includeArchived ? 1 : 0}|${folderId ?? ""}`;
+  const filterKey = `${includeArchived ? 1 : 0}|${folderId ?? ""}|${groupsOnly ? "g" : ""}`;
   useEffect(() => {
     const previous = seenKey.current;
     seenKey.current = filterKey;
     const filters = parseInboxFilters({
       archived: includeArchived ? "1" : undefined,
       folder: folderId ?? undefined,
+      filter: groupsOnly ? "groups" : undefined,
     });
     seeding.setInboxFilters(filters);
     if (previous === null && !filtered) {
@@ -80,9 +86,9 @@ export function ChatsShell({ userId, viewer, inbox, children }: Props) {
     return () => {
       live = false;
     };
-  }, [filterKey, filtered, includeArchived, folderId, seeding]);
+  }, [filterKey, filtered, includeArchived, folderId, groupsOnly, seeding]);
   useEffect(
-    () => () => seeding.setInboxFilters({ includeArchived: false, folderId: null }),
+    () => () => seeding.setInboxFilters(DEFAULT_INBOX_FILTERS),
     [seeding],
   );
 

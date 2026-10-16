@@ -103,12 +103,14 @@ export async function listConversations(
     cursor?: string | null;
     includeArchived?: boolean;
     folderId?: string | null;
+    type?: "direct" | "group" | null;
   },
 ): Promise<Result<ListConversationsResult>> {
   const result = await callRpc<ConversationSummary[]>(rpc, "list_conversations", {
     p_cursor: input.cursor ?? null,
     p_include_archived: input.includeArchived ?? false,
     p_folder_id: input.folderId ?? null,
+    p_type: input.type ?? null,
   });
   if (!result.ok) {
     return result;

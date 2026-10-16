@@ -56,7 +56,7 @@ describe("ShellNavList", () => {
 
       const expected: [string, string][] = [
         [s.shell.nav.chats, "/app/chats"],
-        [s.shell.nav.groups, "/app/groups"],
+        [s.shell.nav.groups, "/app/chats?filter=groups"],
         [s.shell.nav.contacts, "/app/contacts"],
         [s.shell.nav.settings, "/app/settings"],
       ];

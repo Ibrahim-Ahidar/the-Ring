@@ -41,6 +41,17 @@ beforeAll(async () => {
     "utf8",
   );
   await db.exec(orgMigration);
+  // The pin above stops before list_conversations gained its p_type argument,
+  // which the service now always sends.
+  await db.exec(
+    await readFile(
+      path.join(
+        import.meta.dirname,
+        "../../supabase/migrations/20261017000000_list_conversations_type_filter.sql",
+      ),
+      "utf8",
+    ),
+  );
 }, 120_000);
 
 afterAll(async () => {

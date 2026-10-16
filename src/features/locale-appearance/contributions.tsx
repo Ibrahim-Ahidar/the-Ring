@@ -25,7 +25,7 @@ export const contributions: FeatureContributions = {
     {
       id: "go-groups",
       labelKey: "cmdGroups",
-      href: "/app/groups",
+      href: "/app/chats?filter=groups",
       order: 42,
     },
     {
