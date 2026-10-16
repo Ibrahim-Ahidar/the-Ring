@@ -28,8 +28,10 @@ export function streamInbox(
   );
 }
 
-export function streamThread(rpc: RpcClient, conversationId: string): Promise<ThreadPage> {
-  return listMessages(rpc, { conversationId }).then(
+export function streamThread(rpc: RpcClient, conversationId: string,
+  limit?: number,
+): Promise<ThreadPage> {
+  return listMessages(rpc, { conversationId, limit }).then(
     (result): ThreadPage => {
       if (!result.ok) {
         console.error("[chats] list_messages failed", {

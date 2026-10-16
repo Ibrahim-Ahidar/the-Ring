@@ -1,5 +1,6 @@
 "use server";
 
+import { readPageLimit } from "./page-limit-server";
 import { getSessionContext } from "@/platform/session";
 import type { Result } from "@/platform/result";
 
@@ -72,7 +73,7 @@ export async function listMessagesAction(input: {
   if (!session) {
     return { ok: false, error: { code: "platform.unauthenticated" } };
   }
-  return listMessages(session.rpc, input);
+  return listMessages(session.rpc, { ...input, limit: await readPageLimit() });
 }
 
 export async function markReadAction(input: {
