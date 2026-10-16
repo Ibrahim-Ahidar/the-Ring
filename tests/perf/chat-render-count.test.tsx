@@ -28,6 +28,9 @@ const hub = vi.hoisted(() => ({
   },
 }));
 
+// Some imported modules are marked server-only; the render-count probe runs them in jsdom.
+vi.mock("server-only", () => ({}));
+
 vi.mock("@/features/direct-messaging/actions", () => ({
   getConversationAction: vi.fn(async () => ({ ok: false, error: { code: "platform.unexpected" } })),
   getConversationReceiptsAction: vi.fn(async () => ({ ok: true, value: {} })),

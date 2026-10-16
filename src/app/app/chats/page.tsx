@@ -5,7 +5,7 @@ import {
   inboxFiltersToListArgs,
   parseInboxFilters,
 } from "@/features/direct-messaging/lib/inbox-filters";
-import { listConversations } from "@/features/direct-messaging/service";
+import { streamInbox } from "@/features/direct-messaging/streamed";
 import { getSessionContext } from "@/platform/session";
 
 import { loadViewer } from "../_lib/viewer";
@@ -25,19 +25,15 @@ export default async function ChatsPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
   const inboxFilters = parseInboxFilters(params);
-  const [list, viewer] = await Promise.all([
-    listConversations(session.rpc, inboxFiltersToListArgs(inboxFilters)),
-    loadViewer(session.rpc),
-  ]);
-  const conversations = list.ok ? list.value.items : [];
-  const hasMore = list.ok ? list.value.hasMore : false;
+  // Streamed: the page frame renders now, the list fills in when it arrives.
+  const inbox = streamInbox(session.rpc, inboxFiltersToListArgs(inboxFilters));
+  const viewer = await loadViewer(session.rpc);
 
   return (
     <ChatsApp
       userId={session.userId}
       viewer={viewer}
-      initialConversations={conversations}
-      initialConversationsHasMore={hasMore}
+      inbox={inbox}
       inboxFilters={inboxFilters}
     />
   );

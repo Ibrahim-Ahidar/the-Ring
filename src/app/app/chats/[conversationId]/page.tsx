@@ -5,12 +5,8 @@ import {
   inboxFiltersToListArgs,
   parseInboxFilters,
 } from "@/features/direct-messaging/lib/inbox-filters";
-import {
-  getConversation,
-  listConversations,
-  listMessages,
-  mapMessageRow,
-} from "@/features/direct-messaging/service";
+import { getConversation } from "@/features/direct-messaging/service";
+import { streamInbox, streamThread } from "@/features/direct-messaging/streamed";
 import { getSessionContext } from "@/platform/session";
 
 import { loadViewer } from "../../_lib/viewer";
@@ -31,10 +27,12 @@ export default async function ConversationPage({ params, searchParams }: PagePro
   const inboxFilters = parseInboxFilters(query);
   const listArgs = inboxFiltersToListArgs(inboxFilters);
 
-  const [list, detailResult, messagesResult, viewer] = await Promise.all([
-    listConversations(session.rpc, listArgs),
+  // The list and messages stream in behind the page frame; only the
+  // conversation row is awaited, for the redirect and the thread header.
+  const inbox = streamInbox(session.rpc, listArgs);
+  const thread = streamThread(session.rpc, conversationId);
+  const [detailResult, viewer] = await Promise.all([
     getConversation(session.rpc, { conversationId }),
-    listMessages(session.rpc, { conversationId }),
     loadViewer(session.rpc),
   ]);
 
@@ -42,29 +40,15 @@ export default async function ConversationPage({ params, searchParams }: PagePro
     redirect("/app/chats");
   }
 
-  if (!messagesResult.ok) {
-    // Never render an empty thread for a failed read: the saved messages would
-    // look lost. Let the route error boundary show a retry instead.
-    console.error("[chats] list_messages failed", {
-      conversationId,
-      code: messagesResult.error.code,
-    });
-    throw new Error(`list_messages failed: ${messagesResult.error.code}`);
-  }
-  const messages = messagesResult.value.items.map(mapMessageRow);
-  const messagesHasMore = messagesResult.value.hasMore;
-
   return (
     <ChatsApp
       userId={session.userId}
       viewer={viewer}
-      initialConversations={list.ok ? list.value.items : []}
-      initialConversationsHasMore={list.ok ? list.value.hasMore : false}
+      inbox={inbox}
       inboxFilters={inboxFilters}
       activeConversationId={conversationId}
       initialDetail={detailResult.value}
-      initialMessages={messages}
-      initialMessagesHasMore={messagesHasMore}
+      thread={thread}
     />
   );
 }
