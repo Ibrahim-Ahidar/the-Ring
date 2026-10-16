@@ -1,0 +1,5 @@
+{
+  "status": "NOT MEASURED",
+  "reason": "No Docker / Supabase CLI on the worker machine (docker: command not found), so the e2e journeys (which need a local Supabase stack) could not run. Run `npm run perf:nav` on a machine with `npx supabase start`; it overwrites this file.",
+  "medianMs": {}
+}

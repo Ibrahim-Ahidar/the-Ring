@@ -1,0 +1,97 @@
+ram-gate: waiting, 1 of 1 in the queue, 1.8 GB free, need 4.5 GB
+ram-gate: waiting, 1 of 2 in the queue, 2.1 GB free, need 4.5 GB
+ram-gate: waiting, 1 of 2 in the queue, 3.8 GB free, need 4.5 GB
+ram-gate: waiting, 1 of 3 in the queue, 4.1 GB free, need 4.5 GB
+ram-gate: waiting, 1 of 4 in the queue, 4.1 GB free, need 4.5 GB
+ram-gate: waiting, 1 of 4 in the queue, 3.7 GB free, need 4.5 GB
+ram-gate: waiting, 1 of 4 in the queue, 3.9 GB free, need 4.5 GB
+ram-gate: waiting, 1 of 4 in the queue, 4.0 GB free, need 4.5 GB
+ram-gate: waiting, 1 of 4 in the queue, 3.9 GB free, need 4.5 GB
+(node:21348) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+> pulse@0.1.0 prebuild
+> npm run gen:features
+
+
+> pulse@0.1.0 gen:features
+> node scripts/gen-features.mjs
+
+Wrote D:\study-main\0 full-stack\Projects\chatapp\.worktrees\perf-baseline\src\shell\generated\features.ts (12 feature(s))
+
+> pulse@0.1.0 build
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of D:\study-main\0 full-stack\Projects\chatapp\package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * D:\study-main\0 full-stack\Projects\chatapp\.worktrees\perf-baseline\package-lock.json
+
+   ▲ Next.js 15.5.27
+   - Experiments (use with caution):
+     · staleTimes
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (103kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (113kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (268kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled successfully in 27.4s
+   Linting and checking validity of types ...
+
+./src/features/direct-messaging/components/ThreadPanel.tsx
+33:11  Warning: 'state' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/11) ...
+   Generating static pages (2/11) 
+   Generating static pages (5/11) 
+   Generating static pages (8/11) 
+ ✓ Generating static pages (11/11)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                    1.16 kB         224 kB
+├ ƒ /_not-found                          1.37 kB         105 kB
+├ ƒ /app                                   133 B         103 kB
+├ ƒ /app/chats                             280 B         241 kB
+├ ƒ /app/chats/[conversationId]            295 B         241 kB
+├ ƒ /app/chats/new                       2.01 kB         225 kB
+├ ƒ /app/chats/requests                  2.02 kB         225 kB
+├ ƒ /app/contacts                        3.87 kB         227 kB
+├ ƒ /app/groups                          1.56 kB         224 kB
+├ ƒ /app/groups/[groupId]                4.46 kB         227 kB
+├ ƒ /app/groups/new                      1.68 kB         224 kB
+├ ƒ /app/media/[conversationId]          2.15 kB         225 kB
+├ ƒ /app/profile/[username]              2.91 kB         226 kB
+├ ƒ /app/settings                          277 B         223 kB
+├ ƒ /app/settings/account                5.78 kB         229 kB
+├ ƒ /app/settings/appearance             1.65 kB         224 kB
+├ ƒ /app/settings/language               1.68 kB         224 kB
+├ ƒ /app/settings/privacy                4.22 kB         227 kB
+├ ƒ /app/settings/security               8.47 kB         231 kB
+├ ƒ /auth/callback                         133 B         103 kB
+├ ƒ /forgot-password                     3.18 kB         226 kB
+├ ○ /icon.svg                                0 B            0 B
+├ ƒ /legal/privacy                       1.16 kB         224 kB
+├ ƒ /legal/terms                         1.16 kB         224 kB
+├ ƒ /login                                1.9 kB         229 kB
+├ ƒ /login/verify                        3.36 kB         226 kB
+├ ƒ /reset-password                       3.3 kB         226 kB
+├ ƒ /signup                              2.54 kB         229 kB
+└ ƒ /username/[username]                  2.8 kB         226 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-5195c795b7c24d19.js        46.9 kB
+  ├ chunks/87c73c54-09e1ba5c70e60a51.js  54.2 kB
+  └ other shared chunks (total)          2.06 kB
+
+
+ƒ Middleware                              141 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
