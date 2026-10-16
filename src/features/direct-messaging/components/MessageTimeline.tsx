@@ -294,7 +294,7 @@ function MessageTimelineInner({
           </>
         ) : null}
         {timeline.length === 0 ? (
-          loading ? <ThreadSkeleton /> : <p className={styles.systemNote}>{t("emptyThread")}</p>
+          loading ? <ThreadSkeleton label={t("loadingMessages")} /> : <p className={styles.systemNote}>{t("emptyThread")}</p>
         ) : null}
         {timeline.map((message, index) => {
           const previous = timeline[index - 1];

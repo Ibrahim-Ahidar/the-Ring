@@ -44,6 +44,7 @@
     "appearanceDesc": "Thème clair, sombre ou système"
   },
   "skipLink": "Aller au contenu",
+  "loading": "Chargement",
   "routes": {
     "login": "Connexion",
     "signup": "Inscription",

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Suspense, use, useEffect } from "react";
 
@@ -93,6 +94,7 @@ export function ThreadSeed({
   detail,
   thread,
 }: ThreadSeedProps) {
+  const t = useTranslations("direct-messaging");
   const seeding = useMessagingSeeding();
   const cached = useThreadCached(conversationId);
   const failed = useThreadFailed(conversationId);
@@ -104,7 +106,7 @@ export function ThreadSeed({
     return null;
   }
   return (
-    <Suspense fallback={<ThreadSkeleton />}>
+    <Suspense fallback={<ThreadSkeleton label={t("loadingMessages")} />}>
       <MessagesSeedReader conversationId={conversationId} thread={thread} />
     </Suspense>
   );

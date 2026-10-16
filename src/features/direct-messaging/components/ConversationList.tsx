@@ -83,7 +83,7 @@ function ConversationListInner({ activeConversationId }: Props) {
 
   if (state.conversations.length === 0) {
     if (loading) {
-      return <ChatListSkeleton />;
+      return <ChatListSkeleton label={t("loadingChats")} />;
     }
     if (inboxFailed) {
       return <LoadFailed />;
