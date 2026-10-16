@@ -1,0 +1,73 @@
+
+> pulse@0.1.0 prebuild
+> npm run gen:features
+
+
+> pulse@0.1.0 gen:features
+> node scripts/gen-features.mjs
+
+Wrote D:\study-main\0 full-stack\Projects\chatapp\src\shell\generated\features.ts (11 feature(s))
+
+> pulse@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.27
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (103kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (113kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (268kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled successfully in 17.2s
+   Linting and checking validity of types ...
+
+./src/features/direct-messaging/components/ThreadPanel.tsx
+33:11  Warning: 'state' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/10) ...
+   Generating static pages (2/10) 
+   Generating static pages (4/10) 
+   Generating static pages (7/10) 
+ ✓ Generating static pages (10/10)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      262 B         223 kB
+├ ƒ /_not-found                            998 B         104 kB
+├ ƒ /app                                   132 B         103 kB
+├ ƒ /app/chats                             146 B         239 kB
+├ ƒ /app/chats/[conversationId]            146 B         239 kB
+├ ƒ /app/chats/new                       1.65 kB         224 kB
+├ ƒ /app/contacts                        3.66 kB         226 kB
+├ ƒ /app/groups                          1.33 kB         224 kB
+├ ƒ /app/groups/[groupId]                4.41 kB         227 kB
+├ ƒ /app/groups/new                      1.66 kB         224 kB
+├ ƒ /app/media/[conversationId]          2.12 kB         225 kB
+├ ƒ /app/profile/[username]              2.88 kB         225 kB
+├ ƒ /app/settings                          260 B         223 kB
+├ ƒ /app/settings/account                5.74 kB         228 kB
+├ ƒ /app/settings/appearance             1.61 kB         224 kB
+├ ƒ /app/settings/language               1.64 kB         224 kB
+├ ƒ /app/settings/privacy                6.98 kB         127 kB
+├ ƒ /app/settings/security               6.08 kB         229 kB
+├ ƒ /auth/callback                         132 B         103 kB
+├ ƒ /forgot-password                     3.09 kB         226 kB
+├ ƒ /legal/privacy                         252 B         223 kB
+├ ƒ /legal/terms                           252 B         223 kB
+├ ƒ /login                               1.83 kB         228 kB
+├ ƒ /reset-password                      3.26 kB         226 kB
+├ ƒ /signup                               2.5 kB         229 kB
+└ ƒ /username/[username]                 4.32 kB         124 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/1255-5cd2fe06309409a0.js      46.5 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)          2.06 kB
+
+
+ƒ Middleware                              140 kB
+
+ƒ  (Dynamic)  server-rendered on demand
+
