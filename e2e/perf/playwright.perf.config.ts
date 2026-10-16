@@ -10,6 +10,8 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   reporter: "list",
-  use: { baseURL },
+  // Bounded waits so a hang fails in a minute with a clear message, not after the 10 min test timeout.
+  expect: { timeout: 30_000 },
+  use: { baseURL, actionTimeout: 30_000, navigationTimeout: 60_000, trace: "retain-on-failure" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });

@@ -1,20 +1,47 @@
 import { writeFileSync } from "node:fs";
 
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { journeysEnabled, SKIP_REASON } from "../support/env";
-import {
-  newMemberContext,
-  openChatWith,
-  seedMember,
-  sendMessage,
-  signIn,
-} from "../support/journeys";
+import { newMemberContext, seedMember } from "../support/journeys";
 
 // Driven by scripts/perf-nav.mjs (`npm run perf:nav`) against `next build && next start`.
 // Not part of the regular e2e run: it needs PERF_NAV=1.
 const RUNS = Number(process.env.PERF_RUNS ?? 5);
 const OUT = process.env.PERF_WINDOWS_OUT ?? ".scratch/perf-nav/windows.json";
+
+// Self-contained helpers (the workflow copies tooling over older refs, whose shared
+// journey helpers use goto's default waitUntil "load"). "load" never fires in CI
+// while a subresource or realtime request stays pending, and the page.goto then
+// hangs until the test timeout. Wait for DOM content plus an explicit locator instead.
+async function gotoReady(page: Page, path: string, ready: () => Promise<void>) {
+  await page.goto(path, { waitUntil: "domcontentloaded" });
+  await ready();
+}
+
+async function loginAs(page: Page, username: string) {
+  await gotoReady(page, "/login", () =>
+    expect(page.getByLabel("Email")).toBeVisible(),
+  );
+  await page.getByLabel("Email").fill(`${username}@pulse.test`);
+  await page.getByLabel("Password", { exact: true }).fill("PulseTest123!");
+  await page.getByRole("button", { name: "Log in" }).click();
+  await page.waitForURL(/\/app\/chats/);
+}
+
+async function startChat(page: Page, username: string) {
+  await gotoReady(page, "/app/contacts", () =>
+    expect(page.getByLabel("Username", { exact: true })).toBeVisible(),
+  );
+  await page.getByLabel("Username", { exact: true }).fill(username);
+  await page.getByRole("button", { name: "Search" }).click();
+  await page
+    .getByRole("list", { name: "Search result" })
+    .getByRole("link", { name: new RegExp(`@${username}`) })
+    .click();
+  await page.getByRole("link", { name: "Start conversation" }).click();
+  await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
+}
 
 type Sample = { journey: string; run: number; ms: number; start: number; end: number };
 
@@ -34,9 +61,10 @@ test.describe("nav timing", () => {
     for (const peer of [peerA, peerB]) {
       const ctx = await newMemberContext(browser);
       const page = await ctx.newPage();
-      await signIn(page, me);
-      await openChatWith(page, peer.username);
-      await sendMessage(page, `hello ${peer.username}`);
+      await loginAs(page, me.username);
+      await startChat(page, peer.username);
+      await page.getByRole("textbox", { name: "Message" }).fill(`hello ${peer.username}`);
+      await page.getByRole("button", { name: "Send" }).click();
       await expect(page.getByText(`hello ${peer.username}`)).toBeVisible();
       await ctx.close();
     }
@@ -60,11 +88,7 @@ test.describe("nav timing", () => {
         timeline.getByText(`hello ${peer.username}`);
 
       await timed("login_to_chats_ready", run, async () => {
-        await page.goto("/login");
-        await page.getByLabel("Email").fill(`${me.username}@pulse.test`);
-        await page.getByLabel("Password", { exact: true }).fill("PulseTest123!");
-        await page.getByRole("button", { name: "Log in" }).click();
-        await page.waitForURL(/\/app\/chats/);
+        await loginAs(page, me.username);
         await expect(list.getByRole("link").first()).toBeVisible();
       });
 
