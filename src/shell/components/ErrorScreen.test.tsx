@@ -7,8 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import en from "@/shell/messages/en.json";
 import fr from "@/shell/messages/fr.json";
 
-const reportError = vi.fn();
-const refresh = vi.fn();
+const { reportError, refresh } = vi.hoisted(() => ({ reportError: vi.fn(), refresh: vi.fn() }));
 vi.mock("@/platform/telemetry", () => ({ reportError }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 
