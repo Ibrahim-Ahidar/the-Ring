@@ -12,3 +12,7 @@ supabase/.temp/
 supabase/.branches/
 *.tsbuildinfo
 .worktrees/
+
+__pycache__/
+*.pyc
+.cache/

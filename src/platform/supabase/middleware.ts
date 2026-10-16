@@ -58,9 +58,10 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Verifies the JWT locally (cached JWKS) instead of a network call to the auth server;
+  // the server-side session check in the app layout still validates revocation.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims?.sub ? claimsData.claims : null;
 
   if (!user) {
     return isAppPath
