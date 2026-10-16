@@ -151,7 +151,11 @@
       "email_taken": "That email is already in use.",
       "email_same": "That’s already your email.",
       "email_not_authorized": "We can’t send email to that address yet. Try another address.",
-      "reauthentication_needed": "Sign in again to change your password."
+      "reauthentication_needed": "Sign in again to change your password.",
+      "mfa_required": "Enter your authenticator code to continue.",
+      "mfa_code_invalid": "Enter the 6-digit code from your authenticator app.",
+      "mfa_code_wrong": "That code isn’t right. Check your authenticator app and try again.",
+      "mfa_limit": "You can add at most two authenticators."
     },
     "platform": {
       "rate_limited": "Too many attempts. Wait a moment and try again.",
@@ -159,5 +163,31 @@
       "auth_unavailable": "Authentication is not configured. Add valid Supabase settings and try again.",
       "unexpected": "Something went wrong. Try again."
     }
-  }
+  },
+  "mfaVerifyTitle": "Two-step verification",
+  "mfaVerifySubtitle": "Enter the 6-digit code from your authenticator app.",
+  "mfaCodeLabel": "Authenticator code",
+  "mfaVerifySubmit": "Verify",
+  "mfaVerifying": "Verifying…",
+  "mfaUseAnotherAccount": "Sign out and use another account",
+  "mfaLostHint": "If you lose access to all your authenticator apps, you will need to contact support to recover your account.",
+  "mfaTitle": "Two-factor authentication",
+  "mfaHint": "Protect your account with a code from an authenticator app each time you sign in.",
+  "mfaDefaultName": "Authenticator",
+  "mfaRemove": "Remove",
+  "mfaEnable": "Turn on two-factor authentication",
+  "mfaAddBackup": "Add a backup authenticator",
+  "mfaBackupPrompt": "Add a second authenticator on another device as a backup, in case you lose this one.",
+  "mfaScan": "Scan this QR code with your authenticator app, or enter the secret manually. Then type the 6-digit code it shows.",
+  "mfaQrAlt": "QR code for your authenticator app",
+  "mfaSecretLabel": "Secret:",
+  "mfaCopy": "Copy",
+  "mfaCopied": "Copied",
+  "mfaConfirm": "Confirm and turn on",
+  "mfaCancel": "Cancel",
+  "mfaRemovePrompt": "Enter a current code from this authenticator to remove it.",
+  "mfaRemoveConfirm": "Remove authenticator",
+  "mfaEnabled": "Authenticator added.",
+  "mfaEnabledSecond": "Backup authenticator added.",
+  "mfaRemoved": "Authenticator removed."
 }

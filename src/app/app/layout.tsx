@@ -20,8 +20,11 @@ export default async function ProtectedAppLayout({
     redirect(loginPath({ reason: "signed_out" }));
   }
 
-  const access = await assertAppAccess(session.rpc, session.user);
+  const access = await assertAppAccess(session.rpc, session.user, session.supabase);
   if (!access.ok) {
+    if (access.error.code === "identity.mfa_required") {
+      redirect("/login/verify");
+    }
     redirect(loginPath({ reason: parseLoginReason(access.error.code) ?? "signed_out" }));
   }
 

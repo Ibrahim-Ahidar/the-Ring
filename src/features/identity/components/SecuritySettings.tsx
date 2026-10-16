@@ -15,14 +15,17 @@ import { IdentityFormProvider, useIdentityForm } from "../context/identity-form-
 import { describeDeviceLabel, type DeviceKind } from "../device-label";
 import styles from "../identity.module.css";
 import { formatLastActive, orderSessions } from "../session-display";
+import { MAX_TOTP_FACTORS, type MfaFactor } from "../service";
 import type { DeviceSession } from "../types";
 import { ChangePasswordCard } from "./ChangePasswordCard";
 import { FormFeedback } from "./FormFeedback";
 import { SessionConfirmDialog } from "./SessionConfirmDialog";
+import { TwoFactorCard } from "./TwoFactorCard";
 
 type SecuritySettingsProps = {
   sessions: DeviceSession[];
   currentDeviceId?: string;
+  mfaFactors?: MfaFactor[];
 };
 
 type PendingRevoke = { kind: "one"; session: DeviceSession } | { kind: "others" };
@@ -36,6 +39,7 @@ const DEVICE_ICONS: Record<DeviceKind, typeof Monitor> = {
 function SecuritySettingsInner({
   sessions,
   currentDeviceId,
+  mfaFactors = [],
 }: SecuritySettingsProps) {
   const t = useTranslations("identity");
   const locale = useLocale();
@@ -129,6 +133,8 @@ function SecuritySettingsInner({
   return (
     <>
       <ChangePasswordCard />
+
+      <TwoFactorCard factors={mfaFactors} maxFactors={MAX_TOTP_FACTORS} />
 
       <section className={ui.settingsCard} aria-labelledby="sessions-heading">
         <div className={ui.settingsCardHead}>

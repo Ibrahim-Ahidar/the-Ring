@@ -73,7 +73,7 @@ export async function signUpAction(input: {
 export async function signInAction(input: {
   email: string;
   password: string;
-}): Promise<Result<void>> {
+}): Promise<Result<{ mfaRequired: boolean }>> {
   const ctx = await getSessionContext();
   const supabase = ctx?.supabase ?? (await tryCreateSupabaseServerClient());
   if (!supabase) {
@@ -91,10 +91,82 @@ export async function signInAction(input: {
     randomUUID,
   );
   if (!result.ok) {
+    // Password was right but a second factor is due; the device registers after it.
+    return result.error.code === identity.MFA_REQUIRED
+      ? ok({ mfaRequired: true })
+      : result;
+  }
+  await writeDeviceId(result.value);
+  return ok({ mfaRequired: false });
+}
+
+export async function verifySignInMfaAction(code: string): Promise<Result<void>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+  const deviceLabel = deviceLabelFromUserAgent((await headers()).get("user-agent"));
+  const result = await identity.verifySignInMfa(
+    ctx.supabase,
+    ctx.rpc,
+    code,
+    deviceLabel ?? undefined,
+    await readDeviceId(),
+    randomUUID,
+  );
+  if (!result.ok) {
     return result;
   }
   await writeDeviceId(result.value);
   return ok(undefined);
+}
+
+export async function listMfaFactorsAction(): Promise<Result<identity.MfaFactor[]>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+  return identity.listMfaFactors(ctx.supabase);
+}
+
+export async function enrollTotpAction(
+  friendlyName: string,
+): Promise<Result<identity.MfaEnrollment>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+  return identity.enrollTotp(ctx.supabase, friendlyName);
+}
+
+export async function verifyTotpEnrollmentAction(
+  factorId: string,
+  code: string,
+): Promise<Result<void>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+  return identity.verifyTotpEnrollment(ctx.supabase, factorId, code);
+}
+
+export async function cancelTotpEnrollmentAction(factorId: string): Promise<Result<void>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+  return identity.cancelTotpEnrollment(ctx.supabase, factorId);
+}
+
+export async function removeTotpFactorAction(
+  factorId: string,
+  code: string,
+): Promise<Result<void>> {
+  const ctx = await getSessionContext();
+  if (!ctx) {
+    return err("platform.unauthenticated");
+  }
+  return identity.removeTotpFactor(ctx.supabase, factorId, code);
 }
 
 export async function verifySignupCodeAction(input: {
@@ -204,11 +276,15 @@ export async function changePasswordAction(input: {
   if (!ctx?.user.email) {
     return err("platform.unauthenticated");
   }
+  if (await identity.needsSecondFactor(ctx.supabase)) {
+    return err(identity.MFA_REQUIRED);
+  }
   const result = await identity.changePassword(
     ctx.supabase,
     ctx.rpc,
     { email: ctx.user.email, ...input },
     await readDeviceId(),
+    tryCreateStatelessSupabaseClient() ?? undefined,
   );
   if (!result.ok) {
     return result;
@@ -223,6 +299,9 @@ export async function changeEmailAction(
   const ctx = await getSessionContext();
   if (!ctx) {
     return err("platform.unauthenticated");
+  }
+  if (await identity.needsSecondFactor(ctx.supabase)) {
+    return err(identity.MFA_REQUIRED);
   }
   return identity.changeEmail(
     ctx.supabase,

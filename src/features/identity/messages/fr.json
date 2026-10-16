@@ -151,7 +151,11 @@
       "email_taken": "Cet e-mail est déjà utilisé.",
       "email_same": "C’est déjà votre e-mail.",
       "email_not_authorized": "Nous ne pouvons pas encore envoyer d’e-mail à cette adresse. Essayez-en une autre.",
-      "reauthentication_needed": "Reconnectez-vous pour changer votre mot de passe."
+      "reauthentication_needed": "Reconnectez-vous pour changer votre mot de passe.",
+      "mfa_required": "Saisissez votre code d’authentification pour continuer.",
+      "mfa_code_invalid": "Saisissez le code à 6 chiffres de votre application d’authentification.",
+      "mfa_code_wrong": "Ce code est incorrect. Vérifiez votre application et réessayez.",
+      "mfa_limit": "Vous pouvez ajouter au maximum deux authentificateurs."
     },
     "platform": {
       "rate_limited": "Trop de tentatives. Patientez.",
@@ -159,5 +163,31 @@
       "auth_unavailable": "L’authentification n’est pas configurée. Ajoutez des paramètres Supabase valides, puis réessayez.",
       "unexpected": "Une erreur est survenue."
     }
-  }
+  },
+  "mfaVerifyTitle": "Vérification en deux étapes",
+  "mfaVerifySubtitle": "Saisissez le code à 6 chiffres de votre application d’authentification.",
+  "mfaCodeLabel": "Code d’authentification",
+  "mfaVerifySubmit": "Vérifier",
+  "mfaVerifying": "Vérification…",
+  "mfaUseAnotherAccount": "Se déconnecter et utiliser un autre compte",
+  "mfaLostHint": "Si vous perdez l’accès à toutes vos applications d’authentification, vous devrez contacter le support pour récupérer votre compte.",
+  "mfaTitle": "Authentification à deux facteurs",
+  "mfaHint": "Protégez votre compte avec un code issu d’une application d’authentification à chaque connexion.",
+  "mfaDefaultName": "Authentificateur",
+  "mfaRemove": "Supprimer",
+  "mfaEnable": "Activer l’authentification à deux facteurs",
+  "mfaAddBackup": "Ajouter un authentificateur de secours",
+  "mfaBackupPrompt": "Ajoutez un second authentificateur sur un autre appareil comme secours, au cas où vous perdriez celui-ci.",
+  "mfaScan": "Scannez ce code QR avec votre application d’authentification, ou saisissez la clé manuellement. Saisissez ensuite le code à 6 chiffres affiché.",
+  "mfaQrAlt": "Code QR pour votre application d’authentification",
+  "mfaSecretLabel": "Clé secrète :",
+  "mfaCopy": "Copier",
+  "mfaCopied": "Copié",
+  "mfaConfirm": "Confirmer et activer",
+  "mfaCancel": "Annuler",
+  "mfaRemovePrompt": "Saisissez un code actuel de cet authentificateur pour le supprimer.",
+  "mfaRemoveConfirm": "Supprimer l’authentificateur",
+  "mfaEnabled": "Authentificateur ajouté.",
+  "mfaEnabledSecond": "Authentificateur de secours ajouté.",
+  "mfaRemoved": "Authentificateur supprimé."
 }
