@@ -125,6 +125,7 @@ jobs:
             app/.scratch/perf-nav/trace-*.txt
             app/.scratch/perf-nav/build-*.txt
             app/.scratch/perf-nav/server-*.log
+            app/test-results/**
           if-no-files-found: warn
 
       - name: Stop local Supabase
