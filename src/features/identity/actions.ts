@@ -305,7 +305,7 @@ export async function changeEmailAction(
   }
   return identity.changeEmail(
     ctx.supabase,
-    ctx.user.email,
+    ctx.user.email ?? undefined,
     email,
     `${appOrigin()}/auth/callback?next=/app/settings/account`,
   );
