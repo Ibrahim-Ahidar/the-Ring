@@ -14,10 +14,16 @@ export function streamInbox(
   args: Parameters<typeof listConversations>[1],
 ): Promise<InboxPage> {
   return listConversations(rpc, args).then(
-    (list) => (list.ok ? list.value : { items: [], hasMore: false }),
+    (list) => {
+      if (list.ok) {
+        return list.value;
+      }
+      console.error("[chats] list_conversations failed", { code: list.error.code });
+      return { items: [], hasMore: false, failed: true };
+    },
     (error: unknown) => {
       console.error("[chats] list_conversations threw", error);
-      return { items: [], hasMore: false };
+      return { items: [], hasMore: false, failed: true };
     },
   );
 }

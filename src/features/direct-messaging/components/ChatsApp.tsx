@@ -93,8 +93,12 @@ function ChatsAppInner(props: Props) {
   const inboxLoading = !inbox;
   const threadLoading = Boolean(activeConversationId) && !thread;
   const loading = useMemo<ChatsLoading>(
-    () => ({ inbox: inboxLoading, thread: threadLoading }),
-    [inboxLoading, threadLoading],
+    () => ({
+      inbox: inboxLoading,
+      thread: threadLoading,
+      inboxFailed: Boolean(inbox?.failed),
+    }),
+    [inboxLoading, threadLoading, inbox?.failed],
   );
 
   if (freshThread && !freshThread.ok) {

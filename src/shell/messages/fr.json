@@ -149,5 +149,17 @@
     "profileDesc": "{name} est sur the Ring. Connectez-vous pour démarrer une conversation.",
     "home": "Accueil",
     "desc": "Messagerie instantanée par nom d'utilisateur. Trouvez des personnes, démarrez une conversation, gardez-la organisée."
+  },
+  "errors": {
+    "title": "Une erreur est survenue",
+    "body": "Impossible de charger cette page. Vos messages sont en sécurité.",
+    "retry": "Réessayer",
+    "reference": "Référence : {digest}",
+    "notFoundTitle": "Page introuvable",
+    "notFoundBody": "Cette page n'existe pas ou a été déplacée.",
+    "backToChats": "Retour aux discussions",
+    "conversationNotFound": "Cette conversation n'existe pas ou vous n'y avez plus accès.",
+    "loadFailed": "Impossible de charger cette liste. Il peut s'agir d'un problème temporaire, elle n'est donc pas forcément vide.",
+    "empty": "Rien ici pour l'instant."
   }
 }

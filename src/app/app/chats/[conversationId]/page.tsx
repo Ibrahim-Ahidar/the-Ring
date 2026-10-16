@@ -8,6 +8,7 @@ import {
 import { getConversation } from "@/features/direct-messaging/service";
 import { streamInbox, streamThread } from "@/features/direct-messaging/streamed";
 import { getSessionContext } from "@/platform/session";
+import { NotFoundScreen } from "@/shell/components/NotFoundScreen";
 
 import { loadViewer } from "../../_lib/viewer";
 
@@ -28,7 +29,7 @@ export default async function ConversationPage({ params, searchParams }: PagePro
   const listArgs = inboxFiltersToListArgs(inboxFilters);
 
   // The list and messages stream in behind the page frame; only the
-  // conversation row is awaited, for the redirect and the thread header.
+  // conversation row is awaited, for the not-found state and the thread header.
   const inbox = streamInbox(session.rpc, listArgs);
   const thread = streamThread(session.rpc, conversationId);
   const [detailResult, viewer] = await Promise.all([
@@ -37,7 +38,8 @@ export default async function ConversationPage({ params, searchParams }: PagePro
   ]);
 
   if (!detailResult.ok) {
-    redirect("/app/chats");
+    // Unknown id or no access: say so instead of silently bouncing to the list.
+    return <NotFoundScreen variant="conversation" />;
   }
 
   return (
