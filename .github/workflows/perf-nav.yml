@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       app_ref:
-        description: Git ref (branch, tag or sha) of the app to measure
+        description: Git ref (branch, tag or full 40-char sha) of the app to measure
         default: main
       label:
         description: Label for the result files (nav-<label>.json)
@@ -63,6 +63,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Setup Supabase CLI
+        id: supabase
         uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -87,11 +88,11 @@ jobs:
 
       - name: Measure (build + run)
         working-directory: app
-        run: npm run perf:nav -- --label "$LABEL" --runs "$RUNS"
+        run: node scripts/perf-nav.mjs --label "$LABEL" --runs "$RUNS"
 
       - name: Measure again (reuse build, label-repeat)
         working-directory: app
-        run: npm run perf:nav -- --label "$LABEL-repeat" --runs "$RUNS" --skip-build
+        run: node scripts/perf-nav.mjs --label "$LABEL-repeat" --runs "$RUNS" --skip-build
 
       - name: Job summary
         if: always()
@@ -127,6 +128,6 @@ jobs:
           if-no-files-found: warn
 
       - name: Stop local Supabase
-        if: always()
+        if: always() && steps.supabase.outcome == 'success'
         working-directory: app
         run: supabase stop --no-backup
