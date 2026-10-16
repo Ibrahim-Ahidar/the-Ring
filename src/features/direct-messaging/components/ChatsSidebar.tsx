@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MessageSquarePlus } from "lucide-react";
+import { Inbox, MessageSquarePlus } from "lucide-react";
 import { memo, Suspense } from "react";
 import { useTranslations } from "next-intl";
 
@@ -20,6 +20,7 @@ type Props = {
 
 function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
   const t = useTranslations("direct-messaging");
+  const tRequests = useTranslations("message-requests");
 
   const viewerName = viewer ? (viewer.displayName ?? viewer.username) : null;
 
@@ -43,14 +44,24 @@ function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
           </Link>
         }
         actions={
-          <Link
-            href="/app/chats/new"
-            className={ui.iconBtn}
-            aria-label={t("newChat")}
-            title={t("newChat")}
-          >
-            <MessageSquarePlus size={24} aria-hidden />
-          </Link>
+          <>
+            <Link
+              href="/app/chats/requests"
+              className={ui.iconBtn}
+              aria-label={tRequests("openRequests")}
+              title={tRequests("openRequests")}
+            >
+              <Inbox size={24} aria-hidden />
+            </Link>
+            <Link
+              href="/app/chats/new"
+              className={ui.iconBtn}
+              aria-label={t("newChat")}
+              title={t("newChat")}
+            >
+              <MessageSquarePlus size={24} aria-hidden />
+            </Link>
+          </>
         }
       />
       <div className="pane-tools">
