@@ -455,3 +455,46 @@
     transition: none;
   }
 }
+
+/* ---------- Skeleton placeholders ---------- */
+/* Shimmering stand-ins for content that is still streaming in. Features lay
+   them out; these classes only paint them. */
+
+.skeleton {
+  display: block;
+  flex-shrink: 0;
+  background:
+    linear-gradient(90deg, transparent 0%, var(--color-hover) 50%, transparent 100%)
+      0 0 / 200% 100% no-repeat,
+    var(--color-input);
+  animation: skeleton-shimmer 1.4s var(--motion-ease) infinite;
+}
+
+.skeleton--bar {
+  max-inline-size: 100%;
+  border-radius: var(--radius-control);
+}
+
+.skeleton--circle {
+  border-radius: var(--radius-pill);
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 150% 0, 0 0;
+  }
+  to {
+    background-position: -50% 0, 0 0;
+  }
+}
+
+/* RTL: sweep the shimmer the way the text reads. */
+[dir="rtl"] .skeleton {
+  animation-direction: reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

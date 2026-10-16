@@ -95,5 +95,7 @@
   "failedActions": "Message not sent. Retry or discard it.",
   "list": {
     "typing": "typing…"
-  }
+  },
+  "loadingChats": "Loading chats",
+  "loadingMessages": "Loading messages"
 }

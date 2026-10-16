@@ -844,3 +844,45 @@
   font-size: var(--text-sm);
   cursor: pointer;
 }
+
+/* ---------- Loading skeletons (Skeletons.tsx) ---------- */
+
+.listSkeleton {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  min-height: var(--row-height);
+  padding: var(--space-8) var(--space-12);
+}
+
+.skeletonRowText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.threadSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding-block: var(--space-16);
+}
+
+.bubbleSkeleton {
+  block-size: 36px;
+  min-inline-size: 96px;
+  border-radius: var(--radius-bubble);
+  background-color: var(--color-bubble-in);
+}
+
+.bubbleSkeleton[data-side="out"] {
+  align-self: flex-end;
+  background-color: var(--color-bubble-out);
+}

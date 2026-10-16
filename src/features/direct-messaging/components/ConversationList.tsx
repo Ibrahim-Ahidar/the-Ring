@@ -10,12 +10,14 @@ import { Avatar } from "@/shell/components/Avatar";
 import { getContributions } from "@/shell/slots";
 import ui from "@/shell/styles/ui.module.css";
 
+import { useChatsLoading } from "../context/LoadingContext";
 import { useMessaging } from "../context/MessagingProvider";
 import { useQueryHref } from "../hooks/useQueryHref";
 import { calendarDaysAgo } from "../lib/calendar";
 import { useHydrated } from "../lib/use-hydrated";
 import type { ConversationSummary } from "../types";
 import styles from "../direct-messaging.module.css";
+import { ChatListSkeleton } from "./Skeletons";
 
 type Props = {
   activeConversationId?: string;
@@ -75,9 +77,13 @@ function ConversationListInner({ activeConversationId }: Props) {
   const queryHref = useQueryHref();
   const folderId = searchParams.get("folder");
   const { state } = useMessaging();
+  const { inbox: loading } = useChatsLoading();
   const menus = useMemo(() => getContributions("listItemMenu"), []);
 
   if (state.conversations.length === 0) {
+    if (loading) {
+      return <ChatListSkeleton />;
+    }
     if (folderId) {
       return (
         <div className={styles.listEmpty}>

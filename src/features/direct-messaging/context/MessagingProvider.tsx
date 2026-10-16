@@ -154,8 +154,9 @@ function writeDraftsToStorage(drafts: Record<string, string>): void {
 
 type ProviderProps = {
   userId: string;
-  initialConversations: ConversationSummary[];
-  initialConversationsHasMore: boolean;
+  /** Undefined while the list is still streaming in. */
+  initialConversations?: ConversationSummary[];
+  initialConversationsHasMore?: boolean;
   inboxFilters?: InboxFilters;
   initialConversationId?: string;
   initialMessages?: TimelineMessage[];
@@ -189,8 +190,8 @@ export function MessagingProvider({
     userId,
     (id) => {
       const base = createInitialState(id);
-      base.conversations = initialConversations;
-      base.conversationsHasMore = initialConversationsHasMore;
+      base.conversations = initialConversations ?? [];
+      base.conversationsHasMore = initialConversationsHasMore ?? false;
       if (initialConversationId && initialMessages) {
         base.messagesByConversation[initialConversationId] = initialMessages;
         base.messagesHasMore[initialConversationId] =
@@ -203,6 +204,24 @@ export function MessagingProvider({
       return base;
     },
   );
+
+  // The list streams in after mount (or replaces a cached copy); take each new
+  // page the server hands over.
+  const seededConversationsRef = useRef(initialConversations);
+  useEffect(() => {
+    if (seededConversationsRef.current === initialConversations) {
+      return;
+    }
+    seededConversationsRef.current = initialConversations;
+    if (!initialConversations) {
+      return;
+    }
+    dispatch({
+      type: "conversations/set",
+      items: initialConversations,
+      hasMore: initialConversationsHasMore ?? false,
+    });
+  }, [initialConversations, initialConversationsHasMore]);
 
   // The reducer only seeds from props once; re-sync when the server hands this
   // mounted provider a new page (router.refresh, switching conversations).
