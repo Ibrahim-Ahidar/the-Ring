@@ -8,6 +8,8 @@ export type ChatsLoading = {
   inbox: boolean;
   /** The open conversation has no messages to show yet. */
   thread: boolean;
+  /** The chat list read failed, so an empty list must not read as "no chats". */
+  inboxFailed?: boolean;
 };
 
 const LoadingContext = createContext<ChatsLoading>({ inbox: false, thread: false });

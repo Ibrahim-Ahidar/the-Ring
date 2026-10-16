@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { listConversations } from "@/features/direct-messaging/service";
 import { GroupsPageView } from "@/features/groups/components/GroupsPageView";
 import { getSessionContext } from "@/platform/session";
+import { LoadFailed } from "@/shell/components/LoadFailed";
 import { SinglePane } from "@/shell/components/SinglePane";
 import ui from "@/shell/styles/ui.module.css";
 import { routeTitle } from "@/app/_public/route-title";
@@ -23,6 +24,7 @@ export default async function GroupsPage() {
   const groups = list.ok
     ? list.value.items.filter((item) => item.type === "group")
     : [];
+  const failed = !list.ok;
 
   return (
     <SinglePane
@@ -38,7 +40,7 @@ export default async function GroupsPage() {
         </Link>
       }
     >
-      <GroupsPageView groups={groups} />
+      {failed ? <LoadFailed /> : <GroupsPageView groups={groups} />}
     </SinglePane>
   );
 }

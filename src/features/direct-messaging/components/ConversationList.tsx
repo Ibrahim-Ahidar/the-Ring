@@ -17,6 +17,7 @@ import { calendarDaysAgo } from "../lib/calendar";
 import { useHydrated } from "../lib/use-hydrated";
 import type { ConversationSummary } from "../types";
 import styles from "../direct-messaging.module.css";
+import { LoadFailed } from "@/shell/components/LoadFailed";
 import { ChatListSkeleton } from "./Skeletons";
 
 type Props = {
@@ -77,12 +78,15 @@ function ConversationListInner({ activeConversationId }: Props) {
   const queryHref = useQueryHref();
   const folderId = searchParams.get("folder");
   const { state } = useMessaging();
-  const { inbox: loading } = useChatsLoading();
+  const { inbox: loading, inboxFailed } = useChatsLoading();
   const menus = useMemo(() => getContributions("listItemMenu"), []);
 
   if (state.conversations.length === 0) {
     if (loading) {
       return <ChatListSkeleton />;
+    }
+    if (inboxFailed) {
+      return <LoadFailed />;
     }
     if (folderId) {
       return (

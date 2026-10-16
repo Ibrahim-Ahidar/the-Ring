@@ -149,5 +149,17 @@
     "profileDesc": "{name} is on the Ring. Log in to start a conversation.",
     "home": "Home",
     "desc": "Username-first realtime chat. Find people, start a conversation, keep it organized."
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "body": "We couldn't load this page. Your messages are safe.",
+    "retry": "Try again",
+    "reference": "Reference: {digest}",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This page doesn't exist or has moved.",
+    "backToChats": "Back to chats",
+    "conversationNotFound": "This conversation doesn't exist or you no longer have access.",
+    "loadFailed": "Couldn't load this list. It may be a temporary problem, so it isn't necessarily empty.",
+    "empty": "Nothing here yet."
   }
 }

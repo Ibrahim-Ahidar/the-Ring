@@ -6,6 +6,7 @@ import {
   listRecentSearches,
 } from "@/features/discovery-contacts/service";
 import { getSessionContext } from "@/platform/session";
+import { LoadFailed } from "@/shell/components/LoadFailed";
 import { SinglePane } from "@/shell/components/SinglePane";
 import { routeTitle } from "@/app/_public/route-title";
 
@@ -26,6 +27,14 @@ export default async function ContactsPage() {
 
   const recents = recentsResult.ok ? recentsResult.value : [];
   const favorites = favoritesResult.ok ? favoritesResult.value : [];
+
+  if (!recentsResult.ok && !favoritesResult.ok) {
+    return (
+      <SinglePane title={t("contacts")}>
+        <LoadFailed />
+      </SinglePane>
+    );
+  }
 
   return (
     <SinglePane title={t("contacts")}>
