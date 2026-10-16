@@ -5,6 +5,9 @@ import { AccountSettings } from "@/features/identity/components/AccountSettings"
 import * as identity from "@/features/identity/service";
 import { getSessionContext } from "@/platform/session";
 import { SettingsSection } from "@/shell/components/SettingsSection";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("settingsAccount");
 
 export default async function SettingsAccountPage() {
   const ctx = await getSessionContext();

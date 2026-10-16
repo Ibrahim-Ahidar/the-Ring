@@ -4,6 +4,9 @@ import { redirect } from "next/navigation";
 import { NewGroupForm } from "@/features/groups/components/NewGroupForm";
 import { getSessionContext } from "@/platform/session";
 import { SinglePane } from "@/shell/components/SinglePane";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("groupsNew");
 
 export default async function NewGroupPage() {
   const session = await getSessionContext();

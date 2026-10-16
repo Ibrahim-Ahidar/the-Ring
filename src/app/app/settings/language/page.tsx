@@ -3,6 +3,9 @@ import { getTranslations } from "next-intl/server";
 import { SettingsLanguageClient } from "@/features/locale-appearance/components/SettingsLanguageClient";
 import { SettingsSection } from "@/shell/components/SettingsSection";
 import { resolveLocale, resolveTheme } from "@/shell/preferences";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("settingsLanguage");
 
 export default async function SettingsLanguagePage() {
   const t = await getTranslations("locale-appearance");

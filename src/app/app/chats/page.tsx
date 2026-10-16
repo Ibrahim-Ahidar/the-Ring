@@ -9,6 +9,9 @@ import { streamInbox } from "@/features/direct-messaging/streamed";
 import { getSessionContext } from "@/platform/session";
 
 import { loadViewer } from "../_lib/viewer";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("chats");
 
 type PageProps = {
   searchParams: Promise<{ archived?: string; folder?: string }>;

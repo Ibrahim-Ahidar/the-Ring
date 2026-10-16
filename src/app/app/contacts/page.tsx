@@ -7,6 +7,9 @@ import {
 } from "@/features/discovery-contacts/service";
 import { getSessionContext } from "@/platform/session";
 import { SinglePane } from "@/shell/components/SinglePane";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("contacts");
 
 export default async function ContactsPage() {
   const session = await getSessionContext();

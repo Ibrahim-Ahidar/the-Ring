@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 
 import { isRtl } from "@/shell/locale";
 import { StaleBuildReload } from "@/shell/components/StaleBuildReload";
@@ -9,9 +9,23 @@ import { resolveLocale, resolveTheme, resolveTimeZone } from "@/shell/preference
 
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Pulse",
-  description: "Username-first realtime chat",
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("shell");
+  const name = t("landing.title");
+  return {
+    title: { default: name, template: `%s · ${name}` },
+    description: t("public.desc"),
+    applicationName: name,
+  };
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f5f3" },
+    { media: "(prefers-color-scheme: dark)", color: "#161717" },
+  ],
 };
 
 export default async function RootLayout({

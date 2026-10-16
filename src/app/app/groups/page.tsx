@@ -8,6 +8,9 @@ import { GroupsPageView } from "@/features/groups/components/GroupsPageView";
 import { getSessionContext } from "@/platform/session";
 import { SinglePane } from "@/shell/components/SinglePane";
 import ui from "@/shell/styles/ui.module.css";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("groups");
 
 export default async function GroupsPage() {
   const session = await getSessionContext();

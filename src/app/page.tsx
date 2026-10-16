@@ -1,51 +1,47 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import ar from "@/shell/messages/ar.json";
-import en from "@/shell/messages/en.json";
-import fr from "@/shell/messages/fr.json";
+import { BrandMark } from "@/shell/components/BrandMark";
 
-const locales = [
-  { code: "ar", label: "العربية", copy: ar.landing },
-  { code: "en", label: "English", copy: en.landing },
-  { code: "fr", label: "Français", copy: fr.landing },
-] as const;
+import { PublicFrame } from "./_public/PublicFrame";
+import styles from "./_public/public.module.css";
+import ui from "@/shell/styles/ui.module.css";
+
+type Feature = { title: string; body: string };
 
 export default async function HomePage() {
   const t = await getTranslations("shell");
+  const features = t.raw("landing.features") as Feature[];
 
   return (
-    <div className="landing">
-      <header className="landing-header">
-        <h1 className="landing-title">{t("landing.title")}</h1>
-        <p>{t("landing.proposition")}</p>
-      </header>
+    <PublicFrame>
+      <section className={styles.hero}>
+        <BrandMark size={72} className={styles.heroMark} />
+        <h1 className={styles.heroTitle}>{t("landing.title")}</h1>
+        <p className={styles.heroText}>{t("landing.proposition")}</p>
+        <div className={styles.actions}>
+          <Link className={`${ui.btn} ${ui.btnPrimary}`} href="/login">
+            {t("landing.login")}
+          </Link>
+          <Link className={`${ui.btn} ${ui.btnSecondary}`} href="/signup">
+            {t("landing.signup")}
+          </Link>
+        </div>
+      </section>
 
-      <div className="landing-actions">
-        <Link className="primary" href="/login">
-          {t("landing.login")}
-        </Link>
-        <Link className="secondary" href="/signup">
-          {t("landing.signup")}
-        </Link>
-      </div>
-
-      {locales.map(({ code, label, copy }) => (
-        <section
-          key={code}
-          className="landing-locale-block"
-          lang={code}
-          dir={code === "ar" ? "rtl" : "ltr"}
-        >
-          <h2>{label}</h2>
-          <p>{copy.proposition}</p>
-        </section>
-      ))}
-
-      <footer className="landing-footer">
-        <Link href="/legal/terms">{t("routes.terms")}</Link>
-        <Link href="/legal/privacy">{t("routes.privacy")}</Link>
-      </footer>
-    </div>
+      <section aria-labelledby="landing-features">
+        <h2 id="landing-features" className="sr-only">
+          {t("landing.featuresTitle")}
+        </h2>
+        <ul className={styles.features}>
+          {features.map((feature) => (
+            <li key={feature.title} className={styles.feature}>
+              <h3>{feature.title}</h3>
+              <p>{feature.body}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </PublicFrame>
   );
 }
