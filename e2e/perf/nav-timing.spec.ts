@@ -72,7 +72,7 @@ test.describe("nav timing", () => {
       // Fresh context per run: cold client cache, like a new visit.
       const ctx = await newMemberContext(browser);
       const page = await ctx.newPage();
-      const list = page.getByRole("list", { name: "Conversation list" });
+      const list = page.getByRole("complementary", { name: "Conversation list" });
       const timeline = page.getByRole("log");
       const lastMessage = (peer: { username: string }) =>
         timeline.getByText(`hello ${peer.username}`);
