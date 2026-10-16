@@ -1,20 +1,21 @@
 import { getRequestConfig } from "next-intl/server";
 
-import { featureMessages } from "@/shell/generated/features";
+import { featureMessageLoaders } from "@/shell/generated/feature-messages";
 import { resolveLocale, resolveTimeZone } from "@/shell/preferences";
 
-import ar from "@/shell/messages/ar.json";
-import en from "@/shell/messages/en.json";
-import fr from "@/shell/messages/fr.json";
-
-const shellCatalogs = { ar, en, fr } as const;
+const shellCatalogs = {
+  ar: () => import("@/shell/messages/ar.json").then((m) => m.default),
+  en: () => import("@/shell/messages/en.json").then((m) => m.default),
+  fr: () => import("@/shell/messages/fr.json").then((m) => m.default),
+} as const;
 
 export default getRequestConfig(async () => {
   const locale = await resolveLocale();
   const timeZone = await resolveTimeZone();
-  const shellMessages = shellCatalogs[locale];
-
-  const featureLocaleMessages = featureMessages[locale] ?? {};
+  const [shellMessages, featureLocaleMessages] = await Promise.all([
+    shellCatalogs[locale](),
+    featureMessageLoaders[locale](),
+  ]);
 
   return {
     locale,

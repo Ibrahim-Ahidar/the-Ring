@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { reportError } from "@/platform/telemetry";
 import { LOCALE_COOKIE, isLocale, isRtl, type Locale } from "@/shell/locale";
 
-import ar from "@/shell/messages/ar.json";
 import en from "@/shell/messages/en.json";
-import fr from "@/shell/messages/fr.json";
 
-const catalogs = { ar, en, fr } as const;
+type Catalog = typeof en;
+
+/** `en` stays static so the page renders even if chunk loading is broken. */
+const lazyCatalogs: Record<Exclude<Locale, "en">, () => Promise<Catalog>> = {
+  ar: () => import("@/shell/messages/ar.json").then((m) => m.default),
+  fr: () => import("@/shell/messages/fr.json").then((m) => m.default),
+};
 
 /** Root layout is gone here, so there is no intl provider: read the locale cookie directly. */
 function readLocale(): Locale {
@@ -35,7 +39,27 @@ export default function GlobalError({
   }, [error]);
 
   const locale = readLocale();
-  const t = catalogs[locale].errors;
+  const [catalog, setCatalog] = useState<Catalog>(en);
+
+  useEffect(() => {
+    if (locale === "en") {
+      return;
+    }
+    let active = true;
+    lazyCatalogs[locale]().then(
+      (loaded) => {
+        if (active) {
+          setCatalog(loaded);
+        }
+      },
+      () => {},
+    );
+    return () => {
+      active = false;
+    };
+  }, [locale]);
+
+  const t = catalog.errors;
 
   return (
     <html lang={locale} dir={isRtl(locale) ? "rtl" : "ltr"} suppressHydrationWarning>
