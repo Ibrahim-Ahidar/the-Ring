@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       app_ref:
-        description: Git ref (branch, tag or sha) of the app to measure
+        description: Git ref (branch, tag or full 40-char sha) of the app to measure
         default: main
       label:
         description: Label for the result files (nav-<label>.json)
@@ -63,6 +63,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Setup Supabase CLI
+        id: supabase
         uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -127,6 +128,6 @@ jobs:
           if-no-files-found: warn
 
       - name: Stop local Supabase
-        if: always()
+        if: always() && steps.supabase.outcome == 'success'
         working-directory: app
         run: supabase stop --no-backup
