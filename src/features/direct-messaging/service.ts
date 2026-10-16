@@ -83,11 +83,12 @@ export async function sendText(
 
 export async function listMessages(
   rpc: RpcClient,
-  input: { conversationId: string; cursor?: string | null },
+  input: { conversationId: string; cursor?: string | null; limit?: number },
 ): Promise<Result<ListMessagesResult>> {
   const result = await callRpc<RpcMessageRow[]>(rpc, "list_messages", {
     p_conversation_id: input.conversationId,
     p_cursor: input.cursor ?? null,
+    p_limit: input.limit ?? null,
   });
   if (!result.ok) {
     return result;

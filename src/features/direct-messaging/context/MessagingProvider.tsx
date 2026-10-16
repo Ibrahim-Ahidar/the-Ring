@@ -1,5 +1,6 @@
 "use client";
 
+import { VIEWPORT_COOKIE } from "../lib/page-limit";
 import { usePathname } from "next/navigation";
 import {
   createContext,
@@ -244,6 +245,16 @@ export function MessagingProvider({
       return base;
     },
   );
+
+  // Tell the server the viewport height so a chat opens with about three screens of rows.
+  useEffect(() => {
+    const report = () => {
+      document.cookie = `${VIEWPORT_COOKIE}=${window.innerHeight}; path=/; max-age=31536000; samesite=lax`;
+    };
+    report();
+    window.addEventListener("resize", report);
+    return () => window.removeEventListener("resize", report);
+  }, []);
 
   useEffect(() => {
     dispatch({ type: "drafts/hydrate", drafts: readDraftsFromStorage() });

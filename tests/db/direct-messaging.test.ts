@@ -152,6 +152,32 @@ describe("sendText and listMessages", () => {
     expect(blocked).toEqual({ ok: false, error: { code: "messaging.not_member" } });
   });
 
+  it("clamps list_messages p_limit to 20..60 and defaults to 40", async () => {
+    const alice = await createTestUser({ username: "clamp_alice" });
+    await createTestUser({ username: "clamp_bob" });
+    const aliceRpc = createRpcClient(db, alice.id);
+    const opened = await openDirect(aliceRpc, { username: "clamp_bob" });
+    expect(opened.ok).toBe(true);
+    if (!opened.ok) return;
+    const conversationId = opened.value.conversationId;
+    // Seeded directly: sendText is rate limited.
+    await asSuperuser(
+      db,
+      `insert into public.messages (conversation_id, sender_id, client_id, type, body)
+       select $1, $2, gen_random_uuid(), 'text', 'm' || g from generate_series(1, 65) g`,
+      [conversationId, alice.id],
+    );
+    const count = async (limit?: number) => {
+      const page = await listMessages(aliceRpc, { conversationId, limit });
+      expect(page.ok).toBe(true);
+      return page.ok ? { n: page.value.items.length, more: page.value.hasMore } : null;
+    };
+    expect(await count()).toEqual({ n: 40, more: true });
+    expect(await count(1)).toEqual({ n: 20, more: true });
+    expect(await count(30)).toEqual({ n: 30, more: true });
+    expect(await count(500)).toEqual({ n: 60, more: true });
+  });
+
   it("returns each message's attachments and reactions", async () => {
     const alice = await createTestUser({ username: "att_alice" });
     const bob = await createTestUser({ username: "att_bob" });
