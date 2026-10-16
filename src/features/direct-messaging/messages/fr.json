@@ -97,5 +97,10 @@
     "typing": "écrit…"
   },
   "loadingChats": "Chargement des discussions",
-  "loadingMessages": "Chargement des messages"
+  "loadingMessages": "Chargement des messages",
+  "typeFilter": {
+    "label": "Filtrer les conversations",
+    "all": "Toutes",
+    "groups": "Groupes"
+  }
 }

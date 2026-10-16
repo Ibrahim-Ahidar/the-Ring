@@ -77,6 +77,8 @@ function ConversationListInner({ activeConversationId }: Props) {
   const searchParams = useSearchParams();
   const queryHref = useQueryHref();
   const folderId = searchParams.get("folder");
+  const groupsOnly = searchParams.get("filter") === "groups";
+  const tGroups = useTranslations("groups");
   const { state } = useMessaging();
   const { inbox: loading, inboxFailed } = useChatsLoading();
   const menus = useMemo(() => getContributions("listItemMenu"), []);
@@ -87,6 +89,16 @@ function ConversationListInner({ activeConversationId }: Props) {
     }
     if (inboxFailed) {
       return <LoadFailed />;
+    }
+    if (groupsOnly) {
+      return (
+        <div className={styles.listEmpty}>
+          <p>{tGroups("emptyGroups")}</p>
+          <Link href="/app/groups/new" className={`${ui.btn} ${ui.btnPrimary}`}>
+            {tGroups("createLink")}
+          </Link>
+        </div>
+      );
     }
     if (folderId) {
       return (

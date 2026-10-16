@@ -97,5 +97,10 @@
     "typing": "typing…"
   },
   "loadingChats": "Loading chats",
-  "loadingMessages": "Loading messages"
+  "loadingMessages": "Loading messages",
+  "typeFilter": {
+    "label": "Filter conversations",
+    "all": "All",
+    "groups": "Groups"
+  }
 }

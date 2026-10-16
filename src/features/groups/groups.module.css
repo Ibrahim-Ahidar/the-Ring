@@ -15,38 +15,6 @@
   font-size: var(--text-sm);
 }
 
-/* ---------- Groups list page ---------- */
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-16);
-  padding-block: var(--space-24);
-  text-align: center;
-}
-
-.groupList {
-  margin: 0;
-  padding: var(--space-8);
-  list-style: none;
-}
-
-.groupRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.groupLink {
-  flex: 1;
-  min-width: 0;
-}
-
-a.groupLink:hover {
-  background: var(--color-hover);
-}
-
 /* ---------- Group settings page ---------- */
 
 .errorBox {

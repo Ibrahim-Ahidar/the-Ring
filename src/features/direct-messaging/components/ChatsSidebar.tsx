@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Inbox, MessageSquarePlus } from "lucide-react";
+import { Inbox, MessageSquarePlus, UsersRound } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { memo, Suspense } from "react";
 import { useTranslations } from "next-intl";
 
@@ -11,6 +12,7 @@ import ui from "@/shell/styles/ui.module.css";
 
 import type { ChatsViewer } from "../types";
 import { ConversationList } from "./ConversationList";
+import { InboxTypeFilter } from "./InboxTypeFilter";
 import styles from "../direct-messaging.module.css";
 
 type Props = {
@@ -21,6 +23,8 @@ type Props = {
 function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
   const t = useTranslations("direct-messaging");
   const tRequests = useTranslations("message-requests");
+  const tGroups = useTranslations("groups");
+  const groupsOnly = useSearchParams().get("filter") === "groups";
 
   const viewerName = viewer ? (viewer.displayName ?? viewer.username) : null;
 
@@ -45,6 +49,16 @@ function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
         }
         actions={
           <>
+            {groupsOnly ? (
+              <Link
+                href="/app/groups/new"
+                className={ui.iconBtn}
+                aria-label={tGroups("createLink")}
+                title={tGroups("createLink")}
+              >
+                <UsersRound size={24} aria-hidden />
+              </Link>
+            ) : null}
             <Link
               href="/app/chats/requests"
               className={ui.iconBtn}
@@ -65,6 +79,7 @@ function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
         }
       />
       <div className="pane-tools">
+        <InboxTypeFilter />
         <div id="conversation-folders" className={styles.foldersHost} />
       </div>
       <div className="pane-body scroll">
