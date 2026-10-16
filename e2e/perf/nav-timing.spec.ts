@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { writeFileSync } from "node:fs";
 
 import { expect, test, type Page } from "@playwright/test";
@@ -30,16 +31,6 @@ async function loginAs(page: Page, username: string) {
   await page.waitForURL(/\/app(\/|$)/, { waitUntil: "commit" });
 }
 
-async function startChat(page: Page, username: string) {
-  // Straight to the profile: the contacts search server action can hang on a second
-  // search in CI ("Searching…" never clears), and search is not what this measures.
-  await gotoReady(page, `/app/profile/${username}`, () =>
-    expect(page.getByRole("link", { name: "Start conversation" })).toBeVisible(),
-  );
-  await page.getByRole("link", { name: "Start conversation" }).click();
-  await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
-}
-
 type Sample = { journey: string; run: number; ms: number; start: number; end: number };
 
 test.describe("nav timing", () => {
@@ -54,16 +45,18 @@ test.describe("nav timing", () => {
       seedMember("perb"),
     ]);
 
-    // Seed two conversations with a last message each.
+    // Seed two conversations with a last message each, through the app's own RPCs
+    // (same on every ref) instead of the UI: the UI flow hangs on the old ref in CI.
     for (const peer of [peerA, peerB]) {
-      const ctx = await newMemberContext(browser);
-      const page = await ctx.newPage();
-      await loginAs(page, me.username);
-      await startChat(page, peer.username);
-      await page.getByRole("textbox", { name: "Message" }).fill(`hello ${peer.username}`);
-      await page.getByRole("button", { name: "Send" }).click();
-      await expect(page.getByText(`hello ${peer.username}`)).toBeVisible();
-      await ctx.close();
+      const opened = await me.client.rpc("open_direct", { p_username: peer.username });
+      if (opened.error) throw new Error(`open_direct: ${opened.error.message}`);
+      const conversationId = (typeof opened.data === "string" ? opened.data : opened.data?.id) as string;
+      const sent = await me.client.rpc("send_text", {
+        p_conversation_id: conversationId,
+        p_client_id: randomUUID(),
+        p_body: `hello ${peer.username}`,
+      });
+      if (sent.error) throw new Error(`send_text: ${sent.error.message}`);
     }
 
     const samples: Sample[] = [];
