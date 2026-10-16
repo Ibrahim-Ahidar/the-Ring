@@ -31,19 +31,11 @@ async function loginAs(page: Page, username: string) {
 }
 
 async function startChat(page: Page, username: string) {
-  await gotoReady(page, "/app/contacts", () =>
-    expect(page.getByLabel("Username", { exact: true })).toBeVisible(),
+  // Straight to the profile: the contacts search server action can hang on a second
+  // search in CI ("Searching…" never clears), and search is not what this measures.
+  await gotoReady(page, `/app/profile/${username}`, () =>
+    expect(page.getByRole("link", { name: "Start conversation" })).toBeVisible(),
   );
-  // Retry fill+submit: before hydration the input value is wiped and the submit is a no-op.
-  const result = page
-    .getByRole("list", { name: "Search result" })
-    .getByRole("link", { name: new RegExp(`@${username}`) });
-  await expect(async () => {
-    await page.getByLabel("Username", { exact: true }).fill(username);
-    await page.getByRole("button", { name: "Search", exact: true }).click();
-    await expect(result).toBeVisible({ timeout: 8_000 });
-  }).toPass({ timeout: 60_000 });
-  await result.click();
   await page.getByRole("link", { name: "Start conversation" }).click();
   await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
 }
