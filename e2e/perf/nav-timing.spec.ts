@@ -35,7 +35,7 @@ async function startChat(page: Page, username: string) {
     expect(page.getByLabel("Username", { exact: true })).toBeVisible(),
   );
   await page.getByLabel("Username", { exact: true }).fill(username);
-  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
   await page
     .getByRole("list", { name: "Search result" })
     .getByRole("link", { name: new RegExp(`@${username}`) })
