@@ -33,8 +33,11 @@ describe("gen-features.mjs", () => {
     const alphaIndex = content.indexOf("feature: \"alpha\"");
     const betaIndex = content.indexOf("feature: \"beta\"");
     expect(alphaIndex).toBeLessThan(betaIndex);
-    expect(content).toContain("alpha_messages_ar");
-    expect(content).toContain("beta_messages_en");
+    expect(content).not.toContain("_messages_");
+    const messages = fs.readFileSync(path.join(outDir, "feature-messages.ts"), "utf8");
+    expect(messages).toContain('import "server-only"');
+    expect(messages).toContain("alpha_messages_ar");
+    expect(messages).toContain("beta_messages_en");
   });
 
   it("works with zero features", () => {
