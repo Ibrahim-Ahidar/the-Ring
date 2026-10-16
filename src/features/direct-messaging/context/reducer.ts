@@ -38,7 +38,6 @@ export function createInitialState(userId: string): MessagingState {
     messagesHasMore: {},
     messageCursors: {},
     pendingSends: [],
-    drafts: {},
     connectionStatus: "connected",
     detailsByConversation: {},
     unreadSeparatorByConversation: {},
@@ -258,16 +257,6 @@ export function messagingReducer(
           (p) => p.clientId !== action.clientId,
         ),
       };
-    case "draft/set":
-      if ((state.drafts[action.conversationId] ?? "") === action.text) {
-        return state;
-      }
-      return {
-        ...state,
-        drafts: { ...state.drafts, [action.conversationId]: action.text },
-      };
-    case "drafts/hydrate":
-      return { ...state, drafts: action.drafts };
     case "connection":
       return state.connectionStatus === action.status
         ? state
