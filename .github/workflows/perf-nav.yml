@@ -88,11 +88,11 @@ jobs:
 
       - name: Measure (build + run)
         working-directory: app
-        run: npm run perf:nav -- --label "$LABEL" --runs "$RUNS"
+        run: node scripts/perf-nav.mjs --label "$LABEL" --runs "$RUNS"
 
       - name: Measure again (reuse build, label-repeat)
         working-directory: app
-        run: npm run perf:nav -- --label "$LABEL-repeat" --runs "$RUNS" --skip-build
+        run: node scripts/perf-nav.mjs --label "$LABEL-repeat" --runs "$RUNS" --skip-build
 
       - name: Job summary
         if: always()
