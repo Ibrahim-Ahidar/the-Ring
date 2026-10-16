@@ -1,0 +1,132 @@
+name: Perf nav
+
+# Manual only: measures navigation timing for any git ref against a local Supabase stack.
+# gh workflow run perf-nav.yml -f app_ref=<sha> -f label=before
+on:
+  workflow_dispatch:
+    inputs:
+      app_ref:
+        description: Git ref (branch, tag or sha) of the app to measure
+        default: main
+      label:
+        description: Label for the result files (nav-<label>.json)
+        default: before
+      runs:
+        description: Journey repetitions per measurement
+        default: "5"
+
+permissions:
+  contents: read
+
+jobs:
+  perf-nav:
+    name: Navigation timing (local Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      LABEL: ${{ inputs.label }}
+      RUNS: ${{ inputs.runs }}
+    steps:
+      - name: Checkout perf tooling (workflow ref)
+        uses: actions/checkout@v4
+        with:
+          path: tooling
+
+      - name: Checkout app
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.app_ref }}
+          path: app
+
+      - name: Copy perf tooling into the app checkout
+        run: |
+          mkdir -p app/scripts app/e2e/perf app/e2e/support app/tests/harness
+          cp tooling/scripts/perf-nav.mjs app/scripts/perf-nav.mjs
+          cp -r tooling/e2e/perf/. app/e2e/perf/
+          # Journey helpers: only fill in what an older ref lacks.
+          cp -rn tooling/e2e/support/. app/e2e/support/
+          cp -rn tooling/tests/harness/. app/tests/harness/
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: app
+        run: npx playwright install --with-deps chromium
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase (Docker)
+        working-directory: app
+        run: supabase start
+
+      - name: Apply migrations and seed
+        working-directory: app
+        run: supabase db reset
+
+      - name: Export Supabase keys
+        working-directory: app
+        run: |
+          supabase status -o env > "$RUNNER_TEMP/supabase.env"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$(grep '^API_URL=' "$RUNNER_TEMP/supabase.env" | cut -d= -f2- | tr -d '"')"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(grep '^ANON_KEY=' "$RUNNER_TEMP/supabase.env" | cut -d= -f2- | tr -d '"')"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$(grep '^SERVICE_ROLE_KEY=' "$RUNNER_TEMP/supabase.env" | cut -d= -f2- | tr -d '"')"
+          } >> "$GITHUB_ENV"
+
+      - name: Measure (build + run)
+        working-directory: app
+        run: npm run perf:nav -- --label "$LABEL" --runs "$RUNS"
+
+      - name: Measure again (reuse build, label-repeat)
+        working-directory: app
+        run: npm run perf:nav -- --label "$LABEL-repeat" --runs "$RUNS" --skip-build
+
+      - name: Job summary
+        if: always()
+        working-directory: app
+        run: |
+          node -e '
+            const fs = require("fs");
+            const dir = ".scratch/perf-nav";
+            const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => /^nav-.*\.json$/.test(f)) : [];
+            const out = [`### Navigation timing (median ms) for \`${process.env.APP_REF}\``, ""];
+            if (!files.length) out.push("No nav-*.json produced; see the step logs.");
+            else {
+              const data = files.map((f) => JSON.parse(fs.readFileSync(`${dir}/${f}`, "utf8")));
+              const journeys = Object.keys(data[0].medianMs);
+              out.push(`| journey | ${data.map((d) => d.label).join(" | ")} |`, `|---|${data.map(() => "---:").join("|")}|`);
+              for (const j of journeys) out.push(`| ${j} | ${data.map((d) => Math.round(d.medianMs[j])).join(" | ")} |`);
+            }
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, out.join("\n") + "\n");
+          '
+        env:
+          APP_REF: ${{ inputs.app_ref }}
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-nav-${{ inputs.label }}
+          path: |
+            app/.scratch/perf-nav/nav-*.json
+            app/.scratch/perf-nav/trace-*.txt
+            app/.scratch/perf-nav/build-*.txt
+            app/.scratch/perf-nav/server-*.log
+          if-no-files-found: warn
+
+      - name: Stop local Supabase
+        if: always()
+        working-directory: app
+        run: supabase stop --no-backup

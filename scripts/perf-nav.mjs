@@ -53,17 +53,26 @@ const logStream = createWriteStream(serverLog);
 const server = spawn("npx", ["next", "start", "-p", String(port)], {
   env: { ...env, PULSE_PERF_TRACE: "1" },
   shell,
+  detached: !shell,
   stdio: ["ignore", "pipe", "pipe"],
 });
 server.stdout.pipe(logStream);
 server.stderr.pipe(logStream);
 const stopServer = () => {
   if (shell) spawnSync("taskkill", ["/pid", String(server.pid), "/t", "/f"]);
-  else server.kill("SIGTERM");
+  else {
+    // shell:true wraps npx in `sh`; signal the whole process group so next itself stops.
+    try {
+      process.kill(-server.pid, "SIGTERM");
+    } catch {
+      server.kill("SIGTERM");
+    }
+  }
 };
 
 async function waitUp() {
   for (let i = 0; i < 120; i++) {
+    if (server.exitCode !== null) throw new Error(`next start exited early (${server.exitCode}); see ${serverLog}`);
     try {
       const r = await fetch(`http://localhost:${port}/login`);
       if (r.ok) return;
