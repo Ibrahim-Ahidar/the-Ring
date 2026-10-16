@@ -1,36 +1,32 @@
-"use client";
-
-import { memo } from "react";
-import { useTranslations } from "next-intl";
+import { SkeletonBar, SkeletonCircle, SkeletonRegion } from "@/shell/components/skeleton/Skeleton";
 
 import styles from "../direct-messaging.module.css";
 
 /**
  * Placeholders painted where the chat list or a thread's messages will appear
  * while they stream in from the server. The surrounding pane (headers, search,
- * composer) is real and usable meanwhile.
+ * composer) is real and usable meanwhile. Sync and hook-free so both server
+ * `loading.tsx` files and client components can render them; callers pass the
+ * translated label.
  */
 
 const ROW_WIDTHS = ["62%", "48%", "71%", "55%", "66%", "44%", "58%", "69%"];
 
-function ChatListSkeletonInner() {
-  const t = useTranslations("direct-messaging");
+export function ChatListSkeleton({ label }: { label: string }) {
   return (
-    <div className={styles.listSkeleton} role="status" aria-busy="true" aria-label={t("loadingChats")}>
+    <SkeletonRegion label={label} className={styles.listSkeleton}>
       {ROW_WIDTHS.map((width, i) => (
         <div key={i} className={styles.skeletonRow} aria-hidden="true">
-          <span className="skeleton skeleton--circle" style={{ inlineSize: 48, blockSize: 48 }} />
+          <SkeletonCircle size={48} />
           <span className={styles.skeletonRowText}>
-            <span className="skeleton skeleton--bar" style={{ inlineSize: i % 2 ? "38%" : "46%", blockSize: 14 }} />
-            <span className="skeleton skeleton--bar" style={{ inlineSize: width, blockSize: 12 }} />
+            <SkeletonBar width={i % 2 ? "38%" : "46%"} height={14} />
+            <SkeletonBar width={width} height={12} />
           </span>
         </div>
       ))}
-    </div>
+    </SkeletonRegion>
   );
 }
-
-export const ChatListSkeleton = memo(ChatListSkeletonInner);
 
 const BUBBLES: { side: "in" | "out"; width: string }[] = [
   { side: "in", width: "42%" },
@@ -43,10 +39,9 @@ const BUBBLES: { side: "in" | "out"; width: string }[] = [
   { side: "out", width: "40%" },
 ];
 
-function ThreadSkeletonInner() {
-  const t = useTranslations("direct-messaging");
+export function ThreadSkeleton({ label }: { label: string }) {
   return (
-    <div className={styles.threadSkeleton} role="status" aria-busy="true" aria-label={t("loadingMessages")}>
+    <SkeletonRegion label={label} className={styles.threadSkeleton}>
       {BUBBLES.map((bubble, i) => (
         <span
           key={i}
@@ -56,8 +51,6 @@ function ThreadSkeletonInner() {
           style={{ inlineSize: bubble.width }}
         />
       ))}
-    </div>
+    </SkeletonRegion>
   );
 }
-
-export const ThreadSkeleton = memo(ThreadSkeletonInner);
