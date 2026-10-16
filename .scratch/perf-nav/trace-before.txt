@@ -1,0 +1,2 @@
+NOT MEASURED: needs the same local Supabase stack as nav-before.json (none available on the worker machine).
+`npm run perf:nav` writes the real summary here (round trips and durations per journey from PULSE_PERF_TRACE=1).
