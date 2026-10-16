@@ -26,7 +26,8 @@ async function loginAs(page: Page, username: string) {
   await page.getByLabel("Email").fill(`${username}@pulse.test`);
   await page.getByLabel("Password", { exact: true }).fill("PulseTest123!");
   await page.getByRole("button", { name: "Log in" }).click();
-  await page.waitForURL(/\/app\/chats/);
+  // Older refs land on /app, newer ones on /app/chats; the "load" event may never fire.
+  await page.waitForURL(/\/app(\/|$)/, { waitUntil: "commit" });
 }
 
 async function startChat(page: Page, username: string) {
