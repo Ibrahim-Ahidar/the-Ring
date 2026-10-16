@@ -17,6 +17,17 @@ const nextConfig: NextConfig = {
       const { ChunkStatsPlugin } = require("./scripts/perf/chunk-stats-plugin.cjs");
       config.plugins.push(new ChunkStatsPlugin());
     }
+    // Next injects a ~200 kB `buffer` polyfill into every client bundle for any module that mentions
+    // `Buffer`. Our only client hit is storage-js's `typeof Buffer !== "undefined"` guard, which has a
+    // btoa fallback, so drop the injection. Server and edge builds keep the real Buffer.
+    if (!isServer) {
+      for (const plugin of config.plugins ?? []) {
+        const defs = plugin?.constructor?.name === "ProvidePlugin" ? plugin.definitions : undefined;
+        if (defs && "Buffer" in defs) {
+          delete defs.Buffer;
+        }
+      }
+    }
     return config;
   },
 };
