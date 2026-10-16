@@ -29,7 +29,6 @@ export type MessagingState = {
   messagesHasMore: Record<string, boolean>;
   messageCursors: Record<string, string | null>;
   pendingSends: PendingSend[];
-  drafts: Record<string, string>;
   connectionStatus: ConnectionStatus;
   detailsByConversation: Record<string, ConversationDetail>;
   unreadSeparatorByConversation: Record<string, string | null>;
@@ -82,14 +81,12 @@ export type MessagingAction =
       status: "pending" | "failed";
     }
   | { type: "pending/remove"; clientId: string }
-  | { type: "draft/set"; conversationId: string; text: string }
   | { type: "connection"; status: ConnectionStatus }
   | {
       type: "unreadSeparator/set";
       conversationId: string;
       messageId: string | null;
     }
-  | { type: "receipts/set"; receipts: Record<string, ConversationReceipt> }
-  | { type: "drafts/hydrate"; drafts: Record<string, string> };
+  | { type: "receipts/set"; receipts: Record<string, ConversationReceipt> };
 
 export const DRAFTS_STORAGE_KEY = "pulse.messaging.drafts.v1";

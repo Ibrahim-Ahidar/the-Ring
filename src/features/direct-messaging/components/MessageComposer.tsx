@@ -21,7 +21,7 @@ import { composerAboveId } from "@/platform/composer-events";
 import { getContributions } from "@/shell/slots";
 import ui from "@/shell/styles/ui.module.css";
 
-import { useMessaging } from "../context/MessagingProvider";
+import { useDraft, useMessagingActions } from "../context/MessagingProvider";
 import styles from "../direct-messaging.module.css";
 
 export type ComposerDisabledReason = "blocked" | "removed" | "restricted";
@@ -43,8 +43,8 @@ function isCoarsePointer(): boolean {
 
 function MessageComposerInner({ conversationId, disabledReason }: Props) {
   const t = useTranslations("direct-messaging");
-  const { state, sendMessage, setDraft } = useMessaging();
-  const draft = state.drafts[conversationId] ?? "";
+  const { sendMessage, setDraft } = useMessagingActions();
+  const draft = useDraft(conversationId);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastInputSignal = useRef(0);
   const tools = useMemo(() => getContributions("composerTool"), []);

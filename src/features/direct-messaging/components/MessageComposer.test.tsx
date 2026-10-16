@@ -13,11 +13,8 @@ const setDraft = vi.fn();
 let draft = "";
 
 vi.mock("../context/MessagingProvider", () => ({
-  useMessaging: () => ({
-    state: { drafts: { c1: draft } },
-    sendMessage,
-    setDraft,
-  }),
+  useMessagingActions: () => ({ sendMessage, setDraft }),
+  useDraft: () => draft,
 }));
 vi.mock("@/shell/slots", () => ({ getContributions: () => [] }));
 vi.mock("@/platform/composer-events", () => ({

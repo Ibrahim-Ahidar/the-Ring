@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   MessagingProvider,
+  useDraft,
   useConversationView,
   useMessaging,
   useMessagingActions,
@@ -265,5 +266,44 @@ describe("MessagingProvider failures and offline", () => {
     });
     expect(views[views.length - 1]).toBe(view);
     expect(actionRefs[actionRefs.length - 1]).toBe(actions);
+  });
+
+  it("a keystroke re-renders only the draft consumer, not the thread list", async () => {
+    let listRenders = 0;
+    let composerRenders = 0;
+    let setDraft: (id: string, text: string) => void = () => {};
+    let draft = "";
+    function ThreadList() {
+      useMessaging();
+      listRenders += 1;
+      return null;
+    }
+    function Composer() {
+      draft = useDraft("conv-1");
+      setDraft = useMessagingActions().setDraft;
+      composerRenders += 1;
+      return null;
+    }
+    render(
+      <MessagingProvider
+        userId="user-1"
+        initialConversations={[]}
+        initialConversationsHasMore={false}
+      >
+        <ThreadList />
+        <Composer />
+      </MessagingProvider>,
+    );
+    await act(async () => {}); // let mount effects settle
+    const listBefore = listRenders;
+    const composerBefore = composerRenders;
+    for (const text of ["h", "he", "hel", "hell", "hello"]) {
+      await act(async () => {
+        setDraft("conv-1", text);
+      });
+    }
+    expect(draft).toBe("hello");
+    expect(composerRenders).toBe(composerBefore + 5);
+    expect(listRenders).toBe(listBefore);
   });
 });
