@@ -1,0 +1,110 @@
+name: E2E
+
+# Manual only: runs the Playwright e2e suite (without e2e/perf) for any git ref
+# against a local Supabase stack, so PRs can be checked without local Docker.
+# gh workflow run e2e.yml -f ref=<branch-or-sha> [-f grep="<pattern>"]
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref (branch, tag or full 40-char sha) to check out and test
+        default: main
+      grep:
+        description: Optional Playwright --grep pattern (empty runs everything)
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ inputs.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playwright e2e (local Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      E2E_SUPABASE: "1"
+      GREP: ${{ inputs.grep }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Setup Supabase CLI
+        id: supabase
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase (Docker)
+        run: supabase start
+
+      - name: Apply migrations and seed
+        run: supabase db reset
+
+      # playwright.config.ts only has dummy keys; the journeys need the real local ones.
+      # Its webServer env spreads process.env, so these override the dummies.
+      - name: Export Supabase keys
+        run: |
+          supabase status -o env > "$RUNNER_TEMP/supabase.env"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$(grep '^API_URL=' "$RUNNER_TEMP/supabase.env" | cut -d= -f2- | tr -d '"')"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(grep '^ANON_KEY=' "$RUNNER_TEMP/supabase.env" | cut -d= -f2- | tr -d '"')"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$(grep '^SERVICE_ROLE_KEY=' "$RUNNER_TEMP/supabase.env" | cut -d= -f2- | tr -d '"')"
+          } >> "$GITHUB_ENV"
+
+      # Playwright has no CLI ignore flag, so wrap the repo config and skip e2e/perf.
+      - name: Write CI config (excludes e2e/perf)
+        run: |
+          cat > playwright.ci.config.ts <<'EOF'
+          import { defineConfig } from "@playwright/test";
+          import base from "./playwright.config";
+
+          export default defineConfig({
+            ...base,
+            testIgnore: ["perf/**"],
+            reporter: [["list"], ["html", { open: "never" }]],
+          });
+          EOF
+
+      - name: Run e2e
+        run: |
+          args=(--config playwright.ci.config.ts)
+          if [ -n "$GREP" ]; then args+=(--grep "$GREP"); fi
+          npx playwright test "${args[@]}"
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          if-no-files-found: warn
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results
+          if-no-files-found: warn
+
+      - name: Stop local Supabase
+        if: always() && steps.supabase.outcome == 'success'
+        run: supabase stop --no-backup
