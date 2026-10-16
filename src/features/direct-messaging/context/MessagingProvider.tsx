@@ -9,6 +9,8 @@ import {
   useMemo,
   useReducer,
   useRef,
+  useState,
+  useSyncExternalStore,
   type MutableRefObject,
   type ReactNode,
 } from "react";
@@ -44,9 +46,9 @@ import {
 } from "../lib/inbox-filters";
 import { ChatsLoadingProvider, type ChatsLoading } from "./LoadingContext";
 import { rowToTimelineMessage } from "./map-row";
+import { createDraftStore, type DraftStore } from "./draft-store";
 import { createInitialState, messagingReducer } from "./reducer";
 import {
-  DRAFTS_STORAGE_KEY,
   type ConnectionStatus,
   type MessagingState,
   type PendingSend,
@@ -128,7 +130,7 @@ const ActionsContext = createContext<MessagingActions | null>(null);
 const MarkSeenContext = createContext<MarkSeenUpTo | null>(null);
 const MessagesSliceContext = createContext<MessagesSlice | null>(null);
 const ThreadFailedContext = createContext<Record<string, boolean> | null>(null);
-const DraftsContext = createContext<Record<string, string> | null>(null);
+const DraftsContext = createContext<DraftStore | null>(null);
 const ConnectionContext = createContext<{ status: ConnectionStatus } | null>(
   null,
 );
@@ -164,29 +166,6 @@ function scheduleInboxRefresh(
     timerRef.current = null;
     refresh();
   }, INBOX_REFRESH_DEBOUNCE_MS);
-}
-
-function readDraftsFromStorage(): Record<string, string> {
-  if (typeof window === "undefined") {
-    return {};
-  }
-  try {
-    const raw = window.localStorage.getItem(DRAFTS_STORAGE_KEY);
-    if (!raw) {
-      return {};
-    }
-    const parsed = JSON.parse(raw) as Record<string, string>;
-    return parsed ?? {};
-  } catch {
-    return {};
-  }
-}
-
-function writeDraftsToStorage(drafts: Record<string, string>): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-  window.localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(drafts));
 }
 
 type ProviderProps = {
@@ -245,25 +224,14 @@ export function MessagingProvider({
     },
   );
 
+  const [draftStore] = useState(createDraftStore);
   useEffect(() => {
-    dispatch({ type: "drafts/hydrate", drafts: readDraftsFromStorage() });
-  }, []);
-
-  // Debounced: writing localStorage on every keystroke blocks the main thread.
-  const draftsRef = useRef(state.drafts);
-  draftsRef.current = state.drafts;
-  useEffect(() => {
-    const timer = setTimeout(() => writeDraftsToStorage(draftsRef.current), 400);
-    return () => clearTimeout(timer);
-  }, [state.drafts]);
-  useEffect(() => {
-    const flush = () => writeDraftsToStorage(draftsRef.current);
-    window.addEventListener("pagehide", flush);
+    window.addEventListener("pagehide", draftStore.flush);
     return () => {
-      window.removeEventListener("pagehide", flush);
-      flush();
+      window.removeEventListener("pagehide", draftStore.flush);
+      draftStore.flush();
     };
-  }, []);
+  }, [draftStore]);
 
   const cursorsRef = useRef(state.messageCursors);
   cursorsRef.current = state.messageCursors;
@@ -714,12 +682,12 @@ export function MessagingProvider({
         createdAt: new Date().toISOString(),
       };
       dispatch({ type: "pending/add", pending });
-      dispatch({ type: "draft/set", conversationId: input.conversationId, text: "" });
+      draftStore.set(input.conversationId, "");
 
       // Sending is a server action and does not depend on the realtime socket.
       await deliver(pending);
     },
-    [deliver],
+    [deliver, draftStore],
   );
 
   const retrySend = useCallback(
@@ -745,9 +713,10 @@ export function MessagingProvider({
     dispatch({ type: "pending/remove", clientId });
   }, []);
 
-  const setDraft = useCallback((conversationId: string, text: string) => {
-    dispatch({ type: "draft/set", conversationId, text });
-  }, []);
+  const setDraft = useCallback(
+    (conversationId: string, text: string) => draftStore.set(conversationId, text),
+    [draftStore],
+  );
 
   const loadOlderMessages = useCallback(
     async (conversationId: string) => {
@@ -971,7 +940,7 @@ export function MessagingProvider({
         <MarkSeenContext.Provider value={markSeenUpTo}>
           <MessagesSliceContext.Provider value={messagesSlice}>
             <ThreadFailedContext.Provider value={state.threadFailed}>
-            <DraftsContext.Provider value={state.drafts}>
+            <DraftsContext.Provider value={draftStore}>
               <ConnectionContext.Provider value={connection}>
                 <InboxContext.Provider value={inbox}>
                   {children}
@@ -1059,8 +1028,12 @@ export function useConversationView(conversationId: string): ConversationView {
 }
 
 export function useDraft(conversationId: string): string {
-  const drafts = useRequired(useContext(DraftsContext), "useDraft");
-  return drafts[conversationId] ?? "";
+  const store = useRequired(useContext(DraftsContext), "useDraft");
+  return useSyncExternalStore(
+    store.subscribe,
+    () => store.get(conversationId),
+    () => "",
+  );
 }
 
 export function useConnection(): { status: ConnectionStatus } {

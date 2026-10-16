@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { useMessaging } from "@/features/direct-messaging/context/MessagingProvider";
+import { useMessagingActions } from "@/features/direct-messaging/context/MessagingProvider";
 import { composerAboveId } from "@/platform/composer-events";
 import ui from "@/shell/styles/ui.module.css";
 
@@ -25,7 +25,7 @@ type Props = {
 
 function ReplyComposerToolInner({ conversationId }: Props) {
   const t = useTranslations("message-actions");
-  const { sendMessage } = useMessaging();
+  const { sendMessage } = useMessagingActions();
   const [target, setTarget] = useState<ReplyTarget | null>(() =>
     getReplyTarget(conversationId),
   );
