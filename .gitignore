@@ -11,3 +11,4 @@ src/shell/generated/
 supabase/.temp/
 supabase/.branches/
 *.tsbuildinfo
+.worktrees/
