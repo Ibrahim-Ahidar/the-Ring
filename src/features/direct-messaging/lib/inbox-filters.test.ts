@@ -9,6 +9,7 @@ describe("parseInboxFilters", () => {
     ).toEqual({
       includeArchived: true,
       folderId: "abc-123",
+      type: null,
     });
   });
 
@@ -16,17 +17,24 @@ describe("parseInboxFilters", () => {
     expect(parseInboxFilters({})).toEqual({
       includeArchived: false,
       folderId: null,
+      type: null,
     });
+  });
+
+  it("reads filter=groups as the group type and ignores other values", () => {
+    expect(parseInboxFilters({ filter: "groups" }).type).toBe("group");
+    expect(parseInboxFilters({ filter: "direct" }).type).toBeNull();
   });
 });
 
 describe("inboxFiltersToListArgs", () => {
   it("maps to listConversations action args", () => {
     expect(
-      inboxFiltersToListArgs({ includeArchived: true, folderId: "f1" }),
+      inboxFiltersToListArgs({ includeArchived: true, folderId: "f1", type: "group" }),
     ).toEqual({
       includeArchived: true,
       folderId: "f1",
+      type: "group",
     });
   });
 });

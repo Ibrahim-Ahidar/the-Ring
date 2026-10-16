@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   MessageCircle,
   Settings,
@@ -54,6 +54,7 @@ export function activeNavId(
  */
 function ShellNavListInner() {
   const pathname = usePathname() ?? "";
+  const groupsFilter = useSearchParams()?.get("filter") === "groups";
   const t = useTranslations("shell.nav");
   const tFeature = useTranslations();
   const featureNav = useMemo(() => getContributions("nav"), []);
@@ -61,7 +62,7 @@ function ShellNavListInner() {
   const entries = useMemo(() => {
     const shellItems: NavEntry[] = [
       { id: "chats", href: "/app/chats", label: t("chats"), icon: MessageCircle, order: 10 },
-      { id: "groups", href: "/app/groups", label: t("groups"), icon: Users, order: 20 },
+      { id: "groups", href: "/app/chats?filter=groups", label: t("groups"), icon: Users, order: 20 },
       { id: "contacts", href: "/app/contacts", label: t("contacts"), icon: UserRound, order: 40 },
       {
         id: "settings",
@@ -89,7 +90,14 @@ function ShellNavListInner() {
     return [...byId.values()].sort((a, b) => a.order - b.order);
   }, [featureNav, t, tFeature]);
 
-  const activeId = activeNavId(pathname, entries);
+  // Groups is a filter of the chats inbox, so it shares the chats path.
+  const activeId =
+    pathname.startsWith("/app/groups/") ||
+    (groupsFilter && (pathname === "/app/chats" || pathname.startsWith("/app/chats/")))
+      ? entries.some((entry) => entry.id === "groups")
+        ? "groups"
+        : null
+      : activeNavId(pathname, entries.filter((entry) => entry.id !== "groups"));
 
   return (
     <nav className="shell-nav" aria-label={t("primary")}>

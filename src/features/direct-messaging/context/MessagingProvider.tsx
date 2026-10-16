@@ -40,6 +40,7 @@ import type {
 } from "../types";
 import {
   inboxFiltersToListArgs,
+  DEFAULT_INBOX_FILTERS,
   type InboxFilters,
 } from "../lib/inbox-filters";
 import { ChatsLoadingProvider, type ChatsLoading } from "./LoadingContext";
@@ -220,7 +221,7 @@ export function MessagingProvider({
 
   const listInbox = useCallback(async () => {
     const args = inboxFiltersToListArgs(
-      inboxFiltersRef.current ?? { includeArchived: false, folderId: null },
+      inboxFiltersRef.current ?? DEFAULT_INBOX_FILTERS,
     );
     return listConversationsAction(args);
   }, []);

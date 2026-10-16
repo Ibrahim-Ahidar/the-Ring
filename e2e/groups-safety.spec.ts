@@ -26,6 +26,11 @@ test.describe("groups and safety", () => {
     await page.waitForURL(/\/app\/chats\/[0-9a-f-]+/);
     const groupId = new URL(page.url()).pathname.split("/").pop();
 
+    // The old groups list now redirects into the "Groups" filter of the inbox.
+    await page.goto("/app/groups");
+    await expect(page).toHaveURL(/\/app\/chats\?filter=groups$/);
+    await expect(page.getByRole("link", { name: /Journey crew/ })).toBeVisible();
+
     await page.goto(`/app/groups/${groupId}`);
     await page.getByLabel("Invite by username").fill(guest.username);
     await page.getByRole("button", { name: "Send invite" }).click();

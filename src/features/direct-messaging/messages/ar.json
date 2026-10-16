@@ -97,5 +97,10 @@
     "typing": "يكتب…"
   },
   "loadingChats": "جارٍ تحميل المحادثات",
-  "loadingMessages": "جارٍ تحميل الرسائل"
+  "loadingMessages": "جارٍ تحميل الرسائل",
+  "typeFilter": {
+    "label": "تصفية المحادثات",
+    "all": "الكل",
+    "groups": "المجموعات"
+  }
 }

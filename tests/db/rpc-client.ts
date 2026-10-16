@@ -31,14 +31,16 @@ async function getProcMeta(db: PGliteInterface, fn: string): Promise<ProcMeta> {
             coalesce(
               (
                 select array_agg(a.argname order by a.argnum)
-                from unnest(p.proargnames) with ordinality as a(argname, argnum)
+                from unnest(p.proargnames, p.proargmodes) with ordinality as a(argname, argmode, argnum)
                 where a.argname is not null and a.argname <> ''
+                  and coalesce(a.argmode, 'i') in ('i', 'b', 'v')
               ),
               array[]::text[]
             ) as arg_names
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
      where n.nspname = 'public' and p.proname = $1
+     order by p.pronargs desc
      limit 1`,
     [fn],
   );

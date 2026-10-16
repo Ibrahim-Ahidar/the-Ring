@@ -56,6 +56,7 @@ export async function listConversationsAction(input: {
   cursor?: string | null;
   includeArchived?: boolean;
   folderId?: string | null;
+  type?: "direct" | "group" | null;
 }): Promise<Result<ListConversationsResult>> {
   const session = await requireRpc();
   if (!session) {
