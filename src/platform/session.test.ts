@@ -5,6 +5,9 @@ vi.mock("server-only", () => ({}));
 const redirectMock = vi.fn((url: string) => {
   throw new Error(`NEXT_REDIRECT:${url}`);
 });
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ get: (n: string) => (n === "pulse_device_id" ? { value: "dev1" } : undefined) }),
+}));
 vi.mock("next/navigation", () => ({ redirect: (url: string) => redirectMock(url) }));
 
 const serverClient = vi.hoisted(() => ({ current: null as unknown }));
@@ -33,8 +36,8 @@ function fakeSupabase(input: {
     rpc,
     client: {
       auth: {
-        getUser: async () => ({
-          data: { user: input.user ?? null },
+        getClaims: async () => ({
+          data: input.user ? { claims: { sub: input.user.id, email: "a@b.co" } } : null,
           error: input.authErrorCode ? { code: input.authErrorCode, message: "x" } : null,
         }),
         signOut,
@@ -58,7 +61,35 @@ describe("resolveSession", () => {
     const fake = fakeSupabase({ user: { id: "u1" } });
     const result = await resolveSession(fake.client as never, fake.client);
     expect(result.status).toBe("active");
-    expect(fake.rpc).toHaveBeenCalledWith("identity_assert_session_active", undefined);
+    expect(fake.rpc).toHaveBeenCalledTimes(1);
+    expect(fake.rpc).toHaveBeenCalledWith("identity_assert_access", { p_device_id: null });
+  });
+
+  it("maps the access row and passes the device id", async () => {
+    const fake = fakeSupabase({
+      user: { id: "u1" },
+      rpcReply: {
+        data: { email_confirmed: true, mfa_required: true, device_active: true },
+        error: null,
+      },
+    });
+    const result = await resolveSession(fake.client as never, fake.client, "dev1");
+    expect(fake.rpc).toHaveBeenCalledWith("identity_assert_access", { p_device_id: "dev1" });
+    expect(result).toMatchObject({
+      status: "active",
+      context: {
+        user: { id: "u1", email: "a@b.co" },
+        access: { emailConfirmed: true, mfaRequired: true, deviceActive: true, deviceId: "dev1" },
+      },
+    });
+  });
+
+  it("treats a missing access row as unconfirmed and inactive (fail closed)", async () => {
+    const fake = fakeSupabase({ user: { id: "u1" } });
+    const result = await resolveSession(fake.client as never, fake.client);
+    expect(result).toMatchObject({
+      context: { access: { emailConfirmed: false, deviceActive: false, mfaRequired: false } },
+    });
   });
 
   it("is anonymous without a user", async () => {
@@ -99,6 +130,7 @@ describe("getSessionContext", () => {
     serverClient.current = fake.client;
     const ctx = await getSessionContext();
     expect(ctx?.userId).toBe("u1");
+    expect(fake.rpc).toHaveBeenCalledWith("identity_assert_access", { p_device_id: "dev1" });
     expect(redirectMock).not.toHaveBeenCalled();
   });
 

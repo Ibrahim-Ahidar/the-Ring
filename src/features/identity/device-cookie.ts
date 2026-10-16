@@ -2,7 +2,9 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
-export const DEVICE_COOKIE_NAME = "pulse_device_id";
+import { DEVICE_COOKIE_NAME } from "@/platform/session";
+
+export { DEVICE_COOKIE_NAME };
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
