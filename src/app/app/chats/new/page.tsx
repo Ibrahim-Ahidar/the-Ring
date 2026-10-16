@@ -5,6 +5,9 @@ import { getTranslations } from "next-intl/server";
 import { NewChatClient } from "@/features/direct-messaging/components/NewChatClient";
 import { getSessionContext } from "@/platform/session";
 import { SinglePane } from "@/shell/components/SinglePane";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("chatsNew");
 
 export default async function NewChatPage() {
   const session = await getSessionContext();

@@ -1,9 +1,24 @@
 {
   "landing": {
-    "title": "Pulse",
+    "title": "the Ring",
     "proposition": "Trouvez des personnes par nom d'utilisateur, démarrez une conversation et gardez vos échanges organisés.",
     "login": "Connexion",
-    "signup": "Inscription"
+    "signup": "Inscription",
+    "features": [
+      {
+        "title": "Trouvez par nom d'utilisateur",
+        "body": "Aucun numéro de téléphone requis. Partagez votre @nom et les autres vous trouvent."
+      },
+      {
+        "title": "Conversations organisées",
+        "body": "Messages privés et groupes, avec confirmations de lecture et présence que vous contrôlez."
+      },
+      {
+        "title": "Vous gardez le contrôle",
+        "body": "Choisissez qui peut vous écrire, bloquez qui vous voulez, et réglez langue et thème."
+      }
+    ],
+    "featuresTitle": "Pourquoi the Ring"
   },
   "nav": {
     "home": "Accueil",
@@ -21,7 +36,7 @@
   "settings": {
     "title": "Paramètres",
     "more": "Plus",
-    "chooseSection": "Choisissez une rubrique à gauche pour modifier vos paramètres.",
+    "chooseSection": "Choisissez une rubrique pour modifier vos paramètres.",
     "accountDesc": "Profil, nom d'utilisateur, photo, suppression du compte",
     "privacyDesc": "Vu pour la dernière fois, confirmations de lecture, qui peut vous écrire, bloqués",
     "securityDesc": "Sessions actives, déconnexion",
@@ -55,7 +70,84 @@
     "privacy": "Confidentialité"
   },
   "legal": {
-    "termsBody": "Ceci est un texte provisoire des conditions pour Pulse. Il sera remplacé avant un lancement public.",
-    "privacyBody": "Ceci est un texte provisoire de confidentialité pour Pulse. Il sera remplacé avant un lancement public."
+    "terms": {
+      "intro": "Ces conditions régissent votre utilisation de the Ring. En créant un compte ou en utilisant le service, vous les acceptez.",
+      "sections": [
+        {
+          "title": "Votre compte",
+          "body": "Vous devez fournir des informations exactes et protéger vos identifiants. Vous êtes responsable de l'activité de votre compte. Vous devez avoir l'âge requis pour conclure un accord contraignant là où vous vivez."
+        },
+        {
+          "title": "Utilisation acceptable",
+          "body": "N'utilisez pas le service pour harceler, menacer ou usurper l'identité d'autrui, envoyer du spam ou des logiciels malveillants, enfreindre la loi, ou tenter de perturber le service ou d'accéder sans autorisation à d'autres comptes."
+        },
+        {
+          "title": "Votre contenu",
+          "body": "Vous restez propriétaire des messages et médias que vous envoyez. Vous nous accordez l'autorisation limitée nécessaire pour les stocker et les transmettre aux personnes que vous choisissez. Vous êtes responsable de ce que vous partagez."
+        },
+        {
+          "title": "Signalement et sanctions",
+          "body": "Vous pouvez bloquer et signaler d'autres utilisateurs. Nous pouvons supprimer du contenu, limiter des fonctions ou suspendre les comptes qui enfreignent ces conditions ou mettent d'autres personnes en danger."
+        },
+        {
+          "title": "Disponibilité",
+          "body": "Le service est fourni tel quel et peut évoluer, être interrompu ou arrêté. Nous ne garantissons pas qu'il sera ininterrompu ou sans erreur."
+        },
+        {
+          "title": "Fin d'utilisation",
+          "body": "Vous pouvez supprimer votre compte à tout moment depuis vos paramètres. Nous pouvons suspendre ou mettre fin à l'accès en cas de violation de ces conditions."
+        },
+        {
+          "title": "Modifications et contact",
+          "body": "Nous pouvons mettre à jour ces conditions et indiquerons la date de la dernière version sur cette page. Continuer à utiliser le service après une modification vaut acceptation. Vos questions peuvent être envoyées via le canal de contact fourni dans l'application."
+        }
+      ]
+    },
+    "privacy": {
+      "intro": "Cette page explique quelles informations the Ring traite et les choix dont vous disposez.",
+      "sections": [
+        {
+          "title": "Informations collectées",
+          "body": "Les informations de compte que vous fournissez (adresse e-mail, nom d'utilisateur, nom affiché, photo, bio), les messages et médias que vous envoyez, et des données techniques de base comme vos préférences de langue, de thème et de fuseau horaire."
+        },
+        {
+          "title": "Utilisation",
+          "body": "Pour faire fonctionner le service : vous connecter, acheminer vos messages, afficher votre profil aux personnes qui vous recherchent, envoyer les notifications activées, et protéger le service contre les abus."
+        },
+        {
+          "title": "Ce que les autres voient",
+          "body": "Votre nom d'utilisateur et votre profil public sont visibles par toute personne disposant du lien. La présence, la dernière connexion et les confirmations de lecture dépendent de vos paramètres de confidentialité."
+        },
+        {
+          "title": "Partage",
+          "body": "Nous ne vendons pas vos informations personnelles. Nous faisons appel à des prestataires d'infrastructure pour héberger et exploiter le service, et pouvons divulguer des informations lorsque la loi l'exige."
+        },
+        {
+          "title": "Conservation et suppression",
+          "body": "Nous conservons vos données tant que votre compte est actif. Vous pouvez supprimer votre compte dans les paramètres, ce qui supprime votre profil et les données associées, sous réserve des obligations légales et de sécurité."
+        },
+        {
+          "title": "Vos choix",
+          "body": "Depuis vos paramètres, vous pouvez modifier votre profil, choisir qui peut vous écrire, masquer la dernière connexion et les confirmations de lecture, gérer les notifications et bloquer des utilisateurs."
+        },
+        {
+          "title": "Cookies et stockage",
+          "body": "Nous utilisons des cookies essentiels et le stockage local pour vous garder connecté et mémoriser votre langue et votre thème."
+        },
+        {
+          "title": "Modifications et contact",
+          "body": "Nous pouvons mettre à jour cette politique et indiquerons la date de la dernière version sur cette page. Vos questions peuvent être envoyées via le canal de contact fourni dans l'application."
+        }
+      ]
+    }
+  },
+  "public": {
+    "back": "Retour à l'accueil",
+    "loginToMessage": "Connectez-vous pour écrire à @{username}",
+    "signupCta": "Créer un compte",
+    "profileTitle": "@{username}",
+    "profileDesc": "{name} est sur the Ring. Connectez-vous pour démarrer une conversation.",
+    "home": "Accueil",
+    "desc": "Messagerie instantanée par nom d'utilisateur. Trouvez des personnes, démarrez une conversation, gardez-la organisée."
   }
 }

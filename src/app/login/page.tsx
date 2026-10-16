@@ -5,6 +5,9 @@ import { LoginForm } from "@/features/identity/components/LoginForm";
 import { LoginReasonBanner } from "@/features/identity/components/LoginReasonBanner";
 import { LanguageSelect } from "@/features/locale-appearance/components/LanguageSelect";
 import { parseLoginReason, safeNextPath } from "@/platform/login-redirect";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("login");
 
 type SearchParams = Record<string, string | string[] | undefined>;
 

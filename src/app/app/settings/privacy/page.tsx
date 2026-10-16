@@ -8,6 +8,9 @@ import {
 } from "@/features/safety/service";
 import { getSessionContext } from "@/platform/session";
 import { SettingsBack, SettingsSection } from "@/shell/components/SettingsSection";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("settingsPrivacy");
 
 export default async function SettingsPrivacyPage() {
   const session = await getSessionContext();

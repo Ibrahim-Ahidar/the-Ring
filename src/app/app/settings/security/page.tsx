@@ -6,6 +6,9 @@ import { readDeviceId } from "@/features/identity/device-cookie";
 import * as identity from "@/features/identity/service";
 import { getSessionContext } from "@/platform/session";
 import { SettingsSection } from "@/shell/components/SettingsSection";
+import { routeTitle } from "@/app/_public/route-title";
+
+export const generateMetadata = routeTitle("settingsSecurity");
 
 export default async function SettingsSecurityPage() {
   const ctx = await getSessionContext();

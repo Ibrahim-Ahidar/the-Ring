@@ -1,9 +1,24 @@
 {
   "landing": {
-    "title": "Pulse",
+    "title": "the Ring",
     "proposition": "Find people by username, start a conversation, and keep communication organized.",
     "login": "Log in",
-    "signup": "Sign up"
+    "signup": "Sign up",
+    "features": [
+      {
+        "title": "Find by username",
+        "body": "No phone numbers needed. Share your @username and people can find you."
+      },
+      {
+        "title": "Organized conversations",
+        "body": "Direct chats and groups, with read receipts and presence you control."
+      },
+      {
+        "title": "Yours to control",
+        "body": "Choose who can message you, block anyone, and set your own language and theme."
+      }
+    ],
+    "featuresTitle": "Why the Ring"
   },
   "nav": {
     "home": "Home",
@@ -21,7 +36,7 @@
   "settings": {
     "title": "Settings",
     "more": "More",
-    "chooseSection": "Choose a section on the left to change your settings.",
+    "chooseSection": "Choose a section to change your settings.",
     "accountDesc": "Profile, username, photo, delete account",
     "privacyDesc": "Last seen, read receipts, who can message you, blocked",
     "securityDesc": "Active sessions, sign out",
@@ -55,7 +70,84 @@
     "privacy": "Privacy"
   },
   "legal": {
-    "termsBody": "This is placeholder terms copy for Pulse. It will be replaced before a public launch.",
-    "privacyBody": "This is placeholder privacy copy for Pulse. It will be replaced before a public launch."
+    "terms": {
+      "intro": "These terms govern your use of the Ring. By creating an account or using the service you agree to them.",
+      "sections": [
+        {
+          "title": "Your account",
+          "body": "You must provide accurate information and keep your sign-in details secure. You are responsible for activity under your account. You must be old enough to enter into a binding agreement where you live."
+        },
+        {
+          "title": "Acceptable use",
+          "body": "Do not use the service to harass, threaten or impersonate others, send spam or malware, break the law, or try to disrupt or gain unauthorized access to the service or other accounts."
+        },
+        {
+          "title": "Your content",
+          "body": "You keep ownership of the messages and media you send. You give us the limited permission needed to store and deliver them to the people you choose. You are responsible for what you share."
+        },
+        {
+          "title": "Reporting and enforcement",
+          "body": "You can block and report other users. We may remove content, limit features or suspend accounts that break these terms or put others at risk."
+        },
+        {
+          "title": "Availability",
+          "body": "The service is provided as is and may change, be interrupted or be discontinued. We do not guarantee it will be uninterrupted or error-free."
+        },
+        {
+          "title": "Ending your use",
+          "body": "You can delete your account at any time from your settings. We may suspend or end access if these terms are violated."
+        },
+        {
+          "title": "Changes and contact",
+          "body": "We may update these terms and will indicate the date of the latest version on this page. Continued use after a change means you accept it. Questions about these terms can be sent through the contact channel provided in the app."
+        }
+      ]
+    },
+    "privacy": {
+      "intro": "This page explains what information the Ring handles and the choices you have.",
+      "sections": [
+        {
+          "title": "Information we collect",
+          "body": "Account details you provide (such as your email address, username, display name, photo and bio), the messages and media you send, and basic technical data such as your language, theme and time zone preferences."
+        },
+        {
+          "title": "How we use it",
+          "body": "To run the service: sign you in, deliver your messages, show your profile to people who look you up, send notifications you enable, and keep the service secure and free of abuse."
+        },
+        {
+          "title": "What others can see",
+          "body": "Your username and public profile can be seen by anyone with the link. Presence, last seen and read receipts are shown according to your privacy settings."
+        },
+        {
+          "title": "Sharing",
+          "body": "We do not sell your personal information. We rely on infrastructure and service providers to host and operate the service, and may disclose information when required by law."
+        },
+        {
+          "title": "Retention and deletion",
+          "body": "We keep your data while your account is active. You can delete your account from settings, which removes your profile and associated data, subject to legal and security retention needs."
+        },
+        {
+          "title": "Your choices",
+          "body": "You can edit your profile, control who can message you, hide last seen and read receipts, manage notifications and block users from your settings."
+        },
+        {
+          "title": "Cookies and storage",
+          "body": "We use essential cookies and local storage to keep you signed in and remember your language and theme."
+        },
+        {
+          "title": "Changes and contact",
+          "body": "We may update this policy and will indicate the date of the latest version on this page. Privacy questions can be sent through the contact channel provided in the app."
+        }
+      ]
+    }
+  },
+  "public": {
+    "back": "Back to home",
+    "loginToMessage": "Log in to message @{username}",
+    "signupCta": "Create an account",
+    "profileTitle": "@{username}",
+    "profileDesc": "{name} is on the Ring. Log in to start a conversation.",
+    "home": "Home",
+    "desc": "Username-first realtime chat. Find people, start a conversation, keep it organized."
   }
 }

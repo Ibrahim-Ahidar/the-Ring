@@ -1,12 +1,14 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-export default async function PrivacyPage() {
-  const t = await getTranslations("shell");
+import { LegalPage } from "../../_public/LegalPage";
 
-  return (
-    <main className="landing" style={{ minHeight: "auto" }}>
-      <h1 className="landing-title">{t("routes.privacy")}</h1>
-      <p>{t("legal.privacyBody")}</p>
-    </main>
-  );
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("shell");
+  return { title: t("routes.privacy"), description: t("legal.privacy.intro") };
+}
+
+// TODO(owner): add the legal entity name, effective date and a contact address to the privacy copy before launch.
+export default function PrivacyPage() {
+  return <LegalPage kind="privacy" />;
 }
