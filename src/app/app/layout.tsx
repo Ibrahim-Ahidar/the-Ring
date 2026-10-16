@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { MessagingProvider } from "@/features/direct-messaging/context/MessagingProvider";
 import { assertAppAccess } from "@/features/identity/session-guard";
 import { loginPath, parseLoginReason } from "@/platform/login-redirect";
 import { getSessionContext } from "@/platform/session";
@@ -28,5 +29,9 @@ export default async function ProtectedAppLayout({
     redirect(loginPath({ reason: parseLoginReason(access.error.code) ?? "signed_out" }));
   }
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <AppShell>
+      <MessagingProvider userId={session.userId}>{children}</MessagingProvider>
+    </AppShell>
+  );
 }

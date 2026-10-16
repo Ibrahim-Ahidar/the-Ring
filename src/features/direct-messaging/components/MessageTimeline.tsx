@@ -22,7 +22,6 @@ import { useHydrated } from "../lib/use-hydrated";
 import { conversationTitle } from "../lib/titles";
 import type { ConversationDetail } from "../types";
 import type { PendingSend } from "../context/types";
-import { useChatsLoading } from "../context/LoadingContext";
 import { useMessaging } from "../context/MessagingProvider";
 import { MessageBubble } from "./MessageBubble";
 import { ThreadSkeleton } from "./Skeletons";
@@ -74,7 +73,8 @@ function MessageTimelineInner({
   const timeZone = useTimeZone() ?? "UTC";
   const hydrated = useHydrated();
   const { state, retrySend, loadOlderMessages } = useMessaging();
-  const { thread: loading } = useChatsLoading();
+  // Not in the store yet: the first page is still streaming in.
+  const loading = state.messagesByConversation[conversationId] === undefined;
   const stored = state.messagesByConversation[conversationId] ?? NO_MESSAGES;
   const pending = useMemo(
     () => state.pendingSends.filter((p) => p.conversationId === conversationId),

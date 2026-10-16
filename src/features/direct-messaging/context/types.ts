@@ -21,6 +21,10 @@ export type MessagingState = {
   userId: string;
   conversations: ConversationSummary[];
   conversationsHasMore: boolean;
+  /** Whether the first page of the chat list has arrived (or failed to). */
+  inboxStatus: "loading" | "ready" | "failed";
+  /** Conversations whose first message page could not be read. */
+  threadFailed: Record<string, boolean>;
   messagesByConversation: Record<string, TimelineMessage[]>;
   messagesHasMore: Record<string, boolean>;
   messageCursors: Record<string, string | null>;
@@ -39,6 +43,10 @@ export type MessagingAction =
       items: ConversationSummary[];
       hasMore: boolean;
     }
+  | { type: "inbox/failed" }
+  | { type: "inbox/loading" }
+  | { type: "thread/failed"; conversationId: string }
+  | { type: "messages/evict"; conversationId: string }
   | { type: "conversations/patch"; item: ConversationSummary }
   | {
       type: "messages/set";

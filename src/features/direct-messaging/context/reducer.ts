@@ -32,6 +32,8 @@ export function createInitialState(userId: string): MessagingState {
     userId,
     conversations: [],
     conversationsHasMore: false,
+    inboxStatus: "loading",
+    threadFailed: {},
     messagesByConversation: {},
     messagesHasMore: {},
     messageCursors: {},
@@ -54,7 +56,30 @@ export function messagingReducer(
         ...state,
         conversations: action.items,
         conversationsHasMore: action.hasMore,
+        inboxStatus: "ready",
       };
+    case "inbox/failed":
+      // A failed refresh must not hide a list that already loaded.
+      return state.conversations.length > 0
+        ? state
+        : { ...state, inboxStatus: "failed" };
+    case "inbox/loading":
+      return { ...state, inboxStatus: "loading" };
+    case "thread/failed":
+      return {
+        ...state,
+        threadFailed: { ...state.threadFailed, [action.conversationId]: true },
+      };
+    case "messages/evict": {
+      const id = action.conversationId;
+      const { [id]: _m, ...messagesByConversation } = state.messagesByConversation;
+      const { [id]: _h, ...messagesHasMore } = state.messagesHasMore;
+      const { [id]: _c, ...messageCursors } = state.messageCursors;
+      void _m;
+      void _h;
+      void _c;
+      return { ...state, messagesByConversation, messagesHasMore, messageCursors };
+    }
     case "receipts/set": {
       const next: Record<string, ConversationReceipt> = {};
       let changed =
@@ -89,6 +114,9 @@ export function messagingReducer(
     case "messages/set":
       return {
         ...state,
+        threadFailed: state.threadFailed[action.conversationId]
+          ? { ...state.threadFailed, [action.conversationId]: false }
+          : state.threadFailed,
         messagesByConversation: {
           ...state.messagesByConversation,
           [action.conversationId]: action.items,
