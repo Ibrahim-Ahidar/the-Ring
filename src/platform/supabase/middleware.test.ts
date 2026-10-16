@@ -5,7 +5,7 @@ const getUser = vi.fn();
 const signOut = vi.fn();
 
 vi.mock("@supabase/ssr", () => ({
-  createServerClient: () => ({ auth: { getUser, signOut } }),
+  createServerClient: () => ({ auth: { getClaims: getUser, signOut } }),
 }));
 
 const { updateSession } = await import("./middleware");
@@ -22,11 +22,11 @@ function location(response: Response): string | null {
 }
 
 function signedIn() {
-  getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
+  getUser.mockResolvedValue({ data: { claims: { sub: "u1" } }, error: null });
 }
 
 function signedOut() {
-  getUser.mockResolvedValue({ data: { user: null }, error: null });
+  getUser.mockResolvedValue({ data: { claims: null }, error: null });
 }
 
 beforeEach(() => {

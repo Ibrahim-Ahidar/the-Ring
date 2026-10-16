@@ -254,9 +254,21 @@ export function MessagingProvider({
     dispatch({ type: "drafts/hydrate", drafts: readDraftsFromStorage() });
   }, []);
 
+  // Debounced: writing localStorage on every keystroke blocks the main thread.
+  const draftsRef = useRef(state.drafts);
+  draftsRef.current = state.drafts;
   useEffect(() => {
-    writeDraftsToStorage(state.drafts);
+    const timer = setTimeout(() => writeDraftsToStorage(draftsRef.current), 400);
+    return () => clearTimeout(timer);
   }, [state.drafts]);
+  useEffect(() => {
+    const flush = () => writeDraftsToStorage(draftsRef.current);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
+  }, []);
 
   const cursorsRef = useRef(state.messageCursors);
   cursorsRef.current = state.messageCursors;

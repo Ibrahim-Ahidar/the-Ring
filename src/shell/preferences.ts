@@ -53,6 +53,12 @@ async function readProfilePreference<T extends string>(
   column: "locale" | "theme",
   parse: (value: string) => value is T,
 ): Promise<T | null> {
+  // Cookie first: skips an auth call plus a profiles query on every render.
+  const cookieStore = await cookies();
+  const cookieValue = cookieStore.get(column === "locale" ? LOCALE_COOKIE : THEME_COOKIE)?.value;
+  if (cookieValue && parse(cookieValue)) {
+    return cookieValue;
+  }
   const row = await readProfilePreferences();
   const value = row?.[column];
   if (typeof value === "string" && parse(value)) {
