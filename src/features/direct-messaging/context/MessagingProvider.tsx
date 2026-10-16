@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -41,6 +42,7 @@ import {
   inboxFiltersToListArgs,
   type InboxFilters,
 } from "../lib/inbox-filters";
+import { ChatsLoadingProvider, type ChatsLoading } from "./LoadingContext";
 import { rowToTimelineMessage } from "./map-row";
 import { createInitialState, messagingReducer } from "./reducer";
 import {
@@ -100,15 +102,50 @@ export type MarkSeenUpTo = (
   message: TimelineMessage,
 ) => Promise<boolean>;
 
+/**
+ * Hands server-streamed pages to the store. Pages stay dumb: they pass
+ * promises, small client seeders read them with `use()` and call these.
+ */
+export type MessagingSeeding = {
+  seedInbox: (items: ConversationSummary[], hasMore: boolean) => void;
+  failInbox: () => void;
+  markInboxLoading: () => void;
+  seedDetail: (conversationId: string, detail: ConversationDetail) => void;
+  seedMessages: (
+    conversationId: string,
+    items: TimelineMessage[],
+    hasMore: boolean,
+  ) => void;
+  failThread: (conversationId: string) => void;
+  /** Filters the realtime inbox refresh applies; chats screens set them. */
+  setInboxFilters: (filters: InboxFilters) => void;
+};
+
+const SeedingContext = createContext<MessagingSeeding | null>(null);
+const ActiveConversationContext = createContext<string | undefined>(undefined);
 const MessagingContext = createContext<MessagingContextValue | null>(null);
 const ActionsContext = createContext<MessagingActions | null>(null);
 const MarkSeenContext = createContext<MarkSeenUpTo | null>(null);
 const MessagesSliceContext = createContext<MessagesSlice | null>(null);
+const ThreadFailedContext = createContext<Record<string, boolean> | null>(null);
 const DraftsContext = createContext<Record<string, string> | null>(null);
 const ConnectionContext = createContext<{ status: ConnectionStatus } | null>(
   null,
 );
 const InboxContext = createContext<InboxSlice | null>(null);
+
+/** Conversations kept subscribed (and cached) at once; the oldest is dropped. */
+const WATCHED_CONVERSATIONS_LIMIT = 8;
+const NON_CONVERSATION_SEGMENTS = new Set(["new", "requests"]);
+
+/** The open conversation id for /app/chats/<id> paths, else undefined. */
+export function conversationIdFromPath(pathname: string | null): string | undefined {
+  const [app, section, id] = (pathname ?? "").split("/").filter(Boolean);
+  if (app !== "app" || section !== "chats" || !id || NON_CONVERSATION_SEGMENTS.has(id)) {
+    return undefined;
+  }
+  return id;
+}
 
 const INBOX_REFRESH_DEBOUNCE_MS = 400;
 /** Catch-up poll interval; only runs while the channel is not SUBSCRIBED. */
@@ -176,8 +213,10 @@ export function MessagingProvider({
   initialDetail,
   children,
 }: ProviderProps) {
+  const pathname = usePathname();
+  const activeConversationId =
+    initialConversationId ?? conversationIdFromPath(pathname);
   const inboxFiltersRef = useRef(inboxFilters);
-  inboxFiltersRef.current = inboxFilters;
 
   const listInbox = useCallback(async () => {
     const args = inboxFiltersToListArgs(
@@ -190,6 +229,7 @@ export function MessagingProvider({
     userId,
     (id) => {
       const base = createInitialState(id);
+      base.inboxStatus = initialConversations ? "ready" : "loading";
       base.conversations = initialConversations ?? [];
       base.conversationsHasMore = initialConversationsHasMore ?? false;
       if (initialConversationId && initialMessages) {
@@ -204,51 +244,6 @@ export function MessagingProvider({
       return base;
     },
   );
-
-  // The list streams in after mount (or replaces a cached copy); take each new
-  // page the server hands over.
-  const seededConversationsRef = useRef(initialConversations);
-  useEffect(() => {
-    if (seededConversationsRef.current === initialConversations) {
-      return;
-    }
-    seededConversationsRef.current = initialConversations;
-    if (!initialConversations) {
-      return;
-    }
-    dispatch({
-      type: "conversations/set",
-      items: initialConversations,
-      hasMore: initialConversationsHasMore ?? false,
-    });
-  }, [initialConversations, initialConversationsHasMore]);
-
-  // The reducer only seeds from props once; re-sync when the server hands this
-  // mounted provider a new page (router.refresh, switching conversations).
-  const seededMessagesRef = useRef(initialMessages);
-  useEffect(() => {
-    if (seededMessagesRef.current === initialMessages) {
-      return;
-    }
-    seededMessagesRef.current = initialMessages;
-    if (!initialConversationId || !initialMessages) {
-      return;
-    }
-    dispatch({
-      type: "messages/set",
-      conversationId: initialConversationId,
-      items: initialMessages,
-      hasMore: initialMessagesHasMore ?? false,
-      cursor: messagePageNextCursor(initialMessages),
-    });
-    if (initialDetail) {
-      dispatch({
-        type: "detail/set",
-        conversationId: initialConversationId,
-        detail: initialDetail,
-      });
-    }
-  }, [initialConversationId, initialDetail, initialMessages, initialMessagesHasMore]);
 
   useEffect(() => {
     dispatch({ type: "drafts/hydrate", drafts: readDraftsFromStorage() });
@@ -275,6 +270,8 @@ export function MessagingProvider({
   const pendingSendsRef = useRef(state.pendingSends);
   const connectionStatusRef = useRef(state.connectionStatus);
   const inFlightRef = useRef(new Set<string>());
+  /** Conversations with a live subscription, oldest first. */
+  const watchedIdsRef = useRef<string[]>([]);
 
   useEffect(() => {
     pendingSendsRef.current = state.pendingSends;
@@ -368,9 +365,7 @@ export function MessagingProvider({
         hasMore: list.value.hasMore,
       });
     }
-    const openIds = new Set(
-      initialConversationId ? [initialConversationId] : [],
-    );
+    const openIds = new Set(watchedIdsRef.current);
     for (const pending of pendingSendsRef.current) {
       openIds.add(pending.conversationId);
     }
@@ -388,7 +383,7 @@ export function MessagingProvider({
       });
     }
     await flushPending();
-  }, [flushPending, initialConversationId, listInbox]);
+  }, [flushPending, listInbox]);
 
   const inboxRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -471,12 +466,9 @@ export function MessagingProvider({
     };
   }, [reconcile, refreshInboxList, setSocketStatus, userId]);
 
-  useEffect(() => {
-    if (!initialConversationId) {
-      return;
-    }
+  const watchConversation = useCallback((conversationId: string): (() => void) => {
     const supabase = createSupabaseBrowserClient();
-    const topic = joinConversation(supabase, initialConversationId, userId);
+    const topic = joinConversation(supabase, conversationId, userId);
 
     let disposed = false;
     let subscribed = false;
@@ -487,12 +479,12 @@ export function MessagingProvider({
 
     const refreshDetail = async () => {
       const result = await getConversationAction({
-        conversationId: initialConversationId,
+        conversationId: conversationId,
       });
       if (!disposed && result.ok) {
         dispatch({
           type: "detail/set",
-          conversationId: initialConversationId,
+          conversationId: conversationId,
           detail: result.value,
         });
       }
@@ -508,14 +500,14 @@ export function MessagingProvider({
       lastSyncAt = Date.now();
       try {
         const page = await listMessagesAction({
-          conversationId: initialConversationId,
+          conversationId: conversationId,
         });
         if (disposed || !page.ok) {
           return;
         }
         dispatch({
           type: "messages/set",
-          conversationId: initialConversationId,
+          conversationId: conversationId,
           items: page.value.items.map(mapMessageRow),
           hasMore: page.value.hasMore,
           cursor: messagePageNextCursor(page.value.items),
@@ -589,7 +581,7 @@ export function MessagingProvider({
       }
       dispatch({
         type: "messages/upsert",
-        conversationId: initialConversationId,
+        conversationId: conversationId,
         message,
       });
       if (needsAttachmentFetch(message)) {
@@ -600,7 +592,7 @@ export function MessagingProvider({
             }
             dispatch({
               type: "messages/upsert",
-              conversationId: initialConversationId,
+              conversationId: conversationId,
               message: { ...message, attachments: result.value },
             });
           },
@@ -618,7 +610,7 @@ export function MessagingProvider({
         if (hideUserId === userId && typeof messageId === "string") {
           dispatch({
             type: "messages/remove",
-            conversationId: initialConversationId,
+            conversationId: conversationId,
             messageId,
           });
         }
@@ -632,12 +624,12 @@ export function MessagingProvider({
           change.eventType === "DELETE"
         ) {
           void getConversationAction({
-            conversationId: initialConversationId,
+            conversationId: conversationId,
           }).then((result) => {
             if (result.ok) {
               dispatch({
                 type: "detail/set",
-                conversationId: initialConversationId,
+                conversationId: conversationId,
                 detail: result.value,
               });
             }
@@ -665,23 +657,46 @@ export function MessagingProvider({
       offChange();
       topic.leave();
     };
-  }, [initialConversationId, refreshInboxList, setSocketStatus, userId]);
+  }, [refreshInboxList, setSocketStatus, userId]);
 
+  // Subscriptions outlive the open chat so a revisited thread is already
+  // current and needs no refetch. They are dropped with the provider.
+  const watchersRef = useRef(new Map<string, () => void>());
   useEffect(() => {
-    if (!initialConversationId || !initialDetail || !initialMessages) {
+    if (!activeConversationId) {
       return;
     }
-    const separator = firstUnreadMessageId(
-      initialMessages,
-      initialDetail.last_read_message_id,
-      userId,
-    );
-    dispatch({
-      type: "unreadSeparator/set",
-      conversationId: initialConversationId,
-      messageId: separator,
-    });
-  }, [initialConversationId, initialDetail, initialMessages, userId]);
+    const watchers = watchersRef.current;
+    const ids = watchedIdsRef.current;
+    const at = ids.indexOf(activeConversationId);
+    if (at !== -1) {
+      ids.splice(at, 1);
+    }
+    ids.push(activeConversationId);
+    if (!watchers.has(activeConversationId)) {
+      watchers.set(activeConversationId, watchConversation(activeConversationId));
+    }
+    while (ids.length > WATCHED_CONVERSATIONS_LIMIT) {
+      const oldest = ids.shift();
+      if (oldest === undefined) {
+        break;
+      }
+      watchers.get(oldest)?.();
+      watchers.delete(oldest);
+      dispatch({ type: "messages/evict", conversationId: oldest });
+    }
+  }, [activeConversationId, watchConversation]);
+  useEffect(() => {
+    const watchers = watchersRef.current;
+    const ids = watchedIdsRef.current;
+    return () => {
+      for (const stop of watchers.values()) {
+        stop();
+      }
+      watchers.clear();
+      ids.length = 0;
+    };
+  }, []);
 
   const sendMessage = useCallback(
     async (input: {
@@ -812,6 +827,59 @@ export function MessagingProvider({
     };
   }, [flushPending]);
 
+  const seeding = useMemo<MessagingSeeding>(
+    () => ({
+      seedInbox: (items, hasMore) =>
+        dispatch({ type: "conversations/set", items, hasMore }),
+      failInbox: () => dispatch({ type: "inbox/failed" }),
+      markInboxLoading: () => dispatch({ type: "inbox/loading" }),
+      seedDetail: (conversationId, detail) =>
+        dispatch({ type: "detail/set", conversationId, detail }),
+      seedMessages: (conversationId, items, hasMore) => {
+        dispatch({
+          type: "messages/set",
+          conversationId,
+          items,
+          hasMore,
+          cursor: messagePageNextCursor(items),
+        });
+      },
+      failThread: (conversationId) =>
+        dispatch({ type: "thread/failed", conversationId }),
+      setInboxFilters: (filters) => {
+        inboxFiltersRef.current = filters;
+      },
+    }),
+    [],
+  );
+
+  // Unread separator for a seeded thread: the first message past the read marker.
+  const separatorSeedRef = useRef(new Set<string>());
+  useEffect(() => {
+    if (!activeConversationId || separatorSeedRef.current.has(activeConversationId)) {
+      return;
+    }
+    const detail = state.detailsByConversation[activeConversationId];
+    const messages = state.messagesByConversation[activeConversationId];
+    if (!detail || !messages) {
+      return;
+    }
+    separatorSeedRef.current.add(activeConversationId);
+    dispatch({
+      type: "unreadSeparator/set",
+      conversationId: activeConversationId,
+      messageId: firstUnreadMessageId(messages, detail.last_read_message_id, userId),
+    });
+  }, [activeConversationId, state.detailsByConversation, state.messagesByConversation, userId]);
+
+  const loading = useMemo<ChatsLoading>(
+    () => ({
+      inbox: state.inboxStatus === "loading",
+      inboxFailed: state.inboxStatus === "failed",
+    }),
+    [state.inboxStatus],
+  );
+
   const actions = useMemo<MessagingActions>(
     () => ({
       sendMessage,
@@ -895,10 +963,14 @@ export function MessagingProvider({
   );
 
   return (
+    <ChatsLoadingProvider value={loading}>
+    <SeedingContext.Provider value={seeding}>
+    <ActiveConversationContext.Provider value={activeConversationId}>
     <MessagingContext.Provider value={value}>
       <ActionsContext.Provider value={actions}>
         <MarkSeenContext.Provider value={markSeenUpTo}>
           <MessagesSliceContext.Provider value={messagesSlice}>
+            <ThreadFailedContext.Provider value={state.threadFailed}>
             <DraftsContext.Provider value={state.drafts}>
               <ConnectionContext.Provider value={connection}>
                 <InboxContext.Provider value={inbox}>
@@ -906,10 +978,14 @@ export function MessagingProvider({
                 </InboxContext.Provider>
               </ConnectionContext.Provider>
             </DraftsContext.Provider>
+            </ThreadFailedContext.Provider>
           </MessagesSliceContext.Provider>
         </MarkSeenContext.Provider>
       </ActionsContext.Provider>
     </MessagingContext.Provider>
+    </ActiveConversationContext.Provider>
+    </SeedingContext.Provider>
+    </ChatsLoadingProvider>
   );
 }
 
@@ -922,6 +998,28 @@ function useRequired<T>(ctx: T | null, name: string): T {
 
 export function useMessaging() {
   return useRequired(useContext(MessagingContext), "useMessaging");
+}
+
+/** Whether a conversation's first message page is already in the store. */
+export function useThreadCached(conversationId: string): boolean {
+  const slice = useRequired(useContext(MessagesSliceContext), "useThreadCached");
+  return slice.messagesByConversation[conversationId] !== undefined;
+}
+
+/** Whether a conversation's first message page failed to load. */
+export function useThreadFailed(conversationId: string): boolean {
+  const failed = useRequired(useContext(ThreadFailedContext), "useThreadFailed");
+  return failed[conversationId] === true;
+}
+
+/** Store-writing hooks for the small client seeders that read streamed server promises. */
+export function useMessagingSeeding(): MessagingSeeding {
+  return useRequired(useContext(SeedingContext), "useMessagingSeeding");
+}
+
+/** The conversation id in the URL (undefined on the list and other routes). */
+export function useActiveConversationId(): string | undefined {
+  return useContext(ActiveConversationContext);
 }
 
 /** Stable action callbacks; never re-renders on state changes. */
