@@ -128,6 +128,7 @@ function ConversationListInner({ activeConversationId }: Props) {
           <li key={item.id} className={styles.chatItem}>
             <Link
               href={queryHref(`/app/chats/${item.id}`, { info: null, message: null })}
+              prefetch={false}
               className={styles.chatRow}
               aria-current={item.id === activeConversationId ? "true" : undefined}
             >
