@@ -39,7 +39,7 @@ const env = {
 };
 
 if (!skipBuild) {
-  const build = spawnSync("npx", ["next", "build"], { env, shell, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  const build = spawnSync("npm", ["run", "build"], { env, shell, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
   const out = (build.stdout ?? "") + (build.stderr ?? "");
   writeFileSync(join(dir, `build-${label}.txt`), out);
   if (build.status !== 0) {
