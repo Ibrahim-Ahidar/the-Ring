@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Fragment,
   memo,
   useCallback,
   useEffect,
@@ -10,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { observeElementRect, useVirtualizer } from "@tanstack/react-virtual";
 import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
 
 import { useGroupMemberDirectory } from "@/features/groups/hooks/useGroupMemberNames";
@@ -38,6 +38,29 @@ type Quote = { self: boolean; author: string | null; text: string };
 
 /** Distance from the bottom (px) within which new messages keep the view pinned. */
 const STICK_THRESHOLD = 80;
+
+/** Rows rendered beyond the viewport on each side. */
+const OVERSCAN = 8;
+/** First-paint height guess (px) for a row before it is measured. */
+const ESTIMATED_ROW = 72;
+/** Viewport height (px) assumed when the scroller reports none (not laid out yet). */
+const FALLBACK_VIEWPORT = 800;
+/** Window event asking the timeline to bring an unrendered message into view. */
+export const REVEAL_MESSAGE_EVENT = "thread:reveal-message";
+
+/** Reports a usable viewport even before layout so the first rows always render. */
+const observeViewport: typeof observeElementRect = (instance, cb) =>
+  observeElementRect(instance, (rect) =>
+    cb(rect.height > 0 ? rect : { width: rect.width, height: FALLBACK_VIEWPORT }),
+  );
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
 
 const NO_MESSAGES: TimelineMessage[] = [];
 
@@ -93,6 +116,8 @@ function MessageTimelineInner({
   const [atBottom, setAtBottom] = useState(true);
   const [seenLastId, setSeenLastId] = useState<string | undefined>(undefined);
   const hasMore = Boolean(state.messagesHasMore[conversationId]);
+  const listRef = useRef<HTMLDivElement>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
 
   const timeline = useMemo(() => {
     const pendingMessages = pending.map((entry) => ({
@@ -107,6 +132,41 @@ function MessageTimelineInner({
     });
     return [...merged].reverse();
   }, [currentUserId, pending, stored]);
+
+  const virtualizer = useVirtualizer({
+    count: timeline.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ESTIMATED_ROW,
+    overscan: OVERSCAN,
+    scrollMargin,
+    getItemKey: (index) => timeline[index]?.id ?? index,
+    observeElementRect: observeViewport,
+    onChange: () => {
+      // Rows grow as they are measured: keep the newest message in view while pinned.
+      const node = scrollRef.current;
+      if (node && stickToBottom.current && node.scrollHeight - node.scrollTop - node.clientHeight > 1) {
+        node.scrollTop = node.scrollHeight;
+      }
+    },
+  });
+
+  // The "load older" control sits above the list; rows are positioned after it.
+  useLayoutEffect(() => {
+    const offset = listRef.current?.offsetTop ?? 0;
+    setScrollMargin((current) => (current === offset ? current : offset));
+  }, [hasMore, loadingOlder]);
+
+  useEffect(() => {
+    const onReveal = (event: Event) => {
+      const id = (event as CustomEvent<{ id: string }>).detail?.id;
+      const index = timeline.findIndex((m) => m.id === id);
+      if (index >= 0) {
+        virtualizer.scrollToIndex(index, { align: "center" });
+      }
+    };
+    window.addEventListener(REVEAL_MESSAGE_EVENT, onReveal);
+    return () => window.removeEventListener(REVEAL_MESSAGE_EVENT, onReveal);
+  }, [timeline, virtualizer]);
 
   const isGroup = conversationType === "group";
   const members = useGroupMemberDirectory(conversationId, isGroup);
@@ -247,7 +307,7 @@ function MessageTimelineInner({
     if (!node) {
       return;
     }
-    node.scrollTo?.({ top: node.scrollHeight, behavior: "smooth" });
+    node.scrollTo?.({ top: node.scrollHeight, behavior: prefersReducedMotion() ? "auto" : "smooth" });
     stickToBottom.current = true;
   }, []);
 
@@ -296,43 +356,63 @@ function MessageTimelineInner({
         {timeline.length === 0 ? (
           loading ? <ThreadSkeleton label={t("loadingMessages")} /> : <p className={styles.systemNote}>{t("emptyThread")}</p>
         ) : null}
-        {timeline.map((message, index) => {
-          const previous = timeline[index - 1];
-          const newDay = !previous || !isSameCalendarDay(previous.created_at, message.created_at, timeZone);
-          const showSeparator = separatorId === message.id;
-          const grouped =
-            !newDay && !showSeparator && shouldGroupWithPrevious(message, previous);
-          const pendingEntry = pending.find((p) => p.clientId === message.client_id);
-          const quote = quotes.get(message.id);
-          return (
-            <Fragment key={message.id}>
-              {newDay ? (
-                <p className={styles.dayDivider}>
-                  <time dateTime={message.created_at}>
-                    {hydrated ? dayLabel(message.created_at) : null}
-                  </time>
-                </p>
-              ) : null}
-              {showSeparator ? <p className={styles.unreadDivider}>{t("newMessages")}</p> : null}
-              <MessageBubble
-                message={message}
-                conversationId={conversationId}
-                currentUserId={currentUserId}
-                conversationType={conversationType}
-                detail={detail}
-                pendingStatus={pendingEntry?.status}
-                grouped={grouped}
-                senderName={isGroup ? nameOf(message.sender_id) : null}
-                senderAvatarUrl={members.get(message.sender_id)?.avatarUrl ?? null}
-                quoteSelf={quote?.self}
-                quoteAuthor={quote?.author}
-                quoteText={quote?.text}
-                onRetry={retrySend}
-                rowRef={track(message)}
-              />
-            </Fragment>
-          );
-        })}
+        {timeline.length > 0 ? (
+          <div
+            ref={listRef}
+            className={styles.virtualList}
+            style={{ blockSize: virtualizer.getTotalSize() - scrollMargin }}
+          >
+            {virtualizer.getVirtualItems().map((item) => {
+              const index = item.index;
+              const message = timeline[index];
+              if (!message) {
+                return null;
+              }
+              const previous = timeline[index - 1];
+              const newDay =
+                !previous || !isSameCalendarDay(previous.created_at, message.created_at, timeZone);
+              const showSeparator = separatorId === message.id;
+              const grouped =
+                !newDay && !showSeparator && shouldGroupWithPrevious(message, previous);
+              const pendingEntry = pending.find((p) => p.clientId === message.client_id);
+              const quote = quotes.get(message.id);
+              return (
+                <div
+                  key={item.key}
+                  ref={virtualizer.measureElement}
+                  data-index={index}
+                  className={styles.virtualRow}
+                  style={{ transform: `translateY(${item.start - scrollMargin}px)` }}
+                >
+                  {newDay ? (
+                    <p className={styles.dayDivider}>
+                      <time dateTime={message.created_at}>
+                        {hydrated ? dayLabel(message.created_at) : null}
+                      </time>
+                    </p>
+                  ) : null}
+                  {showSeparator ? <p className={styles.unreadDivider}>{t("newMessages")}</p> : null}
+                  <MessageBubble
+                    message={message}
+                    conversationId={conversationId}
+                    currentUserId={currentUserId}
+                    conversationType={conversationType}
+                    detail={detail}
+                    pendingStatus={pendingEntry?.status}
+                    grouped={grouped}
+                    senderName={isGroup ? nameOf(message.sender_id) : null}
+                    senderAvatarUrl={members.get(message.sender_id)?.avatarUrl ?? null}
+                    quoteSelf={quote?.self}
+                    quoteAuthor={quote?.author}
+                    quoteText={quote?.text}
+                    onRetry={retrySend}
+                    rowRef={track(message)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
       {!atBottom ? (
         <button type="button" className={styles.jumpLatest} onClick={jumpToLatest}>

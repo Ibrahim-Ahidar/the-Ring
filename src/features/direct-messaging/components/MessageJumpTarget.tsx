@@ -3,10 +3,13 @@
 import { useSearchParams } from "next/navigation";
 import { memo, Suspense, useEffect, useRef } from "react";
 
+import { REVEAL_MESSAGE_EVENT } from "./MessageTimeline";
 import { useMessaging } from "../context/MessagingProvider";
 import styles from "../direct-messaging.module.css";
 
 const MAX_PAGES = 10;
+/** Tries (about 50 ms apart) to reach a loaded message the virtual list has not rendered yet. */
+const MAX_REVEALS = 20;
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined") {
@@ -33,11 +36,13 @@ function MessageJumpTargetInner({ conversationId }: { conversationId: string }) 
   const { state, loadOlderMessages } = useMessaging();
   const attemptsRef = useRef(0);
   const runningRef = useRef(false);
+  const revealsRef = useRef(0);
 
   const messageId = searchParams.get("message");
 
   useEffect(() => {
     attemptsRef.current = 0;
+    revealsRef.current = 0;
     runningRef.current = false;
     if (!messageId) {
       return;
@@ -64,6 +69,12 @@ function MessageJumpTargetInner({ conversationId }: { conversationId: string }) 
       const messages = state.messagesByConversation[conversationId] ?? [];
       const loaded = messages.some((item) => item.id === messageId);
       if (loaded) {
+        // Loaded but not mounted: the virtual list only renders rows near the viewport.
+        if (revealsRef.current < MAX_REVEALS) {
+          revealsRef.current += 1;
+          window.dispatchEvent(new CustomEvent(REVEAL_MESSAGE_EVENT, { detail: { id: messageId } }));
+          window.setTimeout(() => void tryJump(), 50);
+        }
         return;
       }
 

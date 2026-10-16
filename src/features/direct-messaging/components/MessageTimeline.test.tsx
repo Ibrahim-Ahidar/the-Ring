@@ -166,3 +166,21 @@ describe("MessageTimeline jump to latest", () => {
     expect(scrollTo).toHaveBeenCalledWith({ top: 2000, behavior: "smooth" });
   });
 });
+
+describe("MessageTimeline virtualization", () => {
+  it("renders only a window of rows for a 2,000-message thread, in order", () => {
+    const many = Array.from({ length: 2000 }, (_, i) =>
+      msg(`m${String(i).padStart(4, "0")}`, "sara", new Date(Date.UTC(2026, 0, 1, 0, i)).toISOString()),
+    );
+    // jsdom has no layout: give every row a real height so the window is bounded.
+    const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(60);
+    mockState = makeState(many, false);
+    const { container } = render(ui());
+    const rows = container.querySelectorAll("[data-index]");
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.length).toBeLessThan(100);
+    const indexes = Array.from(rows).map((r) => Number(r.getAttribute("data-index")));
+    expect(indexes).toEqual([...indexes].sort((a, b) => a - b));
+    height.mockRestore();
+  });
+});
