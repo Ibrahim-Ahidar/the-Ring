@@ -22,8 +22,10 @@ import { useHydrated } from "../lib/use-hydrated";
 import { conversationTitle } from "../lib/titles";
 import type { ConversationDetail } from "../types";
 import type { PendingSend } from "../context/types";
+import { useChatsLoading } from "../context/LoadingContext";
 import { useMessaging } from "../context/MessagingProvider";
 import { MessageBubble } from "./MessageBubble";
+import { ThreadSkeleton } from "./Skeletons";
 import styles from "../direct-messaging.module.css";
 
 type Props = {
@@ -72,6 +74,7 @@ function MessageTimelineInner({
   const timeZone = useTimeZone() ?? "UTC";
   const hydrated = useHydrated();
   const { state, retrySend, loadOlderMessages } = useMessaging();
+  const { thread: loading } = useChatsLoading();
   const stored = state.messagesByConversation[conversationId] ?? NO_MESSAGES;
   const pending = useMemo(
     () => state.pendingSends.filter((p) => p.conversationId === conversationId),
@@ -290,7 +293,9 @@ function MessageTimelineInner({
             </button>
           </>
         ) : null}
-        {timeline.length === 0 ? <p className={styles.systemNote}>{t("emptyThread")}</p> : null}
+        {timeline.length === 0 ? (
+          loading ? <ThreadSkeleton /> : <p className={styles.systemNote}>{t("emptyThread")}</p>
+        ) : null}
         {timeline.map((message, index) => {
           const previous = timeline[index - 1];
           const newDay = !previous || !isSameCalendarDay(previous.created_at, message.created_at, timeZone);
