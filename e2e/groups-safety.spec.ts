@@ -85,16 +85,25 @@ test.describe("groups and safety", () => {
     await context.close();
   });
 
-  // The message_requests RPCs exist in the database, but origin/main has no
-  // requests inbox or send-request UI yet (issue #44 closed without it), so
-  // the journey cannot be driven through the browser. Owning spec: #44.
-  test.fixme("a message request stays out of the chat list until accepted", async ({ browser }) => {
+  test("a message request stays out of the chat list until accepted", async ({ browser }) => {
     const sender = await seedMember("rqs");
     const recipient = await seedMember("rqr");
     await adminClient()
       .from("profiles")
       .update({ who_can_message: "requests" })
       .eq("id", recipient.id);
+
+    const senderContext = await newMemberContext(browser);
+    const senderPage = await senderContext.newPage();
+    await signIn(senderPage, sender);
+    await senderPage.goto("/app/chats/new");
+    await senderPage.getByLabel("Username", { exact: true }).fill(recipient.username);
+    await senderPage.getByRole("button", { name: "Open chat" }).click();
+    await senderPage.getByLabel("Note (optional)").fill("Hello from the journey");
+    await senderPage.getByRole("button", { name: "Send request" }).click();
+    await expect(senderPage.getByRole("status")).toContainText("Request sent");
+    await senderContext.close();
+
     const context = await newMemberContext(browser);
     const page = await context.newPage();
     await signIn(page, recipient);
@@ -102,6 +111,13 @@ test.describe("groups and safety", () => {
     await expect(
       page.getByRole("list", { name: "Conversation list" }).getByRole("link", { name: new RegExp(sender.username) }),
     ).toHaveCount(0);
+
+    await page.goto("/app/chats/requests");
+    const incoming = page.getByRole("list", { name: "Requests for you" });
+    const row = incoming.getByRole("listitem").filter({ hasText: `@${sender.username}` });
+    await expect(row).toContainText("Hello from the journey");
+    await row.getByRole("button", { name: /^Accept/ }).click();
+    await page.waitForURL(/\/app\/chats\/[0-9a-f-]+/);
     await context.close();
   });
 });

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { SendRequestForm } from "@/features/message-requests/components/SendRequestForm";
 import ui from "@/shell/styles/ui.module.css";
 
 import { openDirectAction } from "../actions";
@@ -75,7 +76,7 @@ function NewChatClientInner() {
 
   const visibleError = error && error !== "messaging.request_required" ? error : null;
   if (error === "messaging.request_required") {
-    return <p className={ui.notice}>{t("requestRequired")}</p>;
+    return <SendRequestForm username={username.trim().replace(/^@/, "")} />;
   }
 
   if (autoOpening && !visibleError) {

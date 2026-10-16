@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import en from "../messages/en.json";
+import requestsEn from "@/features/message-requests/messages/en.json";
 import { NewChatClient } from "./NewChatClient";
 
 const openDirectAction = vi.fn();
@@ -14,6 +15,7 @@ let query = "";
 vi.mock("../actions", () => ({
   openDirectAction: (...args: unknown[]) => openDirectAction(...args),
 }));
+vi.mock("@/features/message-requests/actions", () => ({ createRequestAction: vi.fn() }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push, replace: push }),
   useSearchParams: () => new URLSearchParams(query),
@@ -22,7 +24,7 @@ vi.mock("@/shell/slots", () => ({ getContributions: () => [] }));
 
 function setup() {
   return render(
-    <NextIntlClientProvider locale="en" messages={{ "direct-messaging": en }}>
+    <NextIntlClientProvider locale="en" messages={{ "direct-messaging": en, "message-requests": requestsEn }}>
       <NewChatClient />
     </NextIntlClientProvider>,
   );

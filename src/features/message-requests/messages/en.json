@@ -1,0 +1,32 @@
+{
+  "title": "Message requests",
+  "incomingTitle": "Requests for you",
+  "outgoingTitle": "Requests you sent",
+  "emptyIncoming": "No one is waiting for your reply.",
+  "emptyOutgoing": "You have not sent any requests.",
+  "accept": "Accept",
+  "decline": "Decline",
+  "declineConfirm": "Decline the request from {name}?",
+  "declineConfirmAction": "Yes, decline",
+  "cancel": "Cancel",
+  "requestRequired": "@{username} only accepts message requests. Send one to introduce yourself.",
+  "noteLabel": "Note (optional)",
+  "send": "Send request",
+  "sent": "Request sent to @{username}.",
+  "viewRequests": "View requests",
+  "openRequests": "Message requests",
+  "status": {
+    "pending": "Pending",
+    "accepted": "Accepted",
+    "declined": "Declined"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "message_requests": {
+      "not_allowed": "You can't send a message request to this person.",
+      "not_required": "You can message this person directly.",
+      "note_too_long": "The note is too long.",
+      "not_found": "This request no longer exists."
+    }
+  }
+}

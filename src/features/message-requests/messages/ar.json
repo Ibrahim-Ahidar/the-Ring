@@ -1,0 +1,32 @@
+{
+  "title": "طلبات المراسلة",
+  "incomingTitle": "طلبات واردة إليك",
+  "outgoingTitle": "طلبات أرسلتها",
+  "emptyIncoming": "لا أحد ينتظر ردك.",
+  "emptyOutgoing": "لم ترسل أي طلبات.",
+  "accept": "قبول",
+  "decline": "رفض",
+  "declineConfirm": "هل تريد رفض طلب {name}؟",
+  "declineConfirmAction": "نعم، ارفض",
+  "cancel": "إلغاء",
+  "requestRequired": "@{username} يقبل طلبات المراسلة فقط. أرسل طلبًا للتعريف بنفسك.",
+  "noteLabel": "ملاحظة (اختياري)",
+  "send": "إرسال الطلب",
+  "sent": "تم إرسال الطلب إلى @{username}.",
+  "viewRequests": "عرض الطلبات",
+  "openRequests": "طلبات المراسلة",
+  "status": {
+    "pending": "قيد الانتظار",
+    "accepted": "تم القبول",
+    "declined": "تم الرفض"
+  },
+  "errors": {
+    "generic": "حدث خطأ ما. حاول مرة أخرى.",
+    "message_requests": {
+      "not_allowed": "لا يمكنك إرسال طلب مراسلة إلى هذا الشخص.",
+      "not_required": "يمكنك مراسلة هذا الشخص مباشرة.",
+      "note_too_long": "الملاحظة طويلة جدًا.",
+      "not_found": "لم يعد هذا الطلب موجودًا."
+    }
+  }
+}
