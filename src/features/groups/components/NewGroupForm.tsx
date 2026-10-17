@@ -8,24 +8,33 @@ import ui from "@/shell/styles/ui.module.css";
 
 import { createGroupAction, uploadGroupAvatarAction } from "../actions";
 import { groupsErrorMessage } from "../error-message";
+import { parseMemberUsernames } from "../lib/member-usernames";
 
 function NewGroupFormInner() {
   const t = useTranslations("groups");
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [members, setMembers] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  /** Set when the group exists but some members could not be added. */
+  const [createdId, setCreatedId] = useState<string | null>(null);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (createdId) {
+      router.push(`/app/chats/${createdId}`);
+      return;
+    }
     setPending(true);
     setError(null);
 
     const created = await createGroupAction({
       name,
       description: description || null,
+      members: parseMemberUsernames(members),
     });
     if (!created.ok) {
       setPending(false);
@@ -48,7 +57,20 @@ function NewGroupFormInner() {
     }
 
     setPending(false);
-    router.push(`/app/chats/${created.value.conversationId}`);
+    const { conversationId, failedInvites } = created.value;
+    if (failedInvites.length > 0) {
+      // The group exists; resubmitting would create a second one.
+      setCreatedId(conversationId);
+      setError(
+        t("invitesFailed", {
+          list: failedInvites
+            .map((f) => `@${f.username} (${groupsErrorMessage(t, f.code)})`)
+            .join(", "),
+        }),
+      );
+      return;
+    }
+    router.push(`/app/chats/${conversationId}`);
   }
 
   return (
@@ -85,6 +107,27 @@ function NewGroupFormInner() {
         </div>
 
         <div className={ui.field}>
+          <label className={ui.fieldLabel} htmlFor="group-members">
+            {t("membersLabel")}
+          </label>
+          <input
+            id="group-members"
+            className={ui.input}
+            name="members"
+            value={members}
+            onChange={(event) => setMembers(event.target.value)}
+            placeholder={t("membersPlaceholder")}
+            aria-describedby="group-members-hint"
+            autoComplete="off"
+            spellCheck={false}
+            disabled={createdId !== null}
+          />
+          <p id="group-members-hint" className={ui.fieldHint}>
+            {t("membersHint")}
+          </p>
+        </div>
+
+        <div className={ui.field}>
           <label className={ui.fieldLabel} htmlFor="group-avatar">
             {t("avatarLabel")}
           </label>
@@ -104,7 +147,11 @@ function NewGroupFormInner() {
 
         <div className={ui.dialogActions}>
           <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={pending}>
-            {pending ? t("states.saving") : t("createSubmit")}
+            {pending
+              ? t("states.saving")
+              : createdId
+                ? t("openGroup")
+                : t("createSubmit")}
           </button>
         </div>
       </div>

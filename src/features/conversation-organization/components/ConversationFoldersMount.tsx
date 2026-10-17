@@ -8,6 +8,7 @@ import { useOrganization } from "../context/OrganizationProvider";
 import { FolderStrip } from "./FolderStrip";
 
 const HOST_ID = "conversation-folders";
+const READY_EVENT = "conversation-folders:ready";
 
 function ConversationFoldersMountInner() {
   const { state } = useOrganization();
@@ -15,7 +16,15 @@ function ConversationFoldersMountInner() {
   const [host, setHost] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    setHost(document.getElementById(HOST_ID));
+    // Only attach to a host that has finished hydrating (it sets data-ready);
+    // portaling earlier would add children React does not expect.
+    const sync = () => {
+      const el = document.getElementById(HOST_ID);
+      setHost(el?.dataset.ready === "1" ? el : null);
+    };
+    sync();
+    document.addEventListener(READY_EVENT, sync);
+    return () => document.removeEventListener(READY_EVENT, sync);
   }, [pathname]);
 
   if (!host) {

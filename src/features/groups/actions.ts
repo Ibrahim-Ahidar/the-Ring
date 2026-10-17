@@ -12,6 +12,7 @@ import type { Result } from "@/platform/result";
 import { err } from "@/platform/result";
 
 import * as groups from "./service";
+import type { FailedInvite } from "./service";
 import type { GroupMember, GroupSummary, InviteLink } from "./types";
 import type { GroupReportRow } from "@/features/safety/types";
 
@@ -22,7 +23,9 @@ async function requireSession() {
 export async function createGroupAction(input: {
   name: string;
   description?: string | null;
-}): Promise<Result<{ conversationId: string }>> {
+  /** Usernames to add as members right after the group is created. */
+  members?: string[];
+}): Promise<Result<{ conversationId: string; failedInvites: FailedInvite[] }>> {
   const session = await requireSession();
   if (!session) {
     return err("platform.unauthenticated");

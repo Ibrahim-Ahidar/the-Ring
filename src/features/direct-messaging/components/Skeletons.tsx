@@ -1,3 +1,4 @@
+import { PaneLayout } from "@/shell/components/PaneLayout";
 import { SkeletonBar, SkeletonCircle, SkeletonRegion } from "@/shell/components/skeleton/Skeleton";
 
 import styles from "../direct-messaging.module.css";
@@ -52,5 +53,33 @@ export function ThreadSkeleton({ label }: { label: string }) {
         />
       ))}
     </SkeletonRegion>
+  );
+}
+
+/**
+ * Route-level fallback for /app/chats, shown while the chats layout resolves.
+ * Mirrors the real frame (sidebar column + main pane) so the list skeleton
+ * stays at the sidebar's width instead of spanning the page. Narrow screens
+ * show the list pane, like the real shell without an open chat.
+ */
+export function ChatsPageSkeleton({ listLabel, sidebarLabel }: { listLabel: string; sidebarLabel: string }) {
+  return (
+    <PaneLayout
+      view="list"
+      sidebarLabel={sidebarLabel}
+      sidebar={
+        <>
+          <header className="pane-header" aria-hidden="true">
+            <SkeletonCircle size={40} />
+            <SkeletonBar width={120} height={24} />
+          </header>
+          <div className="pane-body">
+            <ChatListSkeleton label={listLabel} />
+          </div>
+        </>
+      }
+    >
+      {null}
+    </PaneLayout>
   );
 }

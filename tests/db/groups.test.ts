@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
   getConversation,
+  listConversations,
   listMessages,
   sendText,
 } from "@/features/direct-messaging/service";
@@ -43,6 +44,60 @@ afterAll(async () => {
 });
 
 describe("createGroup", () => {
+  it("adds the listed members so the group reaches their inbox and thread", async () => {
+    const owner = await createUser(db, { username: "grp_mk_owner" });
+    const b = await createUser(db, { username: "grp_mk_b" });
+    const c = await createUser(db, { username: "grp_mk_c" });
+    await createUser(db, {
+      username: "grp_mk_nobody",
+      profileOverrides: { who_can_add_to_groups: "nobody" },
+    });
+    const ownerRpc = createRpcClient(db, owner.id);
+
+    const created = await createGroup(ownerRpc, {
+      name: "With Members",
+      members: ["@grp_mk_b", "grp_mk_c", "GRP_MK_B", "grp_mk_nobody", "grp_mk_ghost"],
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const { conversationId, failedInvites } = created.value;
+    expect(failedInvites).toEqual([
+      { username: "grp_mk_nobody", code: "groups.not_allowed" },
+      { username: "grp_mk_ghost", code: "groups.user_not_found" },
+    ]);
+
+    const members = await listMembers(ownerRpc, conversationId);
+    expect(members.ok).toBe(true);
+    if (members.ok) {
+      expect(members.value.map((m) => m.username).sort()).toEqual(
+        ["grp_mk_b", "grp_mk_c", "grp_mk_owner"],
+      );
+    }
+
+    const sent = await sendText(ownerRpc, {
+      conversationId,
+      clientId: randomUUID(),
+      body: "hello members",
+    });
+    expect(sent.ok).toBe(true);
+
+    for (const member of [b, c]) {
+      const rpc = createRpcClient(db, member.id);
+      for (const type of [null, "group"] as const) {
+        const inbox = await listConversations(rpc, { type });
+        expect(inbox.ok).toBe(true);
+        if (inbox.ok) {
+          expect(inbox.value.items.map((item) => item.id)).toContain(conversationId);
+        }
+      }
+      const thread = await listMessages(rpc, { conversationId });
+      expect(thread.ok).toBe(true);
+      if (thread.ok) {
+        expect(thread.value.items.some((m) => m.body === "hello members")).toBe(true);
+      }
+    }
+  });
+
   it("creates one owner membership and rate limits are invoked via RPC", async () => {
     const owner = await createUser(db, { username: "grp_owner" });
     const rpc = createRpcClient(db, owner.id);

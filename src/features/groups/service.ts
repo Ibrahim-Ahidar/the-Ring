@@ -2,6 +2,7 @@ import { IMAGE_MAX_BYTES, IMAGE_MIME_TYPES, validateAttachment } from "@/platfor
 import { callRpc, type RpcClient } from "@/platform/rpc";
 import { err, ok, type Result } from "@/platform/result";
 
+import { parseMemberUsernames } from "./lib/member-usernames";
 import type { GroupMember, GroupSummary, InviteLink, MemberRole } from "./types";
 
 type DbGroupRow = {
@@ -88,10 +89,22 @@ export function validateGroupAvatarUpload(
   return ok({ kind: "image" });
 }
 
+export type FailedInvite = { username: string; code: string };
+
+/**
+ * Creates the group with the caller as owner, then adds each listed member.
+ * `groups_create` only inserts the owner's membership, so without the invites
+ * nobody else is in the group: it never reaches their inbox, realtime, or
+ * message fetches (all gated on a `conversation_members` row).
+ */
 export async function createGroup(
   rpc: RpcClient,
-  input: { name: string; description?: string | null },
-): Promise<Result<{ conversationId: string }>> {
+  input: {
+    name: string;
+    description?: string | null;
+    members?: string | readonly string[];
+  },
+): Promise<Result<{ conversationId: string; failedInvites: FailedInvite[] }>> {
   const result = await callRpc<string>(rpc, "groups_create", {
     p_name: input.name,
     p_description: input.description ?? null,
@@ -102,7 +115,16 @@ export async function createGroup(
   if (!result.value) {
     return err("platform.unexpected");
   }
-  return ok({ conversationId: result.value });
+  const conversationId = result.value;
+
+  const failedInvites: FailedInvite[] = [];
+  for (const username of parseMemberUsernames(input.members ?? [])) {
+    const invited = await inviteMember(rpc, { conversationId, username });
+    if (!invited.ok) {
+      failedInvites.push({ username, code: invited.error.code });
+    }
+  }
+  return ok({ conversationId, failedInvites });
 }
 
 export async function updateGroup(

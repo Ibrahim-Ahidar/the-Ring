@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Inbox, MessageSquarePlus, UsersRound } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { memo, Suspense } from "react";
+import { memo, Suspense, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 
 import { Avatar } from "@/shell/components/Avatar";
@@ -19,6 +19,23 @@ type Props = {
   viewer: ChatsViewer | null;
   activeConversationId?: string;
 };
+
+/**
+ * Slot for the conversation-organization folder strip. The strip is portaled
+ * in from outside the tree, so it must wait until this host has hydrated:
+ * adding children earlier makes the server HTML and client tree disagree.
+ * The effect (post-hydration) marks the host ready and announces it.
+ */
+function FoldersHost() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.dataset.ready = "1";
+    document.dispatchEvent(new Event("conversation-folders:ready"));
+  }, []);
+  return <div ref={ref} id="conversation-folders" className={styles.foldersHost} />;
+}
 
 function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
   const t = useTranslations("direct-messaging");
@@ -80,7 +97,7 @@ function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
       />
       <div className="pane-tools">
         <InboxTypeFilter />
-        <div id="conversation-folders" className={styles.foldersHost} />
+        <FoldersHost />
       </div>
       <div className="pane-body scroll">
         <Suspense fallback={null}>
