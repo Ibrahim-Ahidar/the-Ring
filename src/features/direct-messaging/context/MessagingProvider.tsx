@@ -20,6 +20,7 @@ import { emitComposerActivity } from "@/platform/composer-events";
 import { joinConversation, joinInbox } from "@/platform/realtime-hub";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 import type { TimelineMessage } from "@/platform/timeline";
+import { randomUUID } from "@/platform/uuid";
 
 import { getMessageAttachmentsAction } from "@/features/media/actions";
 
@@ -685,7 +686,7 @@ export function MessagingProvider({
       body: string;
       replyToId?: string | null;
     }) => {
-      const clientId = crypto.randomUUID();
+      const clientId = randomUUID();
       const pending: PendingSend = {
         clientId,
         conversationId: input.conversationId,

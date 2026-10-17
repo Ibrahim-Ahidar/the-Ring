@@ -14,6 +14,7 @@ import { emitMessageMutation } from "@/features/message-actions/message-actions-
 
 import { validateAttachment } from "@/platform/media";
 import type { AttachmentKind } from "@/platform/media";
+import { randomUUID } from "@/platform/uuid";
 
 import {
   completeUploadAction,
@@ -195,7 +196,7 @@ export function MediaProvider({ children }: { children: ReactNode }) {
 
   const startUpload = useCallback(
     async (input: StartUploadInput) => {
-      const clientId = input.clientId ?? crypto.randomUUID();
+      const clientId = input.clientId ?? randomUUID();
       const validated = validateAttachment({
         mimeType: input.file.type,
         sizeBytes: input.file.size,

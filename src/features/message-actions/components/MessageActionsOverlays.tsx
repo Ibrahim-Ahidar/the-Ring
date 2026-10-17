@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { listConversationsAction } from "@/features/direct-messaging/actions";
 import type { ConversationSummary } from "@/features/direct-messaging/types";
+import { randomUUID } from "@/platform/uuid";
 
 import {
   deleteForEveryoneAction,
@@ -278,7 +279,7 @@ function ForwardDialog({
     const result = await forwardMessageAction({
       sourceMessageId: request.message.id,
       targetConversationId: targetId,
-      clientId: crypto.randomUUID(),
+      clientId: randomUUID(),
     });
     setBusy(false);
     if (!result.ok) {
