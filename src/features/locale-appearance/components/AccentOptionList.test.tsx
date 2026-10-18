@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -51,5 +51,16 @@ describe("AccentOptionList", () => {
     const onFailure = saveAccent.mock.calls.at(-1)![1] as () => void;
     onFailure();
     expect(document.documentElement.getAttribute("data-accent")).toBe("indigo");
+  });
+
+  it("shows an alert on failure and clears it on the next attempt", () => {
+    renderList("indigo");
+    expect(screen.queryByRole("alert")).toBeNull();
+    fireEvent.click(screen.getByLabelText("Green"));
+    const onFailure = saveAccent.mock.calls.at(-1)![1] as () => void;
+    act(() => onFailure());
+    expect(screen.getByRole("alert").textContent).toBe(messages.saveError);
+    fireEvent.click(screen.getByLabelText("Green"));
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });
