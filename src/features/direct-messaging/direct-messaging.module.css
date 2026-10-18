@@ -578,20 +578,28 @@
   color: var(--color-icon);
   cursor: pointer;
   opacity: 0;
-  transition: opacity var(--motion-fast) var(--motion-ease);
+  transform: translateY(-4px);
+  transition:
+    opacity var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
 }
 
 .bubble:hover .actionTrigger,
 .bubble:focus-within .actionTrigger,
 .actionTrigger[aria-expanded="true"] {
   opacity: 1;
+  transform: none;
 }
 
+/* Touch opens the menu by long-press; no trigger, no hover animation. */
 @media (hover: none) {
   .actionTrigger {
-    opacity: 0.85;
-    box-shadow: none;
+    display: none;
   }
+}
+
+.bubble {
+  -webkit-touch-callout: none;
 }
 
 .actionMenuBackdrop {

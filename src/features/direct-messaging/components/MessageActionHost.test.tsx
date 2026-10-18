@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { Copy, Trash2 } from "lucide-react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -85,6 +85,62 @@ function renderHost() {
 describe("MessageActionHost", () => {
   afterEach(() => {
     cleanup();
+  });
+
+  describe("bubble long-press and context menu", () => {
+    const menuOpen = () => screen.queryByRole("dialog") !== null;
+
+    it("opens on touch long-press after 500 ms", () => {
+      vi.useFakeTimers();
+      try {
+        const { container } = renderHost();
+        const bubble = container;
+        fireEvent.pointerDown(bubble, { pointerType: "touch", clientX: 5, clientY: 5 });
+        act(() => {
+          vi.advanceTimersByTime(499);
+        });
+        expect(menuOpen()).toBe(false);
+        act(() => {
+          vi.advanceTimersByTime(2);
+        });
+        expect(menuOpen()).toBe(true);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("cancels the long-press when the finger moves", () => {
+      vi.useFakeTimers();
+      try {
+        const { container } = renderHost();
+        const bubble = container;
+        fireEvent.pointerDown(bubble, { pointerType: "touch", clientX: 5, clientY: 5 });
+        fireEvent.pointerMove(bubble, { pointerType: "touch", clientX: 5, clientY: 40 });
+        act(() => {
+          vi.advanceTimersByTime(800);
+        });
+        expect(menuOpen()).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("opens on right-click and suppresses the native menu", () => {
+      const { container } = renderHost();
+      const bubble = container;
+      const notPrevented = fireEvent.contextMenu(bubble);
+      expect(notPrevented).toBe(false);
+      expect(menuOpen()).toBe(true);
+    });
+
+    it("opens on Shift+F10", () => {
+      const { container } = renderHost();
+      fireEvent.keyDown(container, {
+        key: "F10",
+        shiftKey: true,
+      });
+      expect(menuOpen()).toBe(true);
+    });
   });
 
   it("renders translated action labels", () => {

@@ -9,6 +9,7 @@ import type { MemberRole } from "@/shell/slots/types";
 import { featureLabelKey } from "@/shell/slots/merge";
 import { getContributions } from "@/shell/slots";
 
+import { useBubbleContextMenu } from "../hooks/useBubbleContextMenu";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import styles from "../direct-messaging.module.css";
 
@@ -38,6 +39,8 @@ function MessageActionHostInner({
   const tFeature = useTranslations();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const bubbleRef = useRef<HTMLElement | null>(null);
   const trapRef = useFocusTrap(open);
   const actions = useMemo(() => getContributions("messageAction"), []);
 
@@ -82,6 +85,12 @@ function MessageActionHostInner({
     panel.addEventListener("dm-action-menu-close", onCloseEvent);
     return () => panel.removeEventListener("dm-action-menu-close", onCloseEvent);
   }, [close, open, trapRef]);
+
+  useEffect(() => {
+    bubbleRef.current = rootRef.current?.parentElement ?? null;
+  });
+  const openMenu = useCallback(() => setOpen(true), []);
+  useBubbleContextMenu(bubbleRef, openMenu, actions.length > 0);
 
   if (actions.length === 0) {
     return null;
@@ -134,7 +143,7 @@ function MessageActionHostInner({
   };
 
   return (
-    <div className={styles.actionMenuRoot}>
+    <div ref={rootRef} data-bubble-menu className={styles.actionMenuRoot}>
       <button
         ref={triggerRef}
         type="button"
