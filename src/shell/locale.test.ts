@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  DEFAULT_ACCENT,
   DEFAULT_LOCALE,
+  isAccent,
   isLocale,
   isRtl,
   isTheme,
@@ -24,5 +26,12 @@ describe("locale helpers", () => {
     expect(isLocale("de")).toBe(false);
     expect(isTheme("system")).toBe(true);
     expect(isTheme("neon")).toBe(false);
+  });
+
+  it("validates accents and defaults to indigo", () => {
+    expect(DEFAULT_ACCENT).toBe("indigo");
+    expect(isAccent("indigo")).toBe(true);
+    expect(isAccent("green")).toBe(true);
+    expect(isAccent("blue")).toBe(false);
   });
 });

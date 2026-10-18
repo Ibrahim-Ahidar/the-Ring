@@ -1,8 +1,9 @@
-import type { Locale, Theme } from "@/shell/locale";
+import { DEFAULT_ACCENT, type Accent, type Locale, type Theme } from "@/shell/locale";
 
 export type AppearanceState = {
   locale: Locale;
   theme: Theme;
+  accent: Accent;
   paletteOpen: boolean;
   paletteQuery: string;
   highlightedIndex: number;
@@ -19,14 +20,17 @@ export type AppearanceAction =
   | { type: "open_help" }
   | { type: "close_help" }
   | { type: "set_locale"; locale: Locale }
-  | { type: "set_theme"; theme: Theme };
+  | { type: "set_theme"; theme: Theme }
+  | { type: "set_accent"; accent: Accent };
 
 export const initialAppearanceState = (
   locale: Locale,
   theme: Theme,
+  accent: Accent = DEFAULT_ACCENT,
 ): AppearanceState => ({
   locale,
   theme,
+  accent,
   paletteOpen: false,
   paletteQuery: "",
   highlightedIndex: 0,
@@ -92,6 +96,8 @@ export function appearanceReducer(
       return { ...state, locale: action.locale };
     case "set_theme":
       return { ...state, theme: action.theme };
+    case "set_accent":
+      return { ...state, accent: action.accent };
     default:
       return state;
   }

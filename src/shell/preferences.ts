@@ -5,15 +5,19 @@ import { cache } from "react";
 
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 import {
+  ACCENT_COOKIE,
+  DEFAULT_ACCENT,
   DEFAULT_LOCALE,
   DEFAULT_THEME,
   DEFAULT_TIME_ZONE,
+  isAccent,
   isLocale,
   isTheme,
   isTimeZone,
   LOCALE_COOKIE,
   THEME_COOKIE,
   TIME_ZONE_COOKIE,
+  type Accent,
   type Locale,
   type Theme,
 } from "@/shell/locale";
@@ -35,7 +39,7 @@ const readProfilePreferences = cache(
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("locale, theme")
+        .select("locale, theme, accent")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -50,12 +54,14 @@ const readProfilePreferences = cache(
 );
 
 async function readProfilePreference<T extends string>(
-  column: "locale" | "theme",
+  column: "locale" | "theme" | "accent",
   parse: (value: string) => value is T,
 ): Promise<T | null> {
   // Cookie first: skips an auth call plus a profiles query on every render.
   const cookieStore = await cookies();
-  const cookieValue = cookieStore.get(column === "locale" ? LOCALE_COOKIE : THEME_COOKIE)?.value;
+  const cookieName =
+    column === "locale" ? LOCALE_COOKIE : column === "theme" ? THEME_COOKIE : ACCENT_COOKIE;
+  const cookieValue = cookieStore.get(cookieName)?.value;
   if (cookieValue && parse(cookieValue)) {
     return cookieValue;
   }
@@ -95,6 +101,21 @@ export async function resolveTheme(): Promise<Theme> {
   }
 
   return DEFAULT_THEME;
+}
+
+export async function resolveAccent(): Promise<Accent> {
+  const fromProfile = await readProfilePreference("accent", isAccent);
+  if (fromProfile) {
+    return fromProfile;
+  }
+
+  const cookieStore = await cookies();
+  const cookieValue = cookieStore.get(ACCENT_COOKIE)?.value;
+  if (cookieValue && isAccent(cookieValue)) {
+    return cookieValue;
+  }
+
+  return DEFAULT_ACCENT;
 }
 
 /**

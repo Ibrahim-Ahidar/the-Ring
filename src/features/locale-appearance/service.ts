@@ -1,8 +1,10 @@
 import { callRpc, type RpcClient } from "@/platform/rpc";
 import type { Result } from "@/platform/result";
 import {
+  isAccent,
   isLocale,
   isTheme,
+  type Accent,
   type Locale,
   type Theme,
 } from "@/shell/locale";
@@ -27,4 +29,14 @@ export async function updateTheme(
   return callRpc(rpc, "appearance_update_theme", { p_theme: theme });
 }
 
-export type { Locale, Theme };
+export async function updateAccent(
+  rpc: RpcClient,
+  accent: string,
+): Promise<Result<null>> {
+  if (!isAccent(accent)) {
+    return { ok: false, error: { code: "appearance.invalid_preference" } };
+  }
+  return callRpc(rpc, "appearance_update_accent", { p_accent: accent });
+}
+
+export type { Accent, Locale, Theme };

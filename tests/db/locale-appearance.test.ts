@@ -1,7 +1,7 @@
 import type { PGliteInterface } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { updateLocale, updateTheme } from "@/features/locale-appearance/service";
+import { updateAccent, updateLocale, updateTheme } from "@/features/locale-appearance/service";
 
 import { createTestDb, createUser } from "./pglite";
 import { createRpcClient } from "./rpc-client";
@@ -80,6 +80,35 @@ describe("appearance_update_theme", () => {
     }
 
     const bad = await updateTheme(rpc, "neon");
+    expect(bad).toEqual({
+      ok: false,
+      error: { code: "appearance.invalid_preference" },
+    });
+  });
+});
+
+describe("appearance_update_accent", () => {
+  it("defaults to indigo, persists legal accents and rejects invalid values", async () => {
+    const user = await createUser(db, { username: "accentuser1" });
+    const rpc = createRpcClient(db, user.id);
+
+    const initial = await db.query<{ accent: string }>(
+      `select accent::text from public.profiles where id = $1`,
+      [user.id],
+    );
+    expect(initial.rows[0]!.accent).toBe("indigo");
+
+    for (const accent of ["green", "indigo"] as const) {
+      const result = await updateAccent(rpc, accent);
+      expect(result.ok).toBe(true);
+      const row = await db.query<{ accent: string }>(
+        `select accent::text from public.profiles where id = $1`,
+        [user.id],
+      );
+      expect(row.rows[0]!.accent).toBe(accent);
+    }
+
+    const bad = await updateAccent(rpc, "blue");
     expect(bad).toEqual({
       ok: false,
       error: { code: "appearance.invalid_preference" },
