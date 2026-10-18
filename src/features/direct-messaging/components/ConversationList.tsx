@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Ban, BellOff, Check, CheckCheck, Pin } from "lucide-react";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState, type ReactNode } from "react";
 import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
@@ -12,6 +12,7 @@ import ui from "@/shell/styles/ui.module.css";
 
 import { useChatsLoading } from "../context/LoadingContext";
 import { useMessaging } from "../context/MessagingProvider";
+import { useLongPress } from "../hooks/useLongPress";
 import { useQueryHref } from "../hooks/useQueryHref";
 import { calendarDaysAgo } from "../lib/calendar";
 import { useHydrated } from "../lib/use-hydrated";
@@ -19,6 +20,7 @@ import type { ConversationSummary } from "../types";
 import styles from "../direct-messaging.module.css";
 import { LoadFailed } from "@/shell/components/LoadFailed";
 import { ChatListSkeleton } from "./Skeletons";
+import { ConversationActionsSheet } from "./ConversationActionsSheet";
 
 type Props = {
   activeConversationId?: string;
@@ -85,6 +87,8 @@ function ConversationListInner({ activeConversationId }: Props) {
   const { state } = useMessaging();
   const { inbox: loading, inboxFailed } = useChatsLoading();
   const menus = useMemo(() => getContributions("listItemMenu"), []);
+  const [sheetId, setSheetId] = useState<string | null>(null);
+  const bindPress = useLongPress<string>(setSheetId);
 
   if (state.conversations.length === 0) {
     if (loading) {
@@ -134,7 +138,10 @@ function ConversationListInner({ activeConversationId }: Props) {
     );
   }
 
-  return (
+  const sheetItem = sheetId ? state.conversations.find((c) => c.id === sheetId) : undefined;
+  let sheet: ReactNode = null;
+
+  const list = (
     <ul className={styles.chatList}>
       {state.conversations.map((item) => {
         const title = displayTitle(item);
@@ -152,6 +159,17 @@ function ConversationListInner({ activeConversationId }: Props) {
           },
         };
         const availableMenus = menus.filter((menu) => menu.isAvailable(menuCtx));
+        if (item === sheetItem && availableMenus.length > 0) {
+          sheet = (
+            <ConversationActionsSheet
+              title={title}
+              menus={availableMenus}
+              ctx={menuCtx}
+              onClose={() => setSheetId(null)}
+            />
+          );
+        }
+        const press = availableMenus.length > 0 ? bindPress(item.id) : {};
 
         return (
           <li key={item.id} className={styles.chatItem}>
@@ -159,6 +177,7 @@ function ConversationListInner({ activeConversationId }: Props) {
               href={queryHref(`/app/chats/${item.id}`, { info: null, message: null })}
               prefetch={false}
               className={styles.chatRow}
+              {...press}
               aria-current={item.id === activeConversationId ? "true" : undefined}
             >
               <Avatar
@@ -220,6 +239,7 @@ function ConversationListInner({ activeConversationId }: Props) {
             </Link>
             {availableMenus.length > 0 ? (
               <div className={styles.rowMenu}>
+                <div className={styles.rowMenuInner}>
                 {availableMenus.map((menu) => {
                   const Icon = menu.icon;
                   const label = tFeature(menu.labelKey!);
@@ -236,12 +256,20 @@ function ConversationListInner({ activeConversationId }: Props) {
                     </button>
                   );
                 })}
+                </div>
               </div>
             ) : null}
           </li>
         );
       })}
     </ul>
+  );
+
+  return (
+    <>
+      {list}
+      {sheet}
+    </>
   );
 }
 

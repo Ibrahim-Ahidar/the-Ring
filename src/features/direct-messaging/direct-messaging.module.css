@@ -16,9 +16,13 @@
 
 .chatItem {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .chatRow {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: var(--space-12);
@@ -103,32 +107,67 @@
   color: var(--color-text-muted);
 }
 
-/* Overflow menu sits beside the link (never inside it); revealed on hover or focus. */
+/* Overflow menu sits beside the link (never inside it) in the row layout. It
+   takes no room until hover / focus, then grows in so the meta shifts toward
+   the start while the buttons fade and slide in from the end edge. */
 .rowMenu {
-  position: absolute;
-  inset-block-start: 50%;
-  inset-inline-end: var(--space-8);
+  display: grid;
+  grid-template-columns: 0fr;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translateX(var(--space-8));
+  transition:
+    grid-template-columns var(--motion-medium) var(--motion-ease),
+    opacity var(--motion-medium) var(--motion-ease),
+    transform var(--motion-medium) var(--motion-ease);
+}
+
+.rowMenuInner {
   display: flex;
   gap: var(--space-2);
-  border-radius: var(--radius-pill);
-  background: var(--color-elevated);
-  box-shadow: var(--shadow-menu);
-  opacity: 0;
-  transform: translateY(-50%);
-  transition: opacity var(--motion-fast) var(--motion-ease);
+  min-width: 0;
+  overflow: hidden;
+}
+
+[dir="rtl"] .rowMenu {
+  transform: translateX(calc(-1 * var(--space-8)));
 }
 
 .chatItem:hover .rowMenu,
-.rowMenu:focus-within {
+.chatItem:focus-within .rowMenu {
+  grid-template-columns: 1fr;
   opacity: 1;
+  transform: none;
 }
 
 @media (hover: none) {
   .rowMenu {
-    opacity: 1;
-    background: none;
-    box-shadow: none;
+    display: none;
   }
+
+  .chatRow {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+.rowSheet {
+  width: min(320px, 100%);
+  max-height: 80dvh;
+  overflow-y: auto;
+}
+
+.rowSheetTitle {
+  padding: var(--space-8) var(--space-16) var(--space-12);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+}
+
+.rowSheetList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .listEmpty {
