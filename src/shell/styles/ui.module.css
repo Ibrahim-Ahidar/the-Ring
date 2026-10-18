@@ -16,7 +16,9 @@
   color: var(--color-icon);
   cursor: pointer;
   text-decoration: none;
-  transition: background var(--motion-fast) var(--motion-ease);
+  transition:
+    background var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
 }
 
 .iconBtn:hover {
@@ -25,6 +27,7 @@
 
 .iconBtn:active {
   background: var(--color-pressed);
+  transform: scale(0.96);
 }
 
 .iconBtn[aria-expanded="true"],
@@ -76,7 +79,12 @@
   cursor: pointer;
   transition:
     background var(--motion-fast) var(--motion-ease),
-    border-color var(--motion-fast) var(--motion-ease);
+    border-color var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 .btn:disabled {
@@ -307,7 +315,10 @@
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
-  transition: background var(--motion-fast) var(--motion-ease);
+  transition:
+    background var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
 }
 
 .chip:hover {
@@ -973,7 +984,57 @@ a.profileHero[aria-current="page"] {
   text-align: center;
 }
 
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+
+@keyframes scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.scrim {
+  animation: scrim-in var(--motion-medium) var(--motion-ease);
+}
+
+.menu {
+  animation: menu-in var(--motion-medium) var(--motion-ease);
+}
+
+.dialog {
+  animation: dialog-in var(--motion-medium) var(--motion-ease);
+}
+
+@media (max-width: 767px) {
+  .scrimSheet .dialog,
+  .scrimSheet .menu {
+    animation-name: sheet-in;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .iconBtn:active,
+  .btn:active,
+  .scrim,
+  .menu,
+  .dialog,
+  .scrimSheet .dialog,
+  .scrimSheet .menu {
+    transform: none;
+    animation: none;
+  }
+
   .iconBtn,
   .btn,
   .chip,
