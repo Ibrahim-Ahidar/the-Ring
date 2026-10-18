@@ -20,6 +20,7 @@ import type { ConversationSummary } from "../types";
 import styles from "../direct-messaging.module.css";
 import { LoadFailed } from "@/shell/components/LoadFailed";
 import { ChatListSkeleton } from "./Skeletons";
+import { UnreadBadge } from "./UnreadBadge";
 import { ConversationActionsSheet } from "./ConversationActionsSheet";
 
 type Props = {
@@ -225,14 +226,11 @@ function ConversationListInner({ activeConversationId }: Props) {
                     {muted ? (
                       <BellOff size={16} aria-label={t("muted")} role="img" />
                     ) : null}
-                    {unread ? (
-                      <span
-                        className={`${ui.badge} ${muted ? ui.badgeMuted : ""}`}
-                        aria-label={t("unreadCount", { count: item.unread_count })}
-                      >
-                        {item.unread_count}
-                      </span>
-                    ) : null}
+                    <UnreadBadge
+                      count={item.unread_count}
+                      muted={muted}
+                      label={t("unreadCount", { count: item.unread_count })}
+                    />
                   </span>
                 </span>
               </span>

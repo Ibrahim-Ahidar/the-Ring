@@ -995,3 +995,27 @@
   font-size: var(--text-lg);
   font-weight: var(--weight-medium);
 }
+
+@keyframes badge-pop {
+  0% {
+    transform: scale(0.6);
+  }
+
+  60% {
+    transform: scale(1.18);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.badgePop {
+  animation: badge-pop var(--motion-medium) var(--motion-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badgePop {
+    animation: none;
+  }
+}
