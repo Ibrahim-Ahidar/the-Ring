@@ -71,6 +71,7 @@ export type MessagingActions = {
   }) => Promise<void>;
   retrySend: (clientId: string) => Promise<void>;
   discardSend: (clientId: string) => void;
+  clearLive: (clientId: string) => void;
   setDraft: (conversationId: string, text: string) => void;
   loadOlderMessages: (conversationId: string) => Promise<void>;
   refreshConversation: (conversationId: string) => Promise<void>;
@@ -869,16 +870,23 @@ export function MessagingProvider({
     [state.inboxStatus],
   );
 
+  const clearLive = useCallback(
+    (clientId: string) => dispatch({ type: "live/clear", clientId }),
+    [],
+  );
+
   const actions = useMemo<MessagingActions>(
     () => ({
       sendMessage,
       retrySend,
       discardSend,
+      clearLive,
       setDraft,
       loadOlderMessages,
       refreshConversation,
     }),
     [
+      clearLive,
       discardSend,
       loadOlderMessages,
       refreshConversation,
@@ -936,11 +944,13 @@ export function MessagingProvider({
       state: { ...state, receiptsByConversation: legacyReceipts },
       sendMessage,
       retrySend,
+      clearLive,
       setDraft,
       loadOlderMessages,
       refreshConversation,
     }),
     [
+      clearLive,
       legacyReceipts,
       loadOlderMessages,
       refreshConversation,

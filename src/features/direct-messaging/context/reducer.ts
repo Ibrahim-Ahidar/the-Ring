@@ -43,6 +43,7 @@ export function createInitialState(userId: string): MessagingState {
     detailsByConversation: {},
     unreadSeparatorByConversation: {},
     receiptsByConversation: {},
+    liveClientIds: {},
   };
 }
 
@@ -186,9 +187,16 @@ export function messagingReducer(
         state.pendingSends.some((p) => p.clientId === echoedClientId)
           ? state.pendingSends.filter((p) => p.clientId !== echoedClientId)
           : state.pendingSends;
+      // Live flag: only a message new to the store (realtime insert) counts;
+      // history loads go through messages/set and messages/mergePage.
+      const liveClientIds =
+        !existing && merged.client_id && !state.liveClientIds[merged.client_id]
+          ? { ...state.liveClientIds, [merged.client_id]: true as const }
+          : state.liveClientIds;
       return {
         ...state,
         pendingSends,
+        liveClientIds,
         messagesByConversation: {
           ...state.messagesByConversation,
           [action.conversationId]: mergeMessages(without, [merged]),
@@ -243,7 +251,16 @@ export function messagingReducer(
       return {
         ...state,
         pendingSends: [...state.pendingSends, action.pending],
+        liveClientIds: { ...state.liveClientIds, [action.pending.clientId]: true },
       };
+    case "live/clear": {
+      if (!state.liveClientIds[action.clientId]) {
+        return state;
+      }
+      const { [action.clientId]: _gone, ...liveClientIds } = state.liveClientIds;
+      void _gone;
+      return { ...state, liveClientIds };
+    }
     case "pending/update":
       if (
         !state.pendingSends.some(

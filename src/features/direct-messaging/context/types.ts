@@ -37,6 +37,8 @@ export type MessagingState = {
   unreadSeparatorByConversation: Record<string, string | null>;
   /** Delivery status of the viewer's newest message per direct chat. */
   receiptsByConversation: Record<string, ConversationReceipt>;
+  /** client_ids of messages that arrived live and have not played their enter animation yet. */
+  liveClientIds: Record<string, true>;
 };
 
 export type MessagingAction =
@@ -90,6 +92,7 @@ export type MessagingAction =
       status: "pending" | "failed";
     }
   | { type: "pending/remove"; clientId: string }
+  | { type: "live/clear"; clientId: string }
   | { type: "connection"; status: ConnectionStatus }
   | {
       type: "unreadSeparator/set";

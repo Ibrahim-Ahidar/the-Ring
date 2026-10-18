@@ -356,3 +356,54 @@ describe("messagingReducer archived chats", () => {
     ).toBe(state);
   });
 });
+
+describe("messagingReducer live flag", () => {
+  const base = () => createInitialState("u1");
+
+  it("marks realtime inserts and optimistic sends live, not loaded history", () => {
+    let state = messagingReducer(base(), {
+      type: "messages/set",
+      conversationId: "c1",
+      items: [msg({ id: "old", client_id: "old-c" })],
+      hasMore: true,
+      cursor: null,
+    });
+    state = messagingReducer(state, {
+      type: "messages/mergePage",
+      conversationId: "c1",
+      items: [msg({ id: "older", client_id: "older-c" })],
+      hasMore: false,
+      cursor: null,
+    });
+    expect(state.liveClientIds).toEqual({});
+
+    state = messagingReducer(state, {
+      type: "messages/upsert",
+      conversationId: "c1",
+      message: msg({ id: "new", client_id: "new-c", sender_id: "u2" }),
+    });
+    expect(state.liveClientIds).toEqual({ "new-c": true });
+
+    state = messagingReducer(state, {
+      type: "pending/add",
+      pending: {
+        clientId: "p-c",
+        conversationId: "c1",
+        body: "x",
+        createdAt: "2026-01-03T00:00:00.000Z",
+        status: "pending",
+      },
+    });
+    expect(state.liveClientIds["p-c"]).toBe(true);
+
+    state = messagingReducer(state, { type: "live/clear", clientId: "new-c" });
+    expect(state.liveClientIds["new-c"]).toBeUndefined();
+    // An edit of an existing message is not live.
+    state = messagingReducer(state, {
+      type: "messages/upsert",
+      conversationId: "c1",
+      message: msg({ id: "new", client_id: "new-c", sender_id: "u2", body: "e" }),
+    });
+    expect(state.liveClientIds["new-c"]).toBeUndefined();
+  });
+});

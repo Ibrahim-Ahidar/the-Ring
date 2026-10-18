@@ -95,7 +95,7 @@ function MessageTimelineInner({
   const now = useNow({ updateInterval: 60_000 });
   const timeZone = useTimeZone() ?? "UTC";
   const hydrated = useHydrated();
-  const { state, retrySend, loadOlderMessages } = useMessaging();
+  const { state, retrySend, clearLive, loadOlderMessages } = useMessaging();
   // Not in the store yet: the first page is still streaming in.
   const loading = state.messagesByConversation[conversationId] === undefined;
   const stored = state.messagesByConversation[conversationId] ?? NO_MESSAGES;
@@ -406,6 +406,8 @@ function MessageTimelineInner({
                     quoteAuthor={quote?.author}
                     quoteText={quote?.text}
                     onRetry={retrySend}
+                    live={Boolean(state.liveClientIds[message.client_id])}
+                    onLiveDone={clearLive}
                     rowRef={track(message)}
                   />
                 </div>
