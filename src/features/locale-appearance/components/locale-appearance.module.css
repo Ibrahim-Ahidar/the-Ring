@@ -104,6 +104,46 @@
   z-index: 1;
 }
 
+/* Swatches hardcode each Accent so both stay visible whichever one is active. */
+.accentSwatch {
+  --swatch-accent: light-dark(#4f46e5, #818cf8);
+  --swatch-bubble: light-dark(#e0e7ff, #2d2f6e);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-4);
+  height: 84px;
+  padding: 10px;
+  border-radius: var(--radius-control);
+  background: var(--color-bg);
+}
+
+.accentSwatch[data-accent-swatch="green"] {
+  --swatch-accent: light-dark(#1daa61, #21c063);
+  --swatch-bubble: light-dark(#d9fdd3, #144d37);
+}
+
+.accentSwatch span {
+  height: 14px;
+  border-radius: 7px;
+}
+
+.accentSwatch span:nth-child(1) {
+  width: 55%;
+  background: var(--color-card);
+}
+
+.accentSwatch span:nth-child(2) {
+  width: 65%;
+  align-self: flex-end;
+  background: var(--swatch-bubble);
+}
+
+.accentSwatch span:nth-child(3) {
+  width: 36%;
+  background: var(--swatch-accent);
+}
+
 .themeLabel {
   display: flex;
   align-items: center;
