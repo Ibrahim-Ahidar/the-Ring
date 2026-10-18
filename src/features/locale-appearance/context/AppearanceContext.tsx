@@ -14,7 +14,7 @@ import {
   type AppearanceAction,
   type AppearanceState,
 } from "@/features/locale-appearance/context/appearance-reducer";
-import type { Locale, Theme } from "@/shell/locale";
+import type { Accent, Locale, Theme } from "@/shell/locale";
 
 type AppearanceContextValue = {
   state: AppearanceState;
@@ -26,17 +26,19 @@ const AppearanceContext = createContext<AppearanceContextValue | null>(null);
 type AppearanceProviderProps = {
   initialLocale: Locale;
   initialTheme: Theme;
+  initialAccent?: Accent;
   children: ReactNode;
 };
 
 export function AppearanceProvider({
   initialLocale,
   initialTheme,
+  initialAccent,
   children,
 }: AppearanceProviderProps) {
   const [state, dispatch] = useReducer(
     appearanceReducer,
-    initialAppearanceState(initialLocale, initialTheme),
+    initialAppearanceState(initialLocale, initialTheme, initialAccent),
   );
 
   const value = useMemo(

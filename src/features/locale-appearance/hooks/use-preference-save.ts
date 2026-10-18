@@ -4,11 +4,12 @@ import { useRouter } from "next/navigation";
 import { useCallback, useTransition } from "react";
 
 import {
+  saveAccentAction,
   saveLocaleAction,
   saveThemeAction,
 } from "@/features/locale-appearance/actions";
 import { useAppearanceDispatch } from "@/features/locale-appearance/context/AppearanceContext";
-import type { Locale, Theme } from "@/shell/locale";
+import type { Accent, Locale, Theme } from "@/shell/locale";
 
 export function usePreferenceSave() {
   const router = useRouter();
@@ -43,5 +44,19 @@ export function usePreferenceSave() {
     [dispatch, router],
   );
 
-  return { saveLocale, saveTheme, pending };
+  const saveAccent = useCallback(
+    (accent: Accent) => {
+      startTransition(async () => {
+        const result = await saveAccentAction(accent);
+        if (!result.ok) {
+          return;
+        }
+        dispatch({ type: "set_accent", accent });
+        router.refresh();
+      });
+    },
+    [dispatch, router],
+  );
+
+  return { saveLocale, saveTheme, saveAccent, pending };
 }
