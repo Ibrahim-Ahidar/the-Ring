@@ -662,7 +662,7 @@
 
 .actionMenuBackdrop {
   position: fixed;
-  z-index: 40;
+  z-index: 60;
   inset: 0;
   padding: 0;
   border: none;
@@ -671,10 +671,8 @@
 }
 
 .actionMenuPanel {
-  position: absolute;
-  z-index: 41;
-  inset-block-start: calc(100% + var(--space-4));
-  inset-inline-end: 0;
+  position: fixed;
+  z-index: 61;
   min-width: 200px;
   max-width: min(100vw - var(--space-24), 320px);
   padding: var(--space-8) 0;
@@ -709,7 +707,7 @@
   cursor: pointer;
 }
 
-.actionMenuItem:hover:not(:disabled) {
+.actionMenuItem:hover {
   background: var(--color-hover);
 }
 
@@ -717,22 +715,9 @@
   color: var(--color-icon);
 }
 
-.actionMenuItem:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
 .actionMenuList[data-tone="danger"] .actionMenuItem,
 .actionMenuList[data-tone="danger"] .actionMenuItem > svg {
   color: var(--color-danger);
-}
-
-.actionMenuReason {
-  display: block;
-  padding-inline: calc(var(--space-16) + 18px + var(--space-12)) var(--space-16);
-  padding-block-end: var(--space-8);
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
 }
 
 .actionMenuDivider {
@@ -857,7 +842,6 @@
   }
 
   .actionMenuPanel {
-    position: fixed;
     inset-block: auto 0;
     inset-inline: 0;
     max-width: none;

@@ -5,6 +5,8 @@ import { createLongPress } from "./useLongPress";
 const inMenu = (el: EventTarget | null) =>
   el instanceof Element && Boolean(el.closest("[data-bubble-menu]"));
 
+export type MenuPoint = { x: number; y: number };
+
 /**
  * Opens a menu from a touch long-press, right-click, ContextMenu key or
  * Shift+F10 on `target`, using the shared long-press core. Also cancels on
@@ -13,7 +15,7 @@ const inMenu = (el: EventTarget | null) =>
  */
 export function useBubbleContextMenu(
   targetRef: RefObject<HTMLElement | null>,
-  onOpen: () => void,
+  onOpen: (point?: MenuPoint) => void,
   enabled: boolean,
 ) {
   useEffect(() => {
@@ -21,7 +23,7 @@ export function useBubbleContextMenu(
     if (!target || !enabled) {
       return;
     }
-    const core = createLongPress<void>(onOpen, (pressing) => {
+    const core = createLongPress<MenuPoint | undefined>(onOpen, (pressing) => {
       if (pressing) {
         target.setAttribute("data-pressing", "true");
       } else {
@@ -38,7 +40,7 @@ export function useBubbleContextMenu(
 
     const onPointerDown = guard((e: PointerEvent) => core.pointerDown(undefined, e));
     const onPointerMove = (e: PointerEvent) => core.pointerMove(e);
-    const onContextMenu = guard((e: MouseEvent) => core.contextMenu(undefined, e));
+    const onContextMenu = guard((e: MouseEvent) => core.contextMenu({ x: e.clientX, y: e.clientY }, e));
     const onKeyDown = guard((e: KeyboardEvent) => core.keyDown(undefined, e));
     const onClick = (e: MouseEvent) => core.click(e);
 
