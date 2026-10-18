@@ -95,6 +95,12 @@ export type ListMessagesResult = {
   hasMore: boolean;
 };
 
+/** The Archived row at the top of the chat list: how many chats, and their unread total. */
+export type ArchivedSummary = {
+  count: number;
+  unread: number;
+};
+
 export type ListConversationsResult = {
   items: ConversationSummary[];
   hasMore: boolean;

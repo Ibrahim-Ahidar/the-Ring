@@ -924,3 +924,27 @@
   align-self: flex-end;
   background-color: var(--color-bubble-out);
 }
+
+/* ---------- Archived row (top of the chat list) ---------- */
+
+.archivedRow {
+  min-height: var(--row-height);
+}
+
+.archivedIcon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  background: var(--color-hover);
+  color: var(--color-text-muted);
+}
+
+.archivedLabel {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+}

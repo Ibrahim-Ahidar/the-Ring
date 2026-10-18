@@ -98,9 +98,12 @@
   },
   "loadingChats": "Loading chats",
   "loadingMessages": "Loading messages",
-  "typeFilter": {
-    "label": "Filter conversations",
-    "all": "All",
-    "groups": "Groups"
+  "unreadEmpty": "No unread chats.",
+  "archived": {
+    "title": "Archived",
+    "back": "Back to chats",
+    "row": "Archived · {count}",
+    "unread": "{count, plural, one {# unread message in archived chats} other {# unread messages in archived chats}}",
+    "empty": "No archived chats."
   }
 }

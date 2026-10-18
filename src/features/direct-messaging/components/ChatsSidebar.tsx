@@ -12,7 +12,7 @@ import ui from "@/shell/styles/ui.module.css";
 
 import type { ChatsViewer } from "../types";
 import { ConversationList } from "./ConversationList";
-import { InboxTypeFilter } from "./InboxTypeFilter";
+import { ArchivedRow } from "./ArchivedRow";
 import styles from "../direct-messaging.module.css";
 
 type Props = {
@@ -41,15 +41,20 @@ function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
   const t = useTranslations("direct-messaging");
   const tRequests = useTranslations("message-requests");
   const tGroups = useTranslations("groups");
-  const groupsOnly = useSearchParams().get("filter") === "groups";
+  const searchParams = useSearchParams();
+  const archivedView = searchParams.get("archived") === "1";
+  const groupsOnly = !archivedView && searchParams.get("filter") === "groups";
 
   const viewerName = viewer ? (viewer.displayName ?? viewer.username) : null;
 
   return (
     <>
       <PaneHeader
-        title={t("title")}
+        title={archivedView ? t("archived.title") : t("title")}
+        backHref={archivedView ? "/app/chats" : null}
+        backLabel={t("archived.back")}
         leading={
+          archivedView ? undefined : (
           <Link
             href="/app/settings"
             className="pane-header__profile"
@@ -63,8 +68,10 @@ function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
               size="sm"
             />
           </Link>
+          )
         }
         actions={
+          archivedView ? null : (
           <>
             {groupsOnly ? (
               <Link
@@ -93,13 +100,14 @@ function ChatsSidebarInner({ viewer, activeConversationId }: Props) {
               <MessageSquarePlus size={24} aria-hidden />
             </Link>
           </>
+          )
         }
       />
-      <div className="pane-tools">
-        <InboxTypeFilter />
+      <div className="pane-tools" hidden={archivedView} style={archivedView ? { display: "none" } : undefined}>
         <FoldersHost />
       </div>
       <div className="pane-body scroll">
+        <ArchivedRow />
         <Suspense fallback={null}>
           <ConversationList activeConversationId={activeConversationId} />
         </Suspense>

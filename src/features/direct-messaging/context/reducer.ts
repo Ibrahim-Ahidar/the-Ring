@@ -33,6 +33,7 @@ export function createInitialState(userId: string): MessagingState {
     conversations: [],
     conversationsHasMore: false,
     inboxStatus: "loading",
+    archivedSummary: { count: 0, unread: 0 },
     threadFailed: {},
     messagesByConversation: {},
     messagesHasMore: {},
@@ -57,6 +58,11 @@ export function messagingReducer(
         conversationsHasMore: action.hasMore,
         inboxStatus: "ready",
       };
+    case "archived/set":
+      return state.archivedSummary.count === action.summary.count &&
+        state.archivedSummary.unread === action.summary.unread
+        ? state
+        : { ...state, archivedSummary: action.summary };
     case "inbox/failed":
       // A failed refresh must not hide a list that already loaded.
       return state.conversations.length > 0
@@ -104,6 +110,11 @@ export function messagingReducer(
     }
     case "conversations/patch": {
       const idx = state.conversations.findIndex((c) => c.id === action.item.id);
+      // Archived chats never join a list that is not the archived view, and the
+      // archived view admits nothing else.
+      if (idx === -1 && (action.item.archived_at !== null) !== (action.archivedOnly ?? false)) {
+        return state;
+      }
       const conversations =
         idx === -1
           ? [action.item, ...state.conversations]

@@ -9,6 +9,7 @@ import type { TimelineMessage } from "@/platform/timeline";
 
 import {
   encodeConversationCursor,
+  type ArchivedSummary,
   type ConversationDetail,
   type ConversationReceipt,
   type ConversationReceiptStatus,
@@ -102,16 +103,18 @@ export async function listConversations(
   rpc: RpcClient,
   input: {
     cursor?: string | null;
-    includeArchived?: boolean;
+    archivedOnly?: boolean;
+    unreadOnly?: boolean;
     folderId?: string | null;
     type?: "direct" | "group" | null;
   },
 ): Promise<Result<ListConversationsResult>> {
   const result = await callRpc<ConversationSummary[]>(rpc, "list_conversations", {
     p_cursor: input.cursor ?? null,
-    p_include_archived: input.includeArchived ?? false,
+    p_archived_only: input.archivedOnly ?? false,
     p_folder_id: input.folderId ?? null,
     p_type: input.type ?? null,
+    p_unread_only: input.unreadOnly ?? false,
   });
   if (!result.ok) {
     return result;
@@ -119,6 +122,21 @@ export async function listConversations(
   const rows = result.value ?? [];
   const hasMore = rows.length > 0 ? Boolean(rows[0]?.has_more) : false;
   return ok({ items: rows, hasMore });
+}
+
+export async function getArchivedSummary(
+  rpc: RpcClient,
+): Promise<Result<ArchivedSummary>> {
+  const result = await callRpc<{ chat_count: number; unread: number }[]>(
+    rpc,
+    "archived_summary",
+    {},
+  );
+  if (!result.ok) {
+    return result;
+  }
+  const row = Array.isArray(result.value) ? result.value[0] : result.value;
+  return ok({ count: row?.chat_count ?? 0, unread: row?.unread ?? 0 });
 }
 
 export async function markRead(

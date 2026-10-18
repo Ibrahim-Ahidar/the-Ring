@@ -11,7 +11,7 @@ const HOST_ID = "conversation-folders";
 const READY_EVENT = "conversation-folders:ready";
 
 function ConversationFoldersMountInner() {
-  const { state } = useOrganization();
+  const { state, refreshFolders } = useOrganization();
   const pathname = usePathname();
   const [host, setHost] = useState<HTMLElement | null>(null);
 
@@ -31,7 +31,7 @@ function ConversationFoldersMountInner() {
     return null;
   }
 
-  return createPortal(<FolderStrip folders={state.folders} />, host);
+  return createPortal(<FolderStrip folders={state.folders} onFoldersChanged={() => void refreshFolders()} />, host);
 }
 
 export const ConversationFoldersMount = memo(ConversationFoldersMountInner);

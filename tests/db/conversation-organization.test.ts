@@ -41,17 +41,19 @@ beforeAll(async () => {
     "utf8",
   );
   await db.exec(orgMigration);
-  // The pin above stops before list_conversations gained its p_type argument,
-  // which the service now always sends.
-  await db.exec(
-    await readFile(
-      path.join(
-        import.meta.dirname,
-        "../../supabase/migrations/20261017000000_list_conversations_type_filter.sql",
+  // The pin above stops before list_conversations gained its p_type, then its
+  // p_archived_only / p_unread_only arguments, which the service now always sends.
+  for (const file of [
+    "20261017000000_list_conversations_type_filter.sql",
+    "20261018000000_list_conversations_archived_unread.sql",
+  ]) {
+    await db.exec(
+      await readFile(
+        path.join(import.meta.dirname, "../../supabase/migrations", file),
+        "utf8",
       ),
-      "utf8",
-    ),
-  );
+    );
+  }
 }, 120_000);
 
 afterAll(async () => {
@@ -103,7 +105,7 @@ describe("conversation organization", () => {
     expect(ownerAfter.rows[0]?.pinned_at).toEqual(ownerRow.rows[0]?.pinned_at);
   });
 
-  it("archives out of default list and shows when includeArchived", async () => {
+  it("archives out of the default list and shows only in the archived view", async () => {
     const owner = await createTestUser("org_arc_a");
     await createTestUser("org_arc_b");
     const rpc = createRpcClient(db, owner.id);
@@ -119,7 +121,7 @@ describe("conversation organization", () => {
     if (!hidden.ok) return;
     expect(hidden.value.items).toHaveLength(0);
 
-    const shown = await listConversations(rpc, { includeArchived: true });
+    const shown = await listConversations(rpc, { archivedOnly: true });
     expect(shown.ok).toBe(true);
     if (!shown.ok) return;
     expect(shown.value.items).toHaveLength(1);

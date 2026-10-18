@@ -27,6 +27,7 @@ import { getMessageAttachmentsAction } from "@/features/media/actions";
 import {
   getConversationAction,
   getConversationReceiptsAction,
+  getArchivedSummaryAction,
   listConversationsAction,
   listMessagesAction,
   markDeliveredAction,
@@ -372,6 +373,11 @@ export function MessagingProvider({
   const refreshInboxList = useCallback(() => {
     // Whatever reached this client counts as delivered to the sender.
     void markDeliveredAction({});
+    void getArchivedSummaryAction().then((summary) => {
+      if (summary.ok) {
+        dispatch({ type: "archived/set", summary: summary.value });
+      }
+    });
     void listInbox().then((result) => {
       if (result.ok) {
         dispatch({

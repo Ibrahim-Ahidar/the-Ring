@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import { PaneLayout } from "@/shell/components/PaneLayout";
@@ -15,6 +15,7 @@ import {
 import {
   DEFAULT_INBOX_FILTERS,
   inboxFiltersToListArgs,
+  isFiltered,
   parseInboxFilters,
 } from "../lib/inbox-filters";
 import type { InboxPage } from "../lib/streamed-pages";
@@ -47,23 +48,27 @@ export function ChatsShell({ userId, viewer, inbox, children }: Props) {
   const { state } = useMessaging();
   const activeId = useActiveConversationId();
 
-  const includeArchived = searchParams.get("archived") === "1";
-  const folderId = searchParams.get("folder")?.trim() || null;
-  const groupsOnly = searchParams.get("filter") === "groups";
-  const filtered = includeArchived || folderId !== null || groupsOnly;
+  const archivedParam = searchParams.get("archived") ?? undefined;
+  const folderParam = searchParams.get("folder") ?? undefined;
+  const filterParam = searchParams.get("filter") ?? undefined;
+  const filters = useMemo(
+    () =>
+      parseInboxFilters({
+        archived: archivedParam,
+        folder: folderParam,
+        filter: filterParam,
+      }),
+    [archivedParam, folderParam, filterParam],
+  );
+  const filtered = isFiltered(filters);
 
   // The layout streams the unfiltered list; any filter is read client-side so
   // the layout does not re-render (and refetch) when the filter changes.
   const seenKey = useRef<string | null>(null);
-  const filterKey = `${includeArchived ? 1 : 0}|${folderId ?? ""}|${groupsOnly ? "g" : ""}`;
+  const filterKey = JSON.stringify(filters);
   useEffect(() => {
     const previous = seenKey.current;
     seenKey.current = filterKey;
-    const filters = parseInboxFilters({
-      archived: includeArchived ? "1" : undefined,
-      folder: folderId ?? undefined,
-      filter: groupsOnly ? "groups" : undefined,
-    });
     seeding.setInboxFilters(filters);
     if (previous === null && !filtered) {
       return;
@@ -86,7 +91,7 @@ export function ChatsShell({ userId, viewer, inbox, children }: Props) {
     return () => {
       live = false;
     };
-  }, [filterKey, filtered, includeArchived, folderId, groupsOnly, seeding]);
+  }, [filterKey, filtered, filters, seeding]);
   useEffect(
     () => () => seeding.setInboxFilters(DEFAULT_INBOX_FILTERS),
     [seeding],

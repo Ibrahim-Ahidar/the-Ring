@@ -13,15 +13,12 @@
   "folderSection": "مجلد",
   "moveToFolder": "نقل إلى {name}",
   "removeFromFolder": "إزالة من المجلد",
-  "allChats": "كل المحادثات",
-  "archivedChats": "المؤرشفة",
   "createFolder": "إنشاء مجلد",
   "renameFolder": "إعادة تسمية المجلد",
   "folderNameLabel": "اسم المجلد",
   "newFolder": "مجلد جديد",
   "folderToolbar": "مجلدات المحادثات",
-  "noFoldersYet": "أنشئ مجلداً لتجميع المحادثات.",
-  "folderEmptyHint": "المحادثات التي تضيفها إلى هذا المجلد تظهر هنا.",
+  "folderEmptyHint": "هذا المجلد فارغ.",
   "muteDuration": {
     "1h": "ساعة واحدة",
     "8h": "8 ساعات",
@@ -40,5 +37,15 @@
     "platform": {
       "unauthenticated": "سجّل الدخول للمتابعة."
     }
-  }
+  },
+  "filterAll": "الكل",
+  "filterUnread": "غير المقروءة",
+  "filterGroups": "المجموعات",
+  "folderMenuOpen": "خيارات المجلد: {name}",
+  "deleteFolder": "حذف المجلد",
+  "moveFolderLeft": "نقل لليسار",
+  "moveFolderRight": "نقل لليمين",
+  "deleteFolderTitle": "حذف «{name}»؟",
+  "deleteFolderBody": "يُحذف المجلد فقط. تبقى محادثاته في قائمتك ولا تُؤرشف ولا تُحذف.",
+  "deleteFolderConfirm": "حذف"
 }

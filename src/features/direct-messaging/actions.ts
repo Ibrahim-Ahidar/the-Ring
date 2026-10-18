@@ -5,6 +5,7 @@ import { getSessionContext } from "@/platform/session";
 import type { Result } from "@/platform/result";
 
 import {
+  getArchivedSummary,
   getConversation,
   listConversations,
   listMessages,
@@ -15,6 +16,7 @@ import {
   sendText,
 } from "./service";
 import type {
+  ArchivedSummary,
   ConversationDetail,
   ConversationReceipt,
   ListConversationsResult,
@@ -55,7 +57,8 @@ export async function sendTextAction(input: {
 
 export async function listConversationsAction(input: {
   cursor?: string | null;
-  includeArchived?: boolean;
+  archivedOnly?: boolean;
+  unreadOnly?: boolean;
   folderId?: string | null;
   type?: "direct" | "group" | null;
 }): Promise<Result<ListConversationsResult>> {
@@ -64,6 +67,14 @@ export async function listConversationsAction(input: {
     return { ok: false, error: { code: "platform.unauthenticated" } };
   }
   return listConversations(session.rpc, input);
+}
+
+export async function getArchivedSummaryAction(): Promise<Result<ArchivedSummary>> {
+  const session = await requireRpc();
+  if (!session) {
+    return { ok: false, error: { code: "platform.unauthenticated" } };
+  }
+  return getArchivedSummary(session.rpc);
 }
 
 export async function listMessagesAction(input: {

@@ -315,3 +315,44 @@ describe("messagingReducer monotonic receipts", () => {
     ).toBe(state);
   });
 });
+
+describe("messagingReducer archived chats", () => {
+  const summary = (id: string, archived: boolean) =>
+    ({ id, archived_at: archived ? "2026-01-01T00:00:00.000Z" : null }) as never;
+
+  it("does not add an archived chat to a list that is not the archived view", () => {
+    const state = createInitialState("me");
+    const next = messagingReducer(state, {
+      type: "conversations/patch",
+      item: summary("c1", true),
+    });
+    expect(next.conversations).toEqual([]);
+  });
+
+  it("admits only archived chats into the archived view", () => {
+    const state = createInitialState("me");
+    const live = messagingReducer(state, {
+      type: "conversations/patch",
+      item: summary("c1", false),
+      archivedOnly: true,
+    });
+    expect(live.conversations).toEqual([]);
+    const archived = messagingReducer(state, {
+      type: "conversations/patch",
+      item: summary("c2", true),
+      archivedOnly: true,
+    });
+    expect(archived.conversations).toHaveLength(1);
+  });
+
+  it("stores the archived summary and keeps state identity when unchanged", () => {
+    const state = messagingReducer(createInitialState("me"), {
+      type: "archived/set",
+      summary: { count: 2, unread: 3 },
+    });
+    expect(state.archivedSummary).toEqual({ count: 2, unread: 3 });
+    expect(
+      messagingReducer(state, { type: "archived/set", summary: { count: 2, unread: 3 } }),
+    ).toBe(state);
+  });
+});

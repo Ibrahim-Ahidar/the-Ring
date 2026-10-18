@@ -35,6 +35,7 @@ vi.mock("@/features/direct-messaging/actions", () => ({
   getConversationAction: vi.fn(async () => ({ ok: false, error: { code: "platform.unexpected" } })),
   getConversationReceiptsAction: vi.fn(async () => ({ ok: true, value: {} })),
   markDeliveredAction: vi.fn(async () => ({ ok: true, value: null })),
+  getArchivedSummaryAction: vi.fn(async () => ({ ok: true, value: { count: 0, unread: 0 } })),
   listConversationsAction: vi.fn(async () => ({ ok: true, value: { items: [], hasMore: false } })),
   listMessagesAction: vi.fn(async () => ({ ok: true, value: { items: [], hasMore: false } })),
   markReadAction: vi.fn(async () => ({ ok: true, value: {} })),

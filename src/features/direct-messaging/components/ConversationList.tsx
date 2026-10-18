@@ -77,7 +77,10 @@ function ConversationListInner({ activeConversationId }: Props) {
   const searchParams = useSearchParams();
   const queryHref = useQueryHref();
   const folderId = searchParams.get("folder");
-  const groupsOnly = searchParams.get("filter") === "groups";
+  const archivedView = searchParams.get("archived") === "1";
+  const filter = archivedView || folderId ? null : searchParams.get("filter");
+  const groupsOnly = filter === "groups";
+  const unreadOnly = filter === "unread";
   const tGroups = useTranslations("groups");
   const { state } = useMessaging();
   const { inbox: loading, inboxFailed } = useChatsLoading();
@@ -89,6 +92,20 @@ function ConversationListInner({ activeConversationId }: Props) {
     }
     if (inboxFailed) {
       return <LoadFailed />;
+    }
+    if (archivedView) {
+      return (
+        <div className={styles.listEmpty}>
+          <p>{t("archived.empty")}</p>
+        </div>
+      );
+    }
+    if (unreadOnly) {
+      return (
+        <div className={styles.listEmpty}>
+          <p>{t("unreadEmpty")}</p>
+        </div>
+      );
     }
     if (groupsOnly) {
       return (

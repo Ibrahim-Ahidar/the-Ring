@@ -22,6 +22,7 @@ vi.mock("../actions", () => ({
   })),
   getConversationReceiptsAction: vi.fn(async () => ({ ok: true, value: {} })),
   markDeliveredAction: vi.fn(async () => ({ ok: true, value: null })),
+  getArchivedSummaryAction: vi.fn(async () => ({ ok: true, value: { count: 0, unread: 0 } })),
   listConversationsAction: vi.fn(async () => ({
     ok: true,
     value: { items: [], hasMore: false },

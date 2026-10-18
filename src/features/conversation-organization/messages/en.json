@@ -13,15 +13,12 @@
   "folderSection": "Folder",
   "moveToFolder": "Move to {name}",
   "removeFromFolder": "Remove from folder",
-  "allChats": "All chats",
-  "archivedChats": "Archived",
   "createFolder": "Create folder",
   "renameFolder": "Rename folder",
   "folderNameLabel": "Folder name",
   "newFolder": "New folder",
   "folderToolbar": "Chat folders",
-  "noFoldersYet": "Create a folder to group conversations.",
-  "folderEmptyHint": "Conversations you add to this folder appear here.",
+  "folderEmptyHint": "This folder is empty.",
   "muteDuration": {
     "1h": "1 hour",
     "8h": "8 hours",
@@ -40,5 +37,15 @@
     "platform": {
       "unauthenticated": "Sign in to continue."
     }
-  }
+  },
+  "filterAll": "All",
+  "filterUnread": "Unread",
+  "filterGroups": "Groups",
+  "folderMenuOpen": "Folder options: {name}",
+  "deleteFolder": "Delete folder",
+  "moveFolderLeft": "Move left",
+  "moveFolderRight": "Move right",
+  "deleteFolderTitle": "Delete \"{name}\"?",
+  "deleteFolderBody": "Only the folder is removed. Its chats stay in your list and are not archived or deleted.",
+  "deleteFolderConfirm": "Delete"
 }

@@ -98,9 +98,12 @@
   },
   "loadingChats": "Chargement des discussions",
   "loadingMessages": "Chargement des messages",
-  "typeFilter": {
-    "label": "Filtrer les conversations",
-    "all": "Toutes",
-    "groups": "Groupes"
+  "unreadEmpty": "Aucune discussion non lue.",
+  "archived": {
+    "title": "Archivées",
+    "back": "Retour aux discussions",
+    "row": "Archivées · {count}",
+    "unread": "{count, plural, one {# message non lu dans les discussions archivées} other {# messages non lus dans les discussions archivées}}",
+    "empty": "Aucune discussion archivée."
   }
 }

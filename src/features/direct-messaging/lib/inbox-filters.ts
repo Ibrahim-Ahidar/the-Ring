@@ -1,40 +1,68 @@
+/**
+ * The chat list shows exactly one view: the archived chats, one folder, or a
+ * built-in filter (All, Unread, Groups). The URL carries it as `?archived=1`,
+ * `?folder=<id>` or `?filter=unread|groups`; at most one of them applies.
+ */
 export type InboxFilters = {
-  includeArchived: boolean;
+  /** Only archived chats. Every other view excludes them. */
+  archivedOnly: boolean;
   folderId: string | null;
+  /** Only chats with unread messages. */
+  unreadOnly: boolean;
   /** `"group"` for the Groups filter; `null` shows every conversation. */
   type: "group" | null;
 };
 
 export const DEFAULT_INBOX_FILTERS: InboxFilters = {
-  includeArchived: false,
+  archivedOnly: false,
   folderId: null,
+  unreadOnly: false,
   type: null,
 };
+
+function first(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
 
 export function parseInboxFilters(input: {
   archived?: string | string[];
   folder?: string | string[];
   filter?: string | string[];
 }): InboxFilters {
-  const archivedRaw = Array.isArray(input.archived)
-    ? input.archived[0]
-    : input.archived;
-  const folderRaw = Array.isArray(input.folder) ? input.folder[0] : input.folder;
-  const filterRaw = Array.isArray(input.filter) ? input.filter[0] : input.filter;
+  if (first(input.archived) === "1") {
+    return { ...DEFAULT_INBOX_FILTERS, archivedOnly: true };
+  }
+  const folderRaw = first(input.folder);
+  if (folderRaw?.trim()) {
+    return { ...DEFAULT_INBOX_FILTERS, folderId: folderRaw };
+  }
+  const filterRaw = first(input.filter);
   return {
-    includeArchived: archivedRaw === "1",
-    folderId: folderRaw?.trim() ? folderRaw : null,
+    ...DEFAULT_INBOX_FILTERS,
+    unreadOnly: filterRaw === "unread",
     type: filterRaw === "groups" ? "group" : null,
   };
 }
 
+/** Whether the filters differ from the unfiltered default list. */
+export function isFiltered(filters: InboxFilters): boolean {
+  return (
+    filters.archivedOnly ||
+    filters.unreadOnly ||
+    filters.folderId !== null ||
+    filters.type !== null
+  );
+}
+
 export function inboxFiltersToListArgs(filters: InboxFilters): {
-  includeArchived?: boolean;
+  archivedOnly?: boolean;
+  unreadOnly?: boolean;
   folderId?: string | null;
   type?: "group" | null;
 } {
   return {
-    includeArchived: filters.includeArchived,
+    archivedOnly: filters.archivedOnly,
+    unreadOnly: filters.unreadOnly,
     folderId: filters.folderId,
     type: filters.type,
   };

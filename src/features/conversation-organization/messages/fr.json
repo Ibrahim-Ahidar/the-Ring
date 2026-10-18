@@ -13,15 +13,12 @@
   "folderSection": "Dossier",
   "moveToFolder": "Déplacer vers {name}",
   "removeFromFolder": "Retirer du dossier",
-  "allChats": "Toutes les discussions",
-  "archivedChats": "Archivées",
   "createFolder": "Créer un dossier",
   "renameFolder": "Renommer le dossier",
   "folderNameLabel": "Nom du dossier",
   "newFolder": "Nouveau dossier",
   "folderToolbar": "Dossiers de discussion",
-  "noFoldersYet": "Créez un dossier pour regrouper vos discussions.",
-  "folderEmptyHint": "Les conversations ajoutées à ce dossier s'affichent ici.",
+  "folderEmptyHint": "Ce dossier est vide.",
   "muteDuration": {
     "1h": "1 heure",
     "8h": "8 heures",
@@ -40,5 +37,15 @@
     "platform": {
       "unauthenticated": "Connectez-vous pour continuer."
     }
-  }
+  },
+  "filterAll": "Toutes",
+  "filterUnread": "Non lues",
+  "filterGroups": "Groupes",
+  "folderMenuOpen": "Options du dossier : {name}",
+  "deleteFolder": "Supprimer le dossier",
+  "moveFolderLeft": "Déplacer à gauche",
+  "moveFolderRight": "Déplacer à droite",
+  "deleteFolderTitle": "Supprimer « {name} » ?",
+  "deleteFolderBody": "Seul le dossier est supprimé. Ses discussions restent dans votre liste, sans être archivées ni supprimées.",
+  "deleteFolderConfirm": "Supprimer"
 }

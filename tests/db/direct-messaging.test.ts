@@ -420,7 +420,7 @@ describe("list filters and access control", () => {
     if (!hidden.ok) return;
     expect(hidden.value.items).toHaveLength(0);
 
-    const shown = await listConversations(rpc, { includeArchived: true });
+    const shown = await listConversations(rpc, { archivedOnly: true });
     expect(shown.ok).toBe(true);
     if (!shown.ok) return;
     expect(shown.value.items).toHaveLength(1);
