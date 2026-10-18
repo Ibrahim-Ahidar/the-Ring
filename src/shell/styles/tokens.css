@@ -7,48 +7,48 @@
   color-scheme: light dark;
 
   /* Surfaces */
-  --color-bg: light-dark(#f7f5f3, #161717);
-  --color-panel: light-dark(#ffffff, #161717);
-  --color-card: light-dark(#ffffff, #1d1f1f);
-  --color-modal: light-dark(#ffffff, #1d1f1f);
-  --color-elevated: light-dark(#ffffff, #242626);
-  --color-input: light-dark(#f0eeec, #2e2f2f);
-  --color-hover: light-dark(rgba(194, 189, 184, 0.18), rgba(255, 255, 255, 0.06));
-  --color-selected: light-dark(rgba(194, 189, 184, 0.3), rgba(255, 255, 255, 0.1));
+  --color-bg: light-dark(#f6f7f9, #121318);
+  --color-panel: light-dark(#ffffff, #121318);
+  --color-card: light-dark(#ffffff, #17181d);
+  --color-modal: light-dark(#ffffff, #17181d);
+  --color-elevated: light-dark(#ffffff, #1e2026);
+  --color-input: light-dark(#eceef3, #26282f);
+  --color-hover: light-dark(rgba(100, 110, 140, 0.12), rgba(255, 255, 255, 0.06));
+  --color-selected: light-dark(rgba(79, 70, 229, 0.12), rgba(129, 140, 248, 0.16));
   --color-pressed: light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.16));
   --color-overlay: rgba(0, 0, 0, 0.32);
 
   /* Content */
   --color-text: light-dark(#0a0a0a, #fafafa);
   --color-text-muted: light-dark(rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.6));
-  --color-text-disabled: light-dark(#bdbdbd, #5c5e5f);
-  --color-icon: light-dark(#54585a, #aebac1);
+  --color-text-disabled: light-dark(#b3b8c4, #5d6270);
+  --color-icon: light-dark(#535b6c, #a9b0c0);
   --color-border: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
-  --color-border-strong: light-dark(#959393, #757778);
+  --color-border-strong: light-dark(#8d93a3, #6f7585);
 
   /* Brand accent */
-  --color-accent: light-dark(#1daa61, #21c063);
-  --color-accent-strong: light-dark(#15603e, #d9fdd3);
-  --color-accent-soft: light-dark(#d9fdd3, #103529);
+  --color-accent: light-dark(#4f46e5, #818cf8);
+  --color-accent-strong: light-dark(#3730a3, #e0e7ff);
+  --color-accent-soft: light-dark(#e0e7ff, #25264d);
   --color-accent-contrast: light-dark(#ffffff, #0a0a0a);
-  --color-focus: light-dark(#1daa61, #21c063);
+  --color-focus: light-dark(#4f46e5, #818cf8);
 
   /* Status */
   --color-danger: light-dark(#ea0038, #fb5061);
   --color-danger-soft: light-dark(#ffe5ea, #3b1219);
   --color-warning: light-dark(#ffeecd, #3a3121);
   --color-online: #25d366;
-  --color-read: light-dark(#007bfc, #53bdeb);
+  --color-read: light-dark(#0284c7, #38bdf8);
   --color-link: light-dark(#027eb5, #53bdeb);
 
   /* Conversation */
-  --color-chat-bg: light-dark(#f5f1eb, #101111);
-  --color-chat-pattern: light-dark(rgba(0, 0, 0, 0.045), rgba(255, 255, 255, 0.035));
-  --color-bubble-in: light-dark(#ffffff, #242626);
-  --color-bubble-out: light-dark(#d9fdd3, #144d37);
+  --color-chat-bg: light-dark(#eef0f5, #0e0f13);
+  --color-chat-pattern: light-dark(rgba(60, 70, 110, 0.05), rgba(255, 255, 255, 0.035));
+  --color-bubble-in: light-dark(#ffffff, #1e2026);
+  --color-bubble-out: light-dark(#e0e7ff, #2d2f6e);
   --color-bubble-meta: light-dark(rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.6));
   --color-quote: light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.22));
-  --color-system: light-dark(#ffffff, #1d1f1f);
+  --color-system: light-dark(#ffffff, #17181d);
 
   /* Avatar fallbacks */
   --avatar-1: light-dark(#ffd7c2, #5e3a2a);
@@ -108,6 +108,31 @@
   --motion-medium: 180ms;
   --motion-slow: 220ms;
   --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+[data-accent="green"] {
+  /* Classic palette: the pre-Indigo values, verbatim. */
+  --color-bg: light-dark(#f7f5f3, #161717);
+  --color-panel: light-dark(#ffffff, #161717);
+  --color-card: light-dark(#ffffff, #1d1f1f);
+  --color-modal: light-dark(#ffffff, #1d1f1f);
+  --color-elevated: light-dark(#ffffff, #242626);
+  --color-input: light-dark(#f0eeec, #2e2f2f);
+  --color-hover: light-dark(rgba(194, 189, 184, 0.18), rgba(255, 255, 255, 0.06));
+  --color-selected: light-dark(rgba(194, 189, 184, 0.3), rgba(255, 255, 255, 0.1));
+  --color-text-disabled: light-dark(#bdbdbd, #5c5e5f);
+  --color-icon: light-dark(#54585a, #aebac1);
+  --color-border-strong: light-dark(#959393, #757778);
+  --color-accent: light-dark(#1daa61, #21c063);
+  --color-accent-strong: light-dark(#15603e, #d9fdd3);
+  --color-accent-soft: light-dark(#d9fdd3, #103529);
+  --color-focus: light-dark(#1daa61, #21c063);
+  --color-read: light-dark(#007bfc, #53bdeb);
+  --color-chat-bg: light-dark(#f5f1eb, #101111);
+  --color-chat-pattern: light-dark(rgba(0, 0, 0, 0.045), rgba(255, 255, 255, 0.035));
+  --color-bubble-in: light-dark(#ffffff, #242626);
+  --color-bubble-out: light-dark(#d9fdd3, #144d37);
+  --color-system: light-dark(#ffffff, #1d1f1f);
 }
 
 [data-theme="light"] {

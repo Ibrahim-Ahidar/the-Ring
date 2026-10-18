@@ -43,29 +43,65 @@
   border-radius: 4px;
 }
 
-/* Fixed swatches: each preview shows its own theme regardless of the active one. */
+/* Previews pin color-scheme so they show their own theme in the active Accent's neutrals. */
 .themePreview[data-theme-preview="light"] {
-  background: #f7f5f3;
-}
-
-.themePreview[data-theme-preview="light"] span {
-  background: #ffffff;
+  color-scheme: light;
 }
 
 .themePreview[data-theme-preview="dark"] {
-  background: #101111;
+  color-scheme: dark;
 }
 
+.themePreview[data-theme-preview="light"],
+.themePreview[data-theme-preview="dark"] {
+  background: var(--color-bg);
+}
+
+.themePreview[data-theme-preview="light"] span,
 .themePreview[data-theme-preview="dark"] span {
-  background: #242626;
+  background: var(--color-card);
 }
 
-.themePreview[data-theme-preview="system"] {
-  background: linear-gradient(to right, #f7f5f3 50%, #101111 50%);
-}
-
+.themePreview[data-theme-preview="system"],
 .themePreview[data-theme-preview="system"] span {
-  background: linear-gradient(to right, #ffffff 50%, #242626 50%);
+  position: relative;
+  overflow: hidden;
+}
+
+.themePreview[data-theme-preview="system"]::before,
+.themePreview[data-theme-preview="system"]::after,
+.themePreview[data-theme-preview="system"] span::before,
+.themePreview[data-theme-preview="system"] span::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  width: 50%;
+}
+
+.themePreview[data-theme-preview="system"]::before,
+.themePreview[data-theme-preview="system"] span::before {
+  inset-inline-start: 0;
+  color-scheme: light;
+}
+
+.themePreview[data-theme-preview="system"]::after,
+.themePreview[data-theme-preview="system"] span::after {
+  inset-inline-end: 0;
+  color-scheme: dark;
+}
+
+.themePreview[data-theme-preview="system"]::before {
+  background: var(--color-bg);
+}
+
+.themePreview[data-theme-preview="system"]::after {
+  background: var(--color-bg);
+}
+
+.themePreview[data-theme-preview="system"] span::before,
+.themePreview[data-theme-preview="system"] span::after {
+  background: var(--color-card);
+  z-index: 1;
 }
 
 .themeLabel {
