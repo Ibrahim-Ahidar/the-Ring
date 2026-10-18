@@ -67,7 +67,7 @@ export function AddContactPrompt({ userId, username, displayName }: Props) {
         gap: 12,
         flexWrap: "wrap",
         padding: "8px 16px",
-        borderBottom: "1px solid var(--border, rgba(128,128,128,.25))",
+        borderBottom: "1px solid var(--color-border)",
       }}
     >
       <span style={{ flex: 1, minWidth: 160 }}>
