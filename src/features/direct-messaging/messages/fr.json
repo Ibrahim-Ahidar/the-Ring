@@ -23,6 +23,8 @@
   "send": "Envoyer",
   "retrySend": "Réessayer",
   "messageActions": "Actions du message",
+  "chatActions": "Actions de la discussion",
+  "closeSheet": "Fermer",
   "closeActionMenu": "Fermer le menu",
   "reconnecting": "Reconnexion…",
   "requestRequired": "Cette personne n'accepte que les demandes de message.",
