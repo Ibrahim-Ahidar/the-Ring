@@ -52,8 +52,16 @@ function AccentOptionListInner() {
                 disabled={pending}
                 onChange={() => {
                   // Apply instantly; the server render confirms it after the save.
-                  document.documentElement.setAttribute("data-accent", code);
-                  saveAccent(code);
+                  const root = document.documentElement;
+                  const previous = root.getAttribute("data-accent");
+                  root.setAttribute("data-accent", code);
+                  saveAccent(code, () => {
+                    if (previous) {
+                      root.setAttribute("data-accent", previous);
+                    } else {
+                      root.removeAttribute("data-accent");
+                    }
+                  });
                 }}
               />
               <span className={ui.radio} data-checked={checked} aria-hidden />

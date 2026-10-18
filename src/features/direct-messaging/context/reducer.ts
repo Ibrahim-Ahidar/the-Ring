@@ -47,6 +47,23 @@ export function createInitialState(userId: string): MessagingState {
   };
 }
 
+/** Drops live flags of messages that a history load just supplied. */
+function withoutLive(
+  live: Record<string, true>,
+  items: TimelineMessage[],
+): Record<string, true> {
+  if (!items.some((m) => m.client_id && live[m.client_id])) {
+    return live;
+  }
+  const next = { ...live };
+  for (const m of items) {
+    if (m.client_id) {
+      delete next[m.client_id];
+    }
+  }
+  return next;
+}
+
 export function messagingReducer(
   state: MessagingState,
   action: MessagingAction,
@@ -125,6 +142,7 @@ export function messagingReducer(
     case "messages/set":
       return {
         ...state,
+        liveClientIds: withoutLive(state.liveClientIds, action.items),
         threadFailed: state.threadFailed[action.conversationId]
           ? { ...state.threadFailed, [action.conversationId]: false }
           : state.threadFailed,
@@ -187,10 +205,16 @@ export function messagingReducer(
         state.pendingSends.some((p) => p.clientId === echoedClientId)
           ? state.pendingSends.filter((p) => p.clientId !== echoedClientId)
           : state.pendingSends;
-      // Live flag: only a message new to the store (realtime insert) counts;
-      // history loads go through messages/set and messages/mergePage.
+      // Live flag: only a message new to the store (realtime insert) in a
+      // thread that is loaded counts; history loads go through messages/set
+      // and messages/mergePage. Own sends are flagged by pending/add, so their
+      // realtime echo must not replay the animation.
       const liveClientIds =
-        !existing && merged.client_id && !state.liveClientIds[merged.client_id]
+        !existing &&
+        action.conversationId in state.messagesByConversation &&
+        merged.sender_id !== state.userId &&
+        merged.client_id &&
+        !state.liveClientIds[merged.client_id]
           ? { ...state.liveClientIds, [merged.client_id]: true as const }
           : state.liveClientIds;
       return {

@@ -45,10 +45,11 @@ export function usePreferenceSave() {
   );
 
   const saveAccent = useCallback(
-    (accent: Accent) => {
+    (accent: Accent, onFailure?: () => void) => {
       startTransition(async () => {
         const result = await saveAccentAction(accent);
         if (!result.ok) {
+          onFailure?.();
           return;
         }
         dispatch({ type: "set_accent", accent });

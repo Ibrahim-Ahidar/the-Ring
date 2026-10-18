@@ -19,14 +19,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#4f46e5" },
-    { media: "(prefers-color-scheme: dark)", color: "#4f46e5" },
-  ],
-};
+const THEME_COLORS = { indigo: "#4f46e5", green: "#1daa61" } as const;
+
+export async function generateViewport(): Promise<Viewport> {
+  const accent = await resolveAccent();
+  return {
+    width: "device-width",
+    initialScale: 1,
+    themeColor: THEME_COLORS[accent],
+  };
+}
 
 export default async function RootLayout({
   children,

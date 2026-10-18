@@ -437,7 +437,7 @@
 @keyframes msgFadeUp {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(var(--space-8));
   }
 }
 
@@ -630,7 +630,7 @@
   color: var(--color-icon);
   cursor: pointer;
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(calc(-1 * var(--space-4)));
   transition:
     opacity var(--motion-fast) var(--motion-ease),
     transform var(--motion-fast) var(--motion-ease);
@@ -652,6 +652,12 @@
 
 .bubble {
   -webkit-touch-callout: none;
+}
+
+/* Only while a long-press is pending, so text stays selectable otherwise. */
+.bubble[data-pressing="true"] {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .actionMenuBackdrop {
@@ -866,6 +872,12 @@
   .quickActionIcon,
   .actionTrigger {
     transition: none;
+  }
+
+  .rowMenu,
+  [dir="rtl"] .rowMenu,
+  .actionTrigger {
+    transform: none;
   }
 }
 

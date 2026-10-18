@@ -22,7 +22,7 @@ vi.mock("@/shell/preferences", () => ({
 }));
 vi.mock("./globals.css", () => ({}));
 
-import RootLayout, { viewport } from "./layout";
+import RootLayout, { generateViewport } from "./layout";
 
 describe("RootLayout accent", () => {
   it("renders data-accent from the resolved accent", async () => {
@@ -35,6 +35,11 @@ describe("RootLayout accent", () => {
     resolveAccent.mockResolvedValue("indigo");
     const html = renderToStaticMarkup(await RootLayout({ children: null }));
     expect(html).toContain('data-accent="indigo"');
-    expect(JSON.stringify(viewport.themeColor)).toContain("#4f46e5");
+    expect((await generateViewport()).themeColor).toBe("#4f46e5");
+  });
+
+  it("derives the theme color from the green accent", async () => {
+    resolveAccent.mockResolvedValue("green");
+    expect((await generateViewport()).themeColor).toBe("#1daa61");
   });
 });

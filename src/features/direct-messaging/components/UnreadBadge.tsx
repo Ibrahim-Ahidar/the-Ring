@@ -13,10 +13,11 @@ type Props = {
 };
 
 /**
- * Unread count pill. Stays mounted at 0 (renders nothing) so a 0 → n change
- * is seen as an increase while the initial load is not. Pops (scale) when it first appears and when the count
- * goes up; a decrease does not animate. The previous count is tracked per
- * badge, so the list does not re-render to drive the animation.
+ * Unread count pill. Pops (scale) when it first appears and when the count
+ * goes up; a decrease does not animate. It stays mounted at 0 (renders
+ * nothing) so a 0 → n change reads as an increase while the initial load does
+ * not. The previous count is tracked per badge, so the list does not
+ * re-render to drive the animation.
  */
 export const UnreadBadge = memo(function UnreadBadge({ count, muted, label }: Props) {
   const [prev, setPrev] = useState(count);
