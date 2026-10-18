@@ -428,6 +428,19 @@
   align-items: flex-start;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .msg[data-live="true"] {
+    animation: msgFadeUp 200ms var(--motion-ease) both;
+  }
+}
+
+@keyframes msgFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 .msg[data-mine="true"] {
   align-items: flex-end;
 }

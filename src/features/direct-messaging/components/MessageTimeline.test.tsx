@@ -14,7 +14,7 @@ const loadOlderMessages = vi.fn();
 let mockState: Record<string, unknown>;
 
 vi.mock("../context/MessagingProvider", () => ({
-  useMessaging: () => ({ state: mockState, retrySend: vi.fn(), loadOlderMessages }),
+  useMessaging: () => ({ state: mockState, retrySend: vi.fn(), clearLive: vi.fn(), loadOlderMessages }),
 }));
 vi.mock("../hooks/useReadReceipts", () => ({
   useReadTracker: () => () => () => {},
@@ -23,7 +23,9 @@ vi.mock("@/features/groups/hooks/useGroupMemberNames", () => ({
   useGroupMemberDirectory: () => new Map(),
 }));
 vi.mock("./MessageBubble", () => ({
-  MessageBubble: ({ message }: { message: TimelineMessage }) => <p>{message.body}</p>,
+  MessageBubble: ({ message, live }: { message: TimelineMessage; live?: boolean }) => (
+    <p data-live={live ? "true" : undefined}>{message.body}</p>
+  ),
 }));
 
 let observerCallback: IntersectionObserverCallback | null = null;
@@ -59,12 +61,13 @@ function msg(id: string, sender: string, at: string): TimelineMessage {
   } as TimelineMessage;
 }
 
-function makeState(messages: TimelineMessage[], hasMore = true) {
+function makeState(messages: TimelineMessage[], hasMore = true, liveClientIds: Record<string, true> = {}) {
   return {
     messagesByConversation: { c1: messages },
     messagesHasMore: { c1: hasMore },
     pendingSends: [],
     unreadSeparatorByConversation: {},
+    liveClientIds,
   };
 }
 
@@ -164,6 +167,22 @@ describe("MessageTimeline jump to latest", () => {
     fireEvent.scroll(log);
     fireEvent.click(screen.getByRole("button", { name: /الانتقال إلى الأحدث/ }));
     expect(scrollTo).toHaveBeenCalledWith({ top: 2000, behavior: "smooth" });
+  });
+});
+
+describe("MessageTimeline live fade-up", () => {
+  it("marks only live-flagged messages for the enter animation", () => {
+    const items = [
+      msg("m1", "sara", "2026-01-01T09:00:00.000Z"),
+      msg("m2", "sara", "2026-01-01T09:01:00.000Z"),
+    ];
+    const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(60);
+    mockState = makeState(items, false, { [items[1].client_id]: true });
+    const { container } = render(ui());
+    height.mockRestore();
+    const live = container.querySelectorAll("[data-live='true']");
+    expect(live.length).toBe(1);
+    expect(live[0].textContent).toBe("m2");
   });
 });
 

@@ -30,6 +30,9 @@ type Props = {
   quoteAuthor?: string | null;
   quoteText?: string;
   onRetry?: (clientId: string) => void;
+  /** Arrived live (realtime or just sent): plays the enter animation once. */
+  live?: boolean;
+  onLiveDone?: (clientId: string) => void;
   /** Ref for the message row; lets the read tracker see when it is on screen. */
   rowRef?: (el: Element | null) => void;
 };
@@ -82,6 +85,8 @@ function MessageBubbleInner({
   quoteAuthor,
   quoteText,
   onRetry,
+  live,
+  onLiveDone,
   rowRef,
 }: Props) {
   const t = useTranslations("direct-messaging");
@@ -123,6 +128,16 @@ function MessageBubbleInner({
       className={styles.msg}
       data-mine={isMine ? "true" : "false"}
       data-first={grouped ? "false" : "true"}
+      data-live={live ? "true" : undefined}
+      onAnimationEnd={
+        live
+          ? (event) => {
+              if (event.target === event.currentTarget) {
+                onLiveDone?.(message.client_id);
+              }
+            }
+          : undefined
+      }
     >
       {showSender ? (
         <span

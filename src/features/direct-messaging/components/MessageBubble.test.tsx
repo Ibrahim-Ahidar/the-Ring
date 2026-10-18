@@ -93,4 +93,12 @@ describe("MessageBubble sender attribution", () => {
     expect(screen.getByText("سارة")).toBeTruthy();
     expect(screen.getByRole("article", { name: /^سارة, / })).toBeTruthy();
   });
+
+  it("marks live bubbles with the enter marker only when live", () => {
+    const { container } = renderBubble({ live: true });
+    expect(container.querySelector("[data-live='true']")).not.toBeNull();
+    cleanup();
+    const plain = renderBubble({});
+    expect(plain.container.querySelector("[data-live]")).toBeNull();
+  });
 });
