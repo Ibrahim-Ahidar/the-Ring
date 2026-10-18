@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import type { ListItemMenuContext, ListItemMenuContribution } from "@/shell/slots/types";
 import ui from "@/shell/styles/ui.module.css";
 
-import { useFocusTrap } from "@/features/conversation-organization/hooks/useFocusTrap";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import styles from "../direct-messaging.module.css";
 
 type Props = {

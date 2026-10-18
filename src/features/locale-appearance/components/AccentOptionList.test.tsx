@@ -40,6 +40,16 @@ describe("AccentOptionList", () => {
     renderList("indigo");
     fireEvent.click(screen.getByLabelText("Green"));
     expect(document.documentElement.getAttribute("data-accent")).toBe("green");
-    expect(saveAccent).toHaveBeenCalledWith("green");
+    expect(saveAccent).toHaveBeenCalledWith("green", expect.any(Function));
+  });
+
+  it("reverts data-accent when the save fails", () => {
+    document.documentElement.setAttribute("data-accent", "indigo");
+    renderList("indigo");
+    fireEvent.click(screen.getByLabelText("Green"));
+    expect(document.documentElement.getAttribute("data-accent")).toBe("green");
+    const onFailure = saveAccent.mock.calls.at(-1)![1] as () => void;
+    onFailure();
+    expect(document.documentElement.getAttribute("data-accent")).toBe("indigo");
   });
 });

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { Ban, BellOff, Check, CheckCheck, Pin } from "lucide-react";
-import { memo, useMemo, useState, type ReactNode } from "react";
+import { memo, useMemo, useState } from "react";
 import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
 import { Avatar } from "@/shell/components/Avatar";
-import { getContributions } from "@/shell/slots";
+import { getContributions, type ListItemMenuContext } from "@/shell/slots";
 import ui from "@/shell/styles/ui.module.css";
 
 import { useChatsLoading } from "../context/LoadingContext";
@@ -67,6 +67,18 @@ function listTime(
 
 function isMuted(item: ConversationSummary, now: Date): boolean {
   return item.muted_until !== null && new Date(item.muted_until).getTime() > now.getTime();
+}
+
+function menuContextOf(item: ConversationSummary): ListItemMenuContext {
+  return {
+    conversationId: item.id,
+    conversationType: item.type,
+    membership: {
+      pinned_at: item.pinned_at,
+      muted_until: item.muted_until,
+      archived_at: item.archived_at,
+    },
+  };
 }
 
 function ConversationListInner({ activeConversationId }: Props) {
@@ -140,7 +152,17 @@ function ConversationListInner({ activeConversationId }: Props) {
   }
 
   const sheetItem = sheetId ? state.conversations.find((c) => c.id === sheetId) : undefined;
-  let sheet: ReactNode = null;
+  const sheetCtx = sheetItem ? menuContextOf(sheetItem) : null;
+  const sheetMenus = sheetCtx ? menus.filter((menu) => menu.isAvailable(sheetCtx)) : [];
+  const sheet =
+    sheetItem && sheetCtx && sheetMenus.length > 0 ? (
+      <ConversationActionsSheet
+        title={displayTitle(sheetItem)}
+        menus={sheetMenus}
+        ctx={sheetCtx}
+        onClose={() => setSheetId(null)}
+      />
+    ) : null;
 
   const list = (
     <ul className={styles.chatList}>
@@ -150,26 +172,8 @@ function ConversationListInner({ activeConversationId }: Props) {
         const muted = isMuted(item, now);
         const deleted = item.last_message_deletion_scope === "everyone";
         const receipt = state.receiptsByConversation[item.id];
-        const menuCtx = {
-          conversationId: item.id,
-          conversationType: item.type,
-          membership: {
-            pinned_at: item.pinned_at,
-            muted_until: item.muted_until,
-            archived_at: item.archived_at,
-          },
-        };
+        const menuCtx = menuContextOf(item);
         const availableMenus = menus.filter((menu) => menu.isAvailable(menuCtx));
-        if (item === sheetItem && availableMenus.length > 0) {
-          sheet = (
-            <ConversationActionsSheet
-              title={title}
-              menus={availableMenus}
-              ctx={menuCtx}
-              onClose={() => setSheetId(null)}
-            />
-          );
-        }
         const press = availableMenus.length > 0 ? bindPress(item.id) : {};
 
         return (

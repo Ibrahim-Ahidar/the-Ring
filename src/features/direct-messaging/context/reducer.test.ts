@@ -406,4 +406,62 @@ describe("messagingReducer live flag", () => {
     });
     expect(state.liveClientIds["new-c"]).toBeUndefined();
   });
+
+  it("does not flag inserts for a thread that is not loaded, and clears flags when it loads", () => {
+    let state = messagingReducer(base(), {
+      type: "messages/upsert",
+      conversationId: "c9",
+      message: msg({ id: "bg", client_id: "bg-c", sender_id: "u2" }),
+    });
+    expect(state.liveClientIds).toEqual({});
+
+    state = messagingReducer(state, {
+      type: "messages/set",
+      conversationId: "c1",
+      items: [],
+      hasMore: false,
+      cursor: null,
+    });
+    state = messagingReducer(state, {
+      type: "messages/upsert",
+      conversationId: "c1",
+      message: msg({ id: "m", client_id: "m-c", sender_id: "u2" }),
+    });
+    expect(state.liveClientIds["m-c"]).toBe(true);
+    state = messagingReducer(state, {
+      type: "messages/set",
+      conversationId: "c1",
+      items: [msg({ id: "m", client_id: "m-c", sender_id: "u2" })],
+      hasMore: false,
+      cursor: null,
+    });
+    expect(state.liveClientIds).toEqual({});
+  });
+
+  it("does not re-flag the realtime echo of an own send after its animation ended", () => {
+    let state = messagingReducer(base(), {
+      type: "messages/set",
+      conversationId: "c1",
+      items: [],
+      hasMore: false,
+      cursor: null,
+    });
+    state = messagingReducer(state, {
+      type: "pending/add",
+      pending: {
+        clientId: "own-c",
+        conversationId: "c1",
+        body: "x",
+        createdAt: "2026-01-03T00:00:00.000Z",
+        status: "pending",
+      },
+    });
+    state = messagingReducer(state, { type: "live/clear", clientId: "own-c" });
+    state = messagingReducer(state, {
+      type: "messages/upsert",
+      conversationId: "c1",
+      message: msg({ id: "own", client_id: "own-c", sender_id: "u1" }),
+    });
+    expect(state.liveClientIds["own-c"]).toBeUndefined();
+  });
 });
