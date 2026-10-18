@@ -872,14 +872,38 @@
   gap: var(--space-12);
   min-height: var(--row-height);
   padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-card);
 }
 
 .skeletonRowText {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-2);
   min-width: 0;
+}
+
+.skeletonRowLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+/* Open-conversation skeleton: bubbles in the real message area, composer pill centred. */
+.skeletonMessages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  overflow: hidden;
+}
+
+.skeletonComposerBar {
+  align-items: center;
+}
+
+.skeletonComposerInput {
+  flex: 1;
 }
 
 .threadSkeleton {
