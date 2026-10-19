@@ -47,18 +47,27 @@ revoke all on function public.presence_topic_readable(text) from public;
 grant execute on function public.presence_topic_subject(text) to authenticated;
 grant execute on function public.presence_topic_readable(text) to authenticated;
 
-drop policy if exists presence_user_topic_read on realtime.messages;
-create policy presence_user_topic_read on realtime.messages
-  for select to authenticated
-  using (
-    extension = 'presence'
-    and public.presence_topic_readable(realtime.topic())
-  );
+-- realtime.messages exists on Supabase but not on the PGlite test stack.
+do $do$
+begin
+  if to_regclass('realtime.messages') is null then
+    return;
+  end if;
 
-drop policy if exists presence_user_topic_write on realtime.messages;
-create policy presence_user_topic_write on realtime.messages
-  for insert to authenticated
-  with check (
-    extension = 'presence'
-    and public.presence_topic_subject(realtime.topic()) = auth.uid()
-  );
+  drop policy if exists presence_user_topic_read on realtime.messages;
+  create policy presence_user_topic_read on realtime.messages
+    for select to authenticated
+    using (
+      extension = 'presence'
+      and public.presence_topic_readable(realtime.topic())
+    );
+
+  drop policy if exists presence_user_topic_write on realtime.messages;
+  create policy presence_user_topic_write on realtime.messages
+    for insert to authenticated
+    with check (
+      extension = 'presence'
+      and public.presence_topic_subject(realtime.topic()) = auth.uid()
+    );
+end
+$do$;
