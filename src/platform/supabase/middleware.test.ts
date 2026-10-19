@@ -65,6 +65,13 @@ describe("updateSession", () => {
     expect(location(await updateSession(request("/signup")))).toBe("/app");
   });
 
+  it("sends signed-in members from the landing page to the app", async () => {
+    signedIn();
+    expect(location(await updateSession(request("/")))).toBe("/app");
+    signedOut();
+    expect(location(await updateSession(request("/")))).toBeNull();
+  });
+
   it("honours a safe next and ignores an unsafe one", async () => {
     signedIn();
     expect(location(await updateSession(request("/login?next=/app/groups")))).toBe(

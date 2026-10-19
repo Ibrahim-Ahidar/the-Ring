@@ -69,6 +69,11 @@ export async function updateSession(request: NextRequest) {
       : supabaseResponse;
   }
 
+  // A signed-in member has no use for the landing page; take them to their chats.
+  if (pathname === "/") {
+    return redirectTo(request, "/app", supabaseResponse);
+  }
+
   if (isAuthPage) {
     const reason = parseLoginReason(searchParams.get("reason"));
     // Server components cannot clear auth cookies, so a revoked session ends here.
