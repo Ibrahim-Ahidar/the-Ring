@@ -72,10 +72,10 @@ describe("typing_presence_touch_last_seen", () => {
     expect(await readLastSeen()).toBe("2026-01-01T12:00:00.000Z");
   });
 
-  it("does not update within five minutes", async () => {
+  it("does not update within the throttle window", async () => {
     const client = createRpcClient(db, user.id);
     const second = await client.rpc("typing_presence_touch_last_seen", {
-      p_now: new Date("2026-01-01T12:01:00Z").toISOString(),
+      p_now: new Date("2026-01-01T12:00:20Z").toISOString(),
     });
     expect(second.error).toBeNull();
     expect(second.data).toBe(false);
@@ -184,6 +184,84 @@ describe("typing_presence_read_subject", () => {
     const row = (result.data as Record<string, unknown>[])[0]!;
     expect(row.presence_allowed).toBe(false);
     expect(row.last_seen_at).toBeNull();
+    await asSuperuser(
+      db,
+      `update public.profiles set show_online = true where id = $1`,
+      [subject.id],
+    );
+  });
+});
+
+describe("presence_peer_online", () => {
+  let db: PGliteInterface;
+  let viewer: TestUser;
+  let subject: TestUser;
+  let outsider: TestUser;
+
+  const setLastSeen = (at: string) =>
+    asSuperuser(
+      db,
+      `update public.profiles set last_seen_at = ${at} where id = $1`,
+      [subject.id],
+    );
+
+  const isOnline = async (userId: string) => {
+    const result = await createRpcClient(db, userId).rpc(
+      "presence_peer_online",
+      { p_subject_id: subject.id },
+    );
+    expect(result.error).toBeNull();
+    return result.data;
+  };
+
+  beforeAll(async () => {
+    db = await createTestDb();
+    viewer = await provisionUser(db, "ponviewer");
+    subject = await provisionUser(db, "ponsubject", { show_online: true });
+    outsider = await provisionUser(db, "ponoutsider");
+
+    const conversationId = randomUUID();
+    const pairKey = await asSuperuser<{ rows: { key: string }[] }>(
+      db,
+      `select public.direct_pair_key($1::uuid, $2::uuid) as key`,
+      [viewer.id, subject.id],
+    );
+    await asSuperuser(
+      db,
+      `insert into public.conversations (id, type, direct_pair_key) values ($1, 'direct', $2)`,
+      [conversationId, pairKey.rows[0]!.key],
+    );
+    await asSuperuser(
+      db,
+      `insert into public.conversation_members (conversation_id, user_id, role)
+       values ($1, $2, 'member'), ($1, $3, 'member')`,
+      [conversationId, viewer.id, subject.id],
+    );
+  });
+
+  it("is true for a recent heartbeat", async () => {
+    await setLastSeen("now() - interval '20 seconds'");
+    expect(await isOnline(viewer.id)).toBe(true);
+  });
+
+  it("is false for a stale heartbeat", async () => {
+    await setLastSeen("now() - interval '5 minutes'");
+    expect(await isOnline(viewer.id)).toBe(false);
+  });
+
+  it("is false without a shared conversation", async () => {
+    await setLastSeen("now()");
+    expect(await isOnline(outsider.id)).toBe(false);
+  });
+
+  it("is false when show_online is off", async () => {
+    await setLastSeen("now()");
+    await asSuperuser(
+      db,
+      `update public.profiles set show_online = false where id = $1`,
+      [subject.id],
+    );
+    expect(await isOnline(viewer.id)).toBe(false);
     await asSuperuser(
       db,
       `update public.profiles set show_online = true where id = $1`,

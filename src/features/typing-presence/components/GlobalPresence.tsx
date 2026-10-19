@@ -8,7 +8,7 @@ import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 
 import { touchLastSeenForMember } from "@/features/typing-presence/service";
 
-const PRESENCE_HEARTBEAT_MS = 60_000;
+const PRESENCE_HEARTBEAT_MS = 30_000;
 const HIDDEN_UNTRACK_MS = 30_000;
 
 /** Mounted once in the shell: tracks the viewer on their own private presence topic. */
@@ -27,6 +27,8 @@ export function GlobalPresence() {
       let hiddenTimer: ReturnType<typeof setTimeout> | null = null;
 
       const touch = () => {
+        // Peers read online from this heartbeat while realtime joins fail (#154).
+        if (document.visibilityState === "hidden") return;
         void touchLastSeenForMember(rpc);
       };
       const track = () => {
@@ -79,6 +81,7 @@ export function GlobalPresence() {
           hiddenTimer = null;
         }
         track();
+        touch();
       };
 
       window.addEventListener("pagehide", onPageHide);

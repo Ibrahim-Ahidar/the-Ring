@@ -1,4 +1,4 @@
-import type { RpcClient } from "@/platform/rpc";
+import { callRpc, type RpcClient } from "@/platform/rpc";
 import type { Result } from "@/platform/result";
 
 import {
@@ -20,4 +20,14 @@ export async function fetchSubjectPresence(
   subjectId: string,
 ): Promise<Result<SubjectPresenceRow | null>> {
   return readSubjectPresence(rpc, conversationId, subjectId);
+}
+
+/** Heartbeat-based online check; the server applies the presence privacy gate. */
+export async function fetchPeerOnline(
+  rpc: RpcClient,
+  subjectId: string,
+): Promise<Result<boolean>> {
+  return callRpc<boolean>(rpc, "presence_peer_online", {
+    p_subject_id: subjectId,
+  });
 }

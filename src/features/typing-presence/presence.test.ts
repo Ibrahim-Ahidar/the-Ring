@@ -32,12 +32,12 @@ describe("canShowPresence", () => {
 });
 
 describe("shouldTouchLastSeen", () => {
-  it("no-ops inside the five-minute window", () => {
+  it("no-ops inside the throttle window", () => {
     resetLastSeenTouchForTests();
     const start = 10_000;
     expect(shouldTouchLastSeen(start)).toBe(true);
     markLastSeenTouched(start);
-    expect(shouldTouchLastSeen(start + 60_000)).toBe(false);
+    expect(shouldTouchLastSeen(start + 10_000)).toBe(false);
     expect(shouldTouchLastSeen(start + LAST_SEEN_TOUCH_MS)).toBe(true);
   });
 });

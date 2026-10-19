@@ -3,7 +3,7 @@ import type { InteractionDecision } from "@/platform/interaction";
 import { callRpc, type RpcClient } from "@/platform/rpc";
 import { ok, type Result } from "@/platform/result";
 
-export const LAST_SEEN_TOUCH_MS = 5 * 60 * 1000;
+export const LAST_SEEN_TOUCH_MS = 25 * 1000;
 
 export type PresenceVisibility = {
   showOnline: boolean;
@@ -31,7 +31,7 @@ export type SubjectPresenceRow = {
 
 let lastTouchAtMs: number | null = null;
 
-/** Client-side throttle before calling the RPC (5-minute window). */
+/** Client-side throttle before calling the RPC (matches the server's 25 s window). */
 export function shouldTouchLastSeen(nowMs: number): boolean {
   if (lastTouchAtMs === null) {
     return true;
