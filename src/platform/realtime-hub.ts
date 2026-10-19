@@ -308,3 +308,13 @@ export function joinInbox(supabase: SupabaseClient, userId: string): TopicHandle
     userId,
   );
 }
+
+/** One app-wide presence topic: every signed-in user tracks here once. */
+export const GLOBAL_PRESENCE_TOPIC = "presence:global";
+
+export function joinGlobalPresence(
+  supabase: SupabaseClient,
+  userId: string,
+): TopicHandle {
+  return join(supabase, GLOBAL_PRESENCE_TOPIC, [], userId);
+}

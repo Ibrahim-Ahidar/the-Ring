@@ -58,6 +58,7 @@ vi.mock("@/features/typing-presence/service", () => ({
   touchLastSeenForMember: vi.fn(async () => undefined),
 }));
 
+import { setOnlineUserIds } from "@/features/typing-presence/presence-store";
 import {
   TypingPresenceProvider,
   useTypingPresence,
@@ -91,6 +92,7 @@ describe("TypingPresenceProvider", () => {
     hub.handle.track.mockClear();
     hub.handle.untrack.mockClear();
     resetTypingStoreForTests();
+    setOnlineUserIds(new Set());
   });
   afterEach(() => {
     cleanup();
@@ -98,9 +100,9 @@ describe("TypingPresenceProvider", () => {
     vi.useRealTimers();
   });
 
-  it("tracks on SUBSCRIBED and does not re-render consumers on typing", async () => {
+  it("does not track per conversation and does not re-render consumers on typing", async () => {
     await mount();
-    expect(hub.handle.track).toHaveBeenCalledTimes(1);
+    expect(hub.handle.track).not.toHaveBeenCalled();
     const before = renders;
     await act(async () => {
       hub.handle.broadcast?.("typing.started", { userId: "ada" });
@@ -117,60 +119,15 @@ describe("TypingPresenceProvider", () => {
     expect(getTyping("c1", "me")).toHaveLength(0);
   });
 
-  it("untracks on pagehide", async () => {
+  it("derives online from the app-wide store, gated by presence_allowed", async () => {
     await mount();
-    act(() => {
-      window.dispatchEvent(new Event("pagehide"));
-    });
-    expect(hub.handle.untrack).toHaveBeenCalledTimes(1);
-  });
-
-  it("untracks after 30 s hidden, and cancels when visible again", async () => {
-    await mount();
-    const setVisibility = (state: "hidden" | "visible") => {
-      Object.defineProperty(document, "visibilityState", {
-        configurable: true,
-        get: () => state,
-      });
-      document.dispatchEvent(new Event("visibilitychange"));
-    };
-
-    act(() => setVisibility("hidden"));
-    act(() => {
-      vi.advanceTimersByTime(29_000);
-    });
-    expect(hub.handle.untrack).not.toHaveBeenCalled();
-    act(() => setVisibility("visible"));
-    act(() => {
-      vi.advanceTimersByTime(60_000);
-    });
-    expect(hub.handle.untrack).not.toHaveBeenCalled();
-
-    act(() => setVisibility("hidden"));
-    act(() => {
-      vi.advanceTimersByTime(30_000);
-    });
-    expect(hub.handle.untrack).toHaveBeenCalledTimes(1);
-
-    act(() => setVisibility("visible"));
-    expect(hub.handle.track).toHaveBeenCalledTimes(2);
-  });
-
-  it("clears the online set when the channel leaves SUBSCRIBED", async () => {
-    await mount();
+    expect(screen.getByTestId("online").textContent).toBe("false");
     await act(async () => {
-      hub.handle.presence?.({ ada: [{}] });
+      setOnlineUserIds(new Set(["ada"]));
     });
     expect(screen.getByTestId("online").textContent).toBe("true");
-
     await act(async () => {
-      hub.handle.status?.("CHANNEL_ERROR");
-    });
-    expect(screen.getByTestId("online").textContent).toBe("false");
-
-    // presence callbacks are ignored while not subscribed
-    await act(async () => {
-      hub.handle.presence?.({ ada: [{}] });
+      setOnlineUserIds(new Set());
     });
     expect(screen.getByTestId("online").textContent).toBe("false");
   });
