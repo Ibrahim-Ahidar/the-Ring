@@ -55,9 +55,13 @@ export async function touchLastSeen(
     return ok(false);
   }
 
-  const result = await callRpc<boolean>(rpc, "typing_presence_touch_last_seen", {
-    p_now: new Date(nowMs).toISOString(),
-  });
+  // A missed beat is retried by the next heartbeat, so it only warns.
+  const result = await callRpc<boolean>(
+    rpc,
+    "typing_presence_touch_last_seen",
+    { p_now: new Date(nowMs).toISOString() },
+    { quiet: true },
+  );
 
   if (result.ok && result.value) {
     markLastSeenTouched(nowMs);

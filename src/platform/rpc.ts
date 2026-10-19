@@ -10,7 +10,8 @@ export interface RpcClient {
     args?: Record<string, unknown>,
   ): PromiseLike<{
     data: unknown;
-    error: { message: string; code?: string } | null;
+    error: { message: string; code?: string; details?: string; hint?: string } | null;
+    status?: number;
   }>;
 }
 
@@ -31,13 +32,23 @@ export async function callRpc<T>(
   client: RpcClient,
   fn: string,
   args?: Record<string, unknown>,
+  options?: { quiet?: boolean },
 ): Promise<Result<T>> {
-  const { data, error } = await client.rpc(fn, args);
+  const { data, error, status } = await client.rpc(fn, args);
   if (error) {
     const code = mapRpcError(error.message, error.code);
     if (code === "platform.unexpected") {
-      // The mapped code hides the cause; keep it visible in server logs.
-      console.error(`[rpc] ${fn} failed`, { pgCode: error.code, message: error.message });
+      // The mapped code hides the cause; keep it visible in server logs. A
+      // gateway or network failure carries no pgCode/message, so log it all.
+      // Quiet calls are best-effort background work that retries on its own.
+      const log = options?.quiet ? console.warn : console.error;
+      log(`[rpc] ${fn} failed`, {
+        status,
+        pgCode: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
     }
     return err(code);
   }
