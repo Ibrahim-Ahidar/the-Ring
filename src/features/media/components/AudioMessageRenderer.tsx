@@ -1,14 +1,13 @@
 "use client";
 
 import { memo, useMemo, useRef, useState } from "react";
-import { CheckCheck, Pause, Play } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import type { TimelineMessage } from "@/platform/timeline";
 
 import { markAudioPlayedAction } from "../actions";
 import { shouldRecordPlay } from "../audio-played";
-import { useAudioPlayed } from "../hooks/useAudioPlayed";
 import { useAttachmentList } from "../hooks/useAttachmentList";
 import { useDownloadUrl } from "../hooks/useDownloadUrl";
 import styles from "../media.module.css";
@@ -42,7 +41,6 @@ function AudioMessageRendererInner({ message, currentUserId }: Props) {
   const [positionMs, setPositionMs] = useState(0);
   // Fallback for rows saved without duration_ms; MediaRecorder webm can report Infinity.
   const [metaDurationMs, setMetaDurationMs] = useState(0);
-  const played = useAudioPlayed(message.id, isOwn && message.status !== "pending");
   const src = useDownloadUrl(uploading ? null : attachment?.id);
 
   const waveform = useMemo(() => {
@@ -128,16 +126,6 @@ function AudioMessageRendererInner({ message, currentUserId }: Props) {
           >
             {started ? `${formatMs(positionMs)} / ${durationLabel}` : durationLabel}
           </span>
-          {isOwn && played ? (
-            <span
-              className={styles.voicePlayed}
-              title={t("audioPlayed")}
-              aria-label={t("audioPlayed")}
-              role="img"
-            >
-              <CheckCheck size={14} aria-hidden />
-            </span>
-          ) : null}
         </div>
       </div>
       {src ? (

@@ -16,6 +16,7 @@
   "attachmentMissing": "المرفق غير متاح",
   "playAudio": "تشغيل رسالة صوتية",
   "audioPlayed": "تم التشغيل",
+  "audioNotPlayed": "لم يتم التشغيل بعد",
   "pauseAudio": "إيقاف الرسالة الصوتية",
   "durationLabel": "المدة {time}",
   "startRecording": "تسجيل رسالة صوتية",

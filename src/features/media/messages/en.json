@@ -16,6 +16,7 @@
   "attachmentMissing": "Attachment unavailable",
   "playAudio": "Play voice message",
   "audioPlayed": "Played",
+  "audioNotPlayed": "Not played yet",
   "pauseAudio": "Pause voice message",
   "durationLabel": "Duration {time}",
   "startRecording": "Record voice message",

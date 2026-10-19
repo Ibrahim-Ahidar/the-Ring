@@ -92,6 +92,7 @@ function MessageBubbleInner({
   const t = useTranslations("direct-messaging");
   const format = useFormatter();
   const extras = useMemo(() => getContributions("bubbleExtra"), []);
+  const metaBadges = useMemo(() => getContributions("bubbleMetaBadge"), []);
   const hydrated = useHydrated();
 
   if (message.type === "system") {
@@ -177,6 +178,13 @@ function MessageBubbleInner({
         <span className={styles.bubbleMeta}>
           {message.edited_at && !deleted ? <span>{t("edited")} ·</span> : null}
           <time dateTime={message.created_at}>{time}</time>
+          {metaBadges.map((badge) => (
+            <badge.Component
+              key={badge.id}
+              message={message}
+              currentUserId={currentUserId}
+            />
+          ))}
           {delivery ? (
             <DeliveryIcon status={delivery} label={deliveryLabel(t, delivery)} />
           ) : null}

@@ -94,6 +94,17 @@ export type BubbleExtraContribution = {
   }>;
 };
 
+/**
+ * Small badge rendered in the bubble meta row, just before the delivery ticks.
+ */
+export type BubbleMetaBadgeContribution = {
+  id: string;
+  Component: ComponentType<{
+    message: TimelineMessage;
+    currentUserId: string;
+  }>;
+};
+
 export type MessageRendererType =
   | "text"
   | "image"
@@ -178,6 +189,7 @@ export type FeatureContributions = {
   composerSendAction?: ComposerSendActionContribution[];
   messageAction?: MessageActionContribution[];
   bubbleExtra?: BubbleExtraContribution[];
+  bubbleMetaBadge?: BubbleMetaBadgeContribution[];
   messageRenderer?: MessageRendererContribution[];
   headerStatus?: HeaderStatusContribution[];
   rightPanelTab?: RightPanelTabContribution[];
@@ -192,6 +204,7 @@ export const CONTRIBUTION_KINDS = [
   "composerSendAction",
   "messageAction",
   "bubbleExtra",
+  "bubbleMetaBadge",
   "messageRenderer",
   "headerStatus",
   "rightPanelTab",
@@ -208,6 +221,7 @@ export type ContributionKindMap = {
   composerSendAction: ComposerSendActionContribution;
   messageAction: MessageActionContribution;
   bubbleExtra: BubbleExtraContribution;
+  bubbleMetaBadge: BubbleMetaBadgeContribution;
   messageRenderer: MessageRendererContribution;
   headerStatus: HeaderStatusContribution;
   rightPanelTab: RightPanelTabContribution;

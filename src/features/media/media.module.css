@@ -320,9 +320,13 @@
   }
 }
 
-.voicePlayed {
+.audioBadge {
   display: inline-grid;
   flex-shrink: 0;
   place-items: center;
-  color: var(--color-accent);
+  color: inherit;
+}
+
+.audioBadge[data-played="true"] {
+  color: var(--color-read);
 }

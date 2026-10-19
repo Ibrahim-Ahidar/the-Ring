@@ -1,6 +1,7 @@
 import type { FeatureContributions } from "@/shell/slots/types";
 
 import { AudioMessageRenderer } from "./components/AudioMessageRenderer";
+import { AudioPlayedBadge } from "./components/AudioPlayedBadge";
 import { FileMessageRenderer } from "./components/FileMessageRenderer";
 import { ImageMessageRenderer } from "./components/ImageMessageRenderer";
 import { MediaComposerTool } from "./components/MediaComposerTool";
@@ -16,6 +17,7 @@ export const contributions: FeatureContributions = {
     },
   ],
   composerSendAction: [{ id: "media-voice", Component: VoiceSendAction }],
+  bubbleMetaBadge: [{ id: "media-audio-played", Component: AudioPlayedBadge }],
   messageRenderer: [
     { type: "image", Component: ImageMessageRenderer },
     { type: "file", Component: FileMessageRenderer },
