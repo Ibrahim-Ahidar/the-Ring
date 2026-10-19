@@ -15,8 +15,6 @@
 .select {
   width: auto;
   min-width: 160px;
-  height: 36px;
-  font-size: var(--text-sm);
 }
 
 .list {

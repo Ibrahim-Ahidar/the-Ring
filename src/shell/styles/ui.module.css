@@ -621,7 +621,11 @@ a.memberRow:hover {
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: 6px;
+}
+
+.field + .field {
+  margin-block-start: var(--space-16);
 }
 
 .fieldLabel {
@@ -632,15 +636,26 @@ a.memberRow:hover {
 
 .input {
   width: 100%;
-  height: 44px;
-  padding-inline: var(--space-16);
+  height: 40px;
+  padding-inline: var(--space-12);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-control);
-  background: transparent;
+  background-color: transparent;
   color: var(--color-text);
+  font: inherit;
   font-size: var(--text-md);
   outline: 0;
   transition: border-color var(--motion-fast) var(--motion-ease);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+.input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 textarea.input {
@@ -651,7 +666,19 @@ textarea.input {
 }
 
 select.input {
-  padding-inline-end: var(--space-8);
+  appearance: none;
+  padding-inline-end: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a8f98' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+select.input option {
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .input:focus {
@@ -665,7 +692,7 @@ select.input {
 
 .fieldHint {
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 
 .fieldError {
@@ -676,7 +703,7 @@ select.input {
 .inputPrefix {
   display: flex;
   align-items: center;
-  height: 44px;
+  height: 40px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-control);
   direction: ltr;
