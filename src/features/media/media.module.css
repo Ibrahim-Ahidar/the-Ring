@@ -22,6 +22,41 @@
   background: var(--color-danger);
 }
 
+.recordingBar {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 44px;
+}
+
+.recordingBar .recordingDot {
+  animation: recordingPulse 1s ease-in-out infinite;
+}
+
+.recordingTime {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.voiceBtn {
+  flex-shrink: 0;
+  margin-block-end: 2px;
+}
+
+@keyframes recordingPulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recordingBar .recordingDot {
+    animation: none;
+  }
+}
+
 .recorderError {
   color: var(--color-danger);
   font-size: var(--text-xs);

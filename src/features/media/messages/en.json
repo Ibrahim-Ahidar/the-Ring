@@ -46,5 +46,8 @@
       "rejected": "Upload could not be verified",
       "storage_error": "Storage is unavailable"
     }
-  }
+  },
+  "cancelRecording": "Cancel recording",
+  "sendRecording": "Send voice message",
+  "recordingTime": "Recording time"
 }

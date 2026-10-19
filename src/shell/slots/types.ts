@@ -42,6 +42,16 @@ export type ComposerToolContribution = {
   Component: ComponentType<ComposerToolProps>;
 };
 
+/**
+ * Replaces the send arrow while the draft is empty (e.g. a mic). May also render a
+ * flex child that takes the textarea's place (recording bar); the composer hides the
+ * textarea itself based on composer activity.
+ */
+export type ComposerSendActionContribution = {
+  id: string;
+  Component: ComponentType<ComposerToolProps>;
+};
+
 export type MessageActionContext = {
   message: TimelineMessage;
   conversationId: string;
@@ -165,6 +175,7 @@ export type FeatureContributions = {
   nav?: NavContribution[];
   overlay?: OverlayContribution[];
   composerTool?: ComposerToolContribution[];
+  composerSendAction?: ComposerSendActionContribution[];
   messageAction?: MessageActionContribution[];
   bubbleExtra?: BubbleExtraContribution[];
   messageRenderer?: MessageRendererContribution[];
@@ -178,6 +189,7 @@ export const CONTRIBUTION_KINDS = [
   "nav",
   "overlay",
   "composerTool",
+  "composerSendAction",
   "messageAction",
   "bubbleExtra",
   "messageRenderer",
@@ -193,6 +205,7 @@ export type ContributionKindMap = {
   nav: NavContribution;
   overlay: OverlayContribution;
   composerTool: ComposerToolContribution;
+  composerSendAction: ComposerSendActionContribution;
   messageAction: MessageActionContribution;
   bubbleExtra: BubbleExtraContribution;
   messageRenderer: MessageRendererContribution;

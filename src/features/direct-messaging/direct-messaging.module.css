@@ -792,6 +792,11 @@
   color: var(--color-text-muted);
 }
 
+.composerTools[hidden],
+.composerInput[hidden] {
+  display: none;
+}
+
 .composerSend {
   flex-shrink: 0;
   margin-block-end: 2px;

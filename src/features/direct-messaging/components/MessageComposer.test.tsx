@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -11,14 +11,22 @@ import { MessageComposer, type ComposerDisabledReason } from "./MessageComposer"
 const sendMessage = vi.fn();
 const setDraft = vi.fn();
 let draft = "";
+let activityListener: ((a: unknown) => void) | null = null;
 
 vi.mock("../context/MessagingProvider", () => ({
   useMessagingActions: () => ({ sendMessage, setDraft }),
   useDraft: () => draft,
 }));
-vi.mock("@/shell/slots", () => ({ getContributions: () => [] }));
+let sendActions: unknown[] = [];
+vi.mock("@/shell/slots", () => ({
+  getContributions: (kind: string) => (kind === "composerSendAction" ? sendActions : []),
+}));
 vi.mock("@/platform/composer-events", () => ({
   emitComposerActivity: vi.fn(),
+  onComposerActivity: (l: (a: unknown) => void) => {
+    activityListener = l;
+    return () => {};
+  },
   getComposerSendExtras: () => undefined,
   composerAboveId: (id: string) => `above-${id}`,
 }));
@@ -44,6 +52,7 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   draft = "";
+  sendActions = [];
   coarse(false);
 });
 
@@ -109,5 +118,26 @@ describe("MessageComposer", () => {
     expect((screen.getByRole("button", { name: ar.send }) as HTMLButtonElement).disabled).toBe(
       true,
     );
+  });
+
+  it("shows the contributed action when empty and the send arrow when typed", () => {
+    sendActions = [{ id: "x", Component: () => <button type="button">MicStub</button> }];
+    const view = setup();
+    expect(screen.getByText("MicStub")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Send" })).toBeNull();
+    view.unmount();
+    draft = "hi";
+    setup();
+    expect(screen.queryByText("MicStub")).toBeNull();
+    expect(screen.getByRole("button", { name: "Send" })).toBeTruthy();
+  });
+
+  it("hides the textarea while recording", () => {
+    sendActions = [{ id: "x", Component: () => <button type="button">MicStub</button> }];
+    setup();
+    act(() => activityListener?.({ kind: "recording", conversationId: "c1", active: true }));
+    expect(screen.queryByRole("textbox")).toBeNull();
+    act(() => activityListener?.({ kind: "recording", conversationId: "c1", active: false }));
+    expect(screen.getByRole("textbox")).toBeTruthy();
   });
 });

@@ -7,6 +7,7 @@ import {
   useMemo,
   useLayoutEffect,
   useRef,
+  useState,
   type FormEvent,
   type KeyboardEvent,
 } from "react";
@@ -16,6 +17,7 @@ import { useTranslations } from "next-intl";
 import {
   emitComposerActivity,
   getComposerSendExtras,
+  onComposerActivity,
 } from "@/platform/composer-events";
 import { composerAboveId } from "@/platform/composer-events";
 import { getContributions } from "@/shell/slots";
@@ -48,6 +50,8 @@ function MessageComposerInner({ conversationId, disabledReason }: Props) {
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastInputSignal = useRef(0);
   const tools = useMemo(() => getContributions("composerTool"), []);
+  const sendAction = useMemo(() => getContributions("composerSendAction")[0], []);
+  const [recording, setRecording] = useState(false);
   const disabled = disabledReason !== undefined;
   const canSend = !disabled && draft.trim().length > 0;
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -61,6 +65,15 @@ function MessageComposerInner({ conversationId, disabledReason }: Props) {
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
   }, [draft]);
+
+  useEffect(() => {
+    setRecording(false);
+    return onComposerActivity((activity) => {
+      if (activity.kind === "recording" && activity.conversationId === conversationId) {
+        setRecording(activity.active);
+      }
+    });
+  }, [conversationId]);
 
   const signalInput = useCallback(
     (text: string) => {
@@ -128,7 +141,7 @@ function MessageComposerInner({ conversationId, disabledReason }: Props) {
     <form className={styles.composer} onSubmit={onSubmit}>
       <div id={composerAboveId(conversationId)} className={styles.composerAbove} />
       <div className={styles.composerBar}>
-        <div className={styles.composerTools}>
+        <div className={styles.composerTools} hidden={recording}>
           {tools.map((tool) => (
             <tool.Component
               key={tool.id}
@@ -143,6 +156,7 @@ function MessageComposerInner({ conversationId, disabledReason }: Props) {
         <textarea
           id={`composer-${conversationId}`}
           className={styles.composerInput}
+          hidden={recording}
           value={draft}
           ref={inputRef}
           rows={1}
@@ -153,15 +167,19 @@ function MessageComposerInner({ conversationId, disabledReason }: Props) {
           placeholder={disabled ? undefined : t("composerPlaceholder")}
           aria-describedby={disabled ? `composer-reason-${conversationId}` : undefined}
         />
-        <button
-          type="submit"
-          className={`${ui.iconBtn} ${ui.iconBtnAccent} ${styles.composerSend}`}
-          aria-label={t("send")}
-          title={t("send")}
-          disabled={!canSend}
-        >
-          <SendHorizontal size={24} className="flip-rtl" aria-hidden />
-        </button>
+        {sendAction && (!canSend || recording) ? (
+          <sendAction.Component conversationId={conversationId} disabled={disabled} />
+        ) : (
+          <button
+            type="submit"
+            className={`${ui.iconBtn} ${ui.iconBtnAccent} ${styles.composerSend}`}
+            aria-label={t("send")}
+            title={t("send")}
+            disabled={!canSend}
+          >
+            <SendHorizontal size={24} className="flip-rtl" aria-hidden />
+          </button>
+        )}
       </div>
       {disabledReason ? (
         <p id={`composer-reason-${conversationId}`} className={ui.notice} role="status">

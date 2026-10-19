@@ -4,6 +4,7 @@ import { AudioMessageRenderer } from "./components/AudioMessageRenderer";
 import { FileMessageRenderer } from "./components/FileMessageRenderer";
 import { ImageMessageRenderer } from "./components/ImageMessageRenderer";
 import { MediaComposerTool } from "./components/MediaComposerTool";
+import { VoiceSendAction } from "./components/VoiceSendAction";
 import { SharedMediaPanelTab } from "./components/SharedMediaPanelTab";
 
 export const contributions: FeatureContributions = {
@@ -14,6 +15,7 @@ export const contributions: FeatureContributions = {
       Component: MediaComposerTool,
     },
   ],
+  composerSendAction: [{ id: "media-voice", Component: VoiceSendAction }],
   messageRenderer: [
     { type: "image", Component: ImageMessageRenderer },
     { type: "file", Component: FileMessageRenderer },

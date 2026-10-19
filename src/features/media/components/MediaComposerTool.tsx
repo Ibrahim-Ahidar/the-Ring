@@ -9,7 +9,6 @@ import ui from "@/shell/styles/ui.module.css";
 
 import { MediaProvider, useMedia } from "../context/MediaProvider";
 import styles from "../media.module.css";
-import { VoiceRecorder } from "./VoiceRecorder";
 
 function MediaComposerToolInner({ conversationId, disabled }: ComposerToolProps) {
   const t = useTranslations("media");
@@ -47,12 +46,6 @@ function MediaComposerToolInner({ conversationId, disabled }: ComposerToolProps)
       >
         <Paperclip size={24} aria-hidden />
       </button>
-      <VoiceRecorder
-        disabled={disabled}
-        onBlob={(file, durationMs) => {
-          void startUpload({ conversationId, file, durationMs });
-        }}
-      />
     </div>
   );
 }

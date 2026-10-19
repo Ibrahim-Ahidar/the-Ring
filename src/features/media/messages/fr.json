@@ -46,5 +46,8 @@
       "rejected": "Impossible de vérifier l’envoi",
       "storage_error": "Stockage indisponible"
     }
-  }
+  },
+  "cancelRecording": "Annuler l’enregistrement",
+  "sendRecording": "Envoyer le message vocal",
+  "recordingTime": "Durée de l’enregistrement"
 }
