@@ -1,11 +1,14 @@
 "use client";
 
 import { memo, useMemo, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
+import { CheckCheck, Pause, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import type { TimelineMessage } from "@/platform/timeline";
 
+import { markAudioPlayedAction } from "../actions";
+import { shouldRecordPlay } from "../audio-played";
+import { useAudioPlayed } from "../hooks/useAudioPlayed";
 import { useAttachmentList } from "../hooks/useAttachmentList";
 import { useDownloadUrl } from "../hooks/useDownloadUrl";
 import styles from "../media.module.css";
@@ -24,15 +27,18 @@ function formatMs(ms: number): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-function AudioMessageRendererInner({ message }: Props) {
+function AudioMessageRendererInner({ message, currentUserId }: Props) {
+  const isOwn = message.sender_id === currentUserId;
   const t = useTranslations("media");
   const attachments = useAttachmentList(message.id, message.attachments);
   const attachment = attachments[0];
   const phase = uploadPhase(message);
   const uploading = phase === "pending" || phase === "failed";
   const audioRef = useRef<HTMLAudioElement>(null);
+  const recordedRef = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [positionMs, setPositionMs] = useState(0);
+  const played = useAudioPlayed(message.id, isOwn && message.status !== "pending");
   const src = useDownloadUrl(uploading ? null : attachment?.id);
 
   const waveform = useMemo(() => {
@@ -75,6 +81,10 @@ function AudioMessageRendererInner({ message }: Props) {
     try {
       await el.play();
       setPlaying(true);
+      if (shouldRecordPlay({ isOwn, alreadyRecorded: recordedRef.current })) {
+        recordedRef.current = true;
+        void markAudioPlayedAction({ messageId: message.id });
+      }
     } catch {
       setPlaying(false);
     }
@@ -114,6 +124,16 @@ function AudioMessageRendererInner({ message }: Props) {
           {started ? `${formatMs(positionMs)} / ${durationLabel}` : durationLabel}
         </span>
       </div>
+      {isOwn && played ? (
+        <span
+          className={styles.voicePlayed}
+          title={t("audioPlayed")}
+          aria-label={t("audioPlayed")}
+          role="img"
+        >
+          <CheckCheck size={14} aria-hidden />
+        </span>
+      ) : null}
       {src ? (
         <audio
           ref={audioRef}

@@ -15,6 +15,7 @@
   "loadingImage": "Loading image…",
   "attachmentMissing": "Attachment unavailable",
   "playAudio": "Play voice message",
+  "audioPlayed": "Played",
   "pauseAudio": "Pause voice message",
   "durationLabel": "Duration {time}",
   "startRecording": "Record voice message",

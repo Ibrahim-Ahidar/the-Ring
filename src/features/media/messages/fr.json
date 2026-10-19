@@ -15,6 +15,7 @@
   "loadingImage": "Chargement de l’image…",
   "attachmentMissing": "Pièce jointe indisponible",
   "playAudio": "Lire le message vocal",
+  "audioPlayed": "Écouté",
   "pauseAudio": "Mettre en pause",
   "durationLabel": "Durée {time}",
   "startRecording": "Enregistrer un message vocal",

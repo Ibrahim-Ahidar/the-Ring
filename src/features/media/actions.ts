@@ -11,7 +11,9 @@ import { completeUploadFlow } from "./complete-upload-flow";
 import {
   failUpload,
   getAttachmentDownloadMeta,
+  getAudioPlayedCount,
   getMessageAttachments,
+  markAudioPlayed,
   listShared,
   prepareUpload,
   reconcileDeletedAttachments,
@@ -183,4 +185,24 @@ export async function listSharedAction(input: {
   }
 
   return listShared(session.rpc, input);
+}
+
+export async function markAudioPlayedAction(input: {
+  messageId: string;
+}): Promise<Result<null>> {
+  const session = await requireSession();
+  if (!session) {
+    return { ok: false, error: { code: "platform.unauthenticated" } };
+  }
+  return markAudioPlayed(session.rpc, input);
+}
+
+export async function getAudioPlayedCountAction(input: {
+  messageId: string;
+}): Promise<Result<number>> {
+  const session = await requireSession();
+  if (!session) {
+    return { ok: false, error: { code: "platform.unauthenticated" } };
+  }
+  return getAudioPlayedCount(session.rpc, input);
 }

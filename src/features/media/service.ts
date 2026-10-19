@@ -196,3 +196,26 @@ export function sharedPageNextCursor(items: SharedItem[]): string | null {
   const payload = `${last.created_at}|${last.message_id}`;
   return encodeBase64Url(payload);
 }
+
+export async function markAudioPlayed(
+  rpc: RpcClient,
+  input: { messageId: string },
+): Promise<Result<null>> {
+  const result = await callRpc<unknown>(rpc, "mark_audio_played", {
+    p_message_id: input.messageId,
+  });
+  return result.ok ? ok(null) : result;
+}
+
+export async function getAudioPlayedCount(
+  rpc: RpcClient,
+  input: { messageId: string },
+): Promise<Result<number>> {
+  const result = await callRpc<unknown>(rpc, "get_audio_played_count", {
+    p_message_id: input.messageId,
+  });
+  if (!result.ok) {
+    return result;
+  }
+  return ok(Number(result.value ?? 0));
+}

@@ -15,6 +15,7 @@
   "loadingImage": "جارٍ تحميل الصورة…",
   "attachmentMissing": "المرفق غير متاح",
   "playAudio": "تشغيل رسالة صوتية",
+  "audioPlayed": "تم التشغيل",
   "pauseAudio": "إيقاف الرسالة الصوتية",
   "durationLabel": "المدة {time}",
   "startRecording": "تسجيل رسالة صوتية",

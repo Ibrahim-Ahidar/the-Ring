@@ -271,3 +271,10 @@
     transition: none;
   }
 }
+
+.voicePlayed {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  color: var(--color-accent);
+}
