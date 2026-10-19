@@ -275,6 +275,7 @@ describe("schema constraints and storage", () => {
     expect(tables.rows.map((r) => r.tablename)).toEqual([
       "conversation_members",
       "conversations",
+      "message_audio_plays",
       "message_hides",
       "message_reactions",
       "messages",

@@ -110,6 +110,7 @@ as $$
   select count(*)::int
   from public.message_audio_plays p
   where p.message_id = p_message_id
+    and (select auth.uid()) is not null
     and public.can_see_audio_play(p.message_id, p.user_id);
 $$;
 
