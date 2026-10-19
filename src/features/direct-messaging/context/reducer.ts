@@ -252,15 +252,37 @@ export function messagingReducer(
       };
     case "detail/patchOwnRead": {
       const current = state.detailsByConversation[action.conversationId];
+      const item = state.conversations.find((c) => c.id === action.conversationId);
+      const covers =
+        !!item &&
+        item.unread_count > 0 &&
+        (item.last_message_id === null ||
+          item.last_message_id === action.lastReadMessageId);
+      const conversations = covers
+        ? state.conversations.map((c) =>
+            c.id === action.conversationId ? { ...c, unread_count: 0 } : c,
+          )
+        : state.conversations;
+      const archivedSummary =
+        covers && item.archived_at !== null && state.archivedSummary.unread > 0
+          ? {
+              ...state.archivedSummary,
+              unread: Math.max(0, state.archivedSummary.unread - item.unread_count),
+            }
+          : state.archivedSummary;
       if (
         !current ||
         (current.last_read_message_id === action.lastReadMessageId &&
           current.last_read_at === action.lastReadAt)
       ) {
-        return state;
+        return conversations === state.conversations
+          ? state
+          : { ...state, conversations, archivedSummary };
       }
       return {
         ...state,
+        conversations,
+        archivedSummary,
         detailsByConversation: {
           ...state.detailsByConversation,
           [action.conversationId]: {

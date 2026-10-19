@@ -5,6 +5,7 @@ import type { TimelineMessage } from "@/platform/timeline";
 import {
   useConversationView,
   useMarkSeenUpTo,
+  useViewerId,
 } from "../context/MessagingProvider";
 
 const VISIBLE_THRESHOLD = 0.6;
@@ -37,9 +38,9 @@ export function useReadTracker(
   rootRef: RefObject<Element | null>,
 ): (message: TimelineMessage) => (el: Element | null) => void {
   const markSeenUpTo = useMarkSeenUpTo();
-  const otherUserId = useConversationView(conversationId).detail?.other_user_id;
-  const otherUserIdRef = useRef(otherUserId);
-  otherUserIdRef.current = otherUserId;
+  const viewerId = useViewerId();
+  const viewerIdRef = useRef(viewerId);
+  viewerIdRef.current = viewerId;
 
   const state = useRef({
     observer: null as IntersectionObserver | null,
@@ -72,7 +73,8 @@ export function useReadTracker(
       const s = state.current;
       if (
         message.deleted_at ||
-        message.sender_id !== otherUserIdRef.current ||
+        !viewerIdRef.current ||
+        message.sender_id === viewerIdRef.current ||
         !isActive()
       ) {
         return;
@@ -110,6 +112,20 @@ export function useReadTracker(
     );
     return s.observer;
   }, [consider, rootRef]);
+
+  // Re-check whatever is on screen once the viewer is known.
+  useEffect(() => {
+    if (!viewerId) {
+      return;
+    }
+    const s = state.current;
+    for (const el of s.visible) {
+      const message = s.messages.get(el);
+      if (message) {
+        consider(message);
+      }
+    }
+  }, [viewerId, consider]);
 
   // Re-check whatever is on screen when the tab becomes active again.
   useEffect(() => {

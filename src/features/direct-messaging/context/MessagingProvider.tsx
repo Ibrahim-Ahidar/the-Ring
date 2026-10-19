@@ -133,6 +133,7 @@ const ActiveConversationContext = createContext<string | undefined>(undefined);
 const MessagingContext = createContext<MessagingContextValue | null>(null);
 const ActionsContext = createContext<MessagingActions | null>(null);
 const MarkSeenContext = createContext<MarkSeenUpTo | null>(null);
+const ViewerIdContext = createContext<string | null>(null);
 const MessagesSliceContext = createContext<MessagesSlice | null>(null);
 const ThreadFailedContext = createContext<Record<string, boolean> | null>(null);
 const DraftsContext = createContext<DraftStore | null>(null);
@@ -967,6 +968,7 @@ export function MessagingProvider({
     <ActiveConversationContext.Provider value={activeConversationId}>
     <MessagingContext.Provider value={value}>
       <ActionsContext.Provider value={actions}>
+        <ViewerIdContext.Provider value={userId}>
         <MarkSeenContext.Provider value={markSeenUpTo}>
           <MessagesSliceContext.Provider value={messagesSlice}>
             <ThreadFailedContext.Provider value={state.threadFailed}>
@@ -980,6 +982,7 @@ export function MessagingProvider({
             </ThreadFailedContext.Provider>
           </MessagesSliceContext.Provider>
         </MarkSeenContext.Provider>
+        </ViewerIdContext.Provider>
       </ActionsContext.Provider>
     </MessagingContext.Provider>
     </ActiveConversationContext.Provider>
@@ -1024,6 +1027,11 @@ export function useActiveConversationId(): string | undefined {
 /** Stable action callbacks; never re-renders on state changes. */
 export function useMessagingActions(): MessagingActions {
   return useRequired(useContext(ActionsContext), "useMessagingActions");
+}
+
+/** The signed-in user's id. */
+export function useViewerId(): string | null {
+  return useContext(ViewerIdContext);
 }
 
 /** Marks a conversation read up to `message`; used by `useReadTracker`. */

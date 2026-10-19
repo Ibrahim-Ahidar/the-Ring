@@ -278,6 +278,36 @@ describe("messagingReducer monotonic receipts", () => {
     expect(state.detailsByConversation["c1"]!.last_read_message_id).toBe("m1");
   });
 
+  it("patchOwnRead clears the inbox badge, and the archived total for archived chats", () => {
+    const item = (id: string, archived: string | null) =>
+      ({
+        id,
+        type: "group",
+        unread_count: 3,
+        last_message_id: "m9",
+        archived_at: archived,
+      }) as never;
+    let state = createInitialState("me");
+    state = {
+      ...state,
+      conversations: [item("c1", null), item("c2", "2026-01-01T00:00:00Z")],
+      archivedSummary: { count: 1, unread: 3 },
+    };
+    const patch = (conversationId: string, id: string) => ({
+      type: "detail/patchOwnRead" as const,
+      conversationId,
+      lastReadMessageId: id,
+      lastReadAt: "2026-01-02T00:00:00.000Z",
+    });
+    const older = messagingReducer(state, patch("c1", "m1"));
+    expect(older.conversations[0]!.unread_count).toBe(3);
+    const read = messagingReducer(state, patch("c1", "m9"));
+    expect(read.conversations[0]!.unread_count).toBe(0);
+    const archived = messagingReducer(read, patch("c2", "m9"));
+    expect(archived.conversations[1]!.unread_count).toBe(0);
+    expect(archived.archivedSummary.unread).toBe(0);
+  });
+
   it("receipts/set keeps the higher rank for the same message and restarts for a new one", () => {
     let state = createInitialState("me");
     state = messagingReducer(state, {

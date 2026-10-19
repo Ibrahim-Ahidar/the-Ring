@@ -5,10 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TimelineMessage } from "@/platform/timeline";
 
 const markSeenUpTo = vi.fn(async () => true);
+const viewer: { id: string | null } = { id: "me" };
 
 vi.mock("../context/MessagingProvider", () => ({
   useMarkSeenUpTo: () => markSeenUpTo,
-  useConversationView: () => ({ detail: { other_user_id: "peer" } }),
+  useViewerId: () => viewer.id,
 }));
 
 import { useReadTracker } from "./useReadReceipts";
@@ -76,6 +77,7 @@ describe("useReadTracker", () => {
     vi.useFakeTimers();
     observers = [];
     markSeenUpTo.mockClear();
+    viewer.id = "me";
     vi.stubGlobal("IntersectionObserver", FakeObserver);
     setActive(true, true);
   });
@@ -135,5 +137,32 @@ describe("useReadTracker", () => {
       vi.advanceTimersByTime(300);
     });
     expect(markSeenUpTo).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks group messages from any other member read", () => {
+    const messages = [msg(1, "alice"), msg(2, "bob")];
+    render(<Harness messages={messages} />);
+    intersect(["m01", "m02"]);
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(markSeenUpTo).toHaveBeenCalledWith("c1", messages[1]);
+  });
+
+  it("rechecks visible rows once the viewer id becomes known", () => {
+    viewer.id = null;
+    const messages = [msg(1, "peer")];
+    const view = render(<Harness messages={messages} />);
+    intersect(["m01"]);
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(markSeenUpTo).not.toHaveBeenCalled();
+    viewer.id = "me";
+    view.rerender(<Harness messages={messages} />);
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(markSeenUpTo).toHaveBeenCalledWith("c1", messages[0]);
   });
 });
