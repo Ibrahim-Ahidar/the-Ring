@@ -120,6 +120,7 @@ vi.mock("@/platform/realtime-hub", () => ({
 }));
 
 vi.mock("@/features/typing-presence/service", () => ({
+  fetchPeerOnline: vi.fn(async () => ({ ok: true, value: false })),
   fetchSubjectPresence: vi.fn(async () => ({
     ok: true,
     value: {
