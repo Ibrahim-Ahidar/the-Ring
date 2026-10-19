@@ -45,6 +45,11 @@ type Quote = { self: boolean; author: string | null; text: string };
 /** Distance from the bottom (px) within which new messages keep the view pinned. */
 const STICK_THRESHOLD = 80;
 
+/** Positions unchanged this long (ms) end the opening phase. */
+const OPEN_SETTLE_MS = 500;
+/** The opening phase never outlasts this (ms), however long rows keep measuring. */
+const OPEN_MAX_MS = 1500;
+
 /** Rows rendered beyond the viewport on each side. */
 const OVERSCAN = 8;
 /** First-paint height guess (px) for a row before it is measured. */
@@ -66,6 +71,23 @@ function prefersReducedMotion(): boolean {
     typeof window.matchMedia === "function" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
+}
+
+/**
+ * Where a freshly opened conversation lands: the first unread message centred, or the
+ * very bottom when nothing is unread (or the separator is not in the timeline).
+ */
+export function openTarget(
+  timeline: readonly { id: string }[],
+  separatorId: string | null,
+): { index: number; align: "center" | "end" } | null {
+  if (timeline.length === 0) {
+    return null;
+  }
+  const index = separatorId ? timeline.findIndex((m) => m.id === separatorId) : -1;
+  return index >= 0
+    ? { index, align: "center" }
+    : { index: timeline.length - 1, align: "end" };
 }
 
 function pendingAsMessage(pending: PendingSend): TimelineMessage {
@@ -127,6 +149,20 @@ function MessageTimelineInner({
   const hasMore = view.hasMore;
   const listRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
+  // Opening phase: the landing spot is re-applied while rows are measured.
+  const opening = useRef({
+    active: false,
+    unread: false,
+    startedAt: 0,
+    settle: undefined as ReturnType<typeof setTimeout> | undefined,
+    max: undefined as ReturnType<typeof setTimeout> | undefined,
+    loadOlderWanted: false,
+  });
+  const openContext = useRef<{
+    timeline: readonly { id: string }[];
+    separatorId: string | null;
+  }>({ timeline: [], separatorId: null });
+  const endOpeningRef = useRef<() => void>(() => {});
 
   const timeline = useMemo(() => {
     const pendingMessages = pending.map((entry) => ({
@@ -142,6 +178,34 @@ function MessageTimelineInner({
     return [...merged].reverse();
   }, [currentUserId, pending, stored]);
 
+  const applyOpenTarget = (instance: {
+    measurementsCache: readonly { start: number; size: number }[];
+  }) => {
+    const node = scrollRef.current;
+    const { timeline: rows, separatorId: separator } = openContext.current;
+    const target = openTarget(rows, separator);
+    if (!node || !target) {
+      return;
+    }
+    const state = opening.current;
+    state.unread = target.align === "center";
+    const item = instance.measurementsCache[target.index];
+    const max = Math.max(0, node.scrollHeight - node.clientHeight);
+    const top =
+      target.align === "center" && item
+        ? Math.min(max, Math.max(0, item.start + item.size / 2 - node.clientHeight / 2))
+        : node.scrollHeight;
+    if (Math.abs(node.scrollTop - top) > 1) {
+      node.scrollTop = top;
+    }
+    if (!state.startedAt) {
+      state.startedAt = Date.now();
+      state.max = setTimeout(() => endOpeningRef.current(), OPEN_MAX_MS);
+    }
+    clearTimeout(state.settle);
+    state.settle = setTimeout(() => endOpeningRef.current(), OPEN_SETTLE_MS);
+  };
+
   const virtualizer = useVirtualizer({
     count: timeline.length,
     getScrollElement: () => scrollRef.current,
@@ -151,6 +215,10 @@ function MessageTimelineInner({
     getItemKey: (index) => timeline[index]?.id ?? index,
     observeElementRect: observeViewport,
     onChange: (instance) => {
+      if (opening.current.active) {
+        applyOpenTarget(instance);
+        return;
+      }
       // Rows grow as they are measured: keep the newest message in view while pinned
       // (never while the reader is actively scrolling).
       const node = scrollRef.current;
@@ -224,17 +292,84 @@ function MessageTimelineInner({
   const lastIsMine = last?.sender_id === currentUserId;
 
   useLayoutEffect(() => {
+    openContext.current = { timeline, separatorId };
+  }, [timeline, separatorId]);
+
+  const endOpening = useCallback(() => {
+    const state = opening.current;
+    if (!state.active) {
+      return;
+    }
+    state.active = false;
+    state.startedAt = 0;
+    clearTimeout(state.settle);
+    clearTimeout(state.max);
+    const node = scrollRef.current;
+    if (node) {
+      const near = node.scrollHeight - node.scrollTop - node.clientHeight < STICK_THRESHOLD;
+      // Reading from the first unread message: later arrivals must not yank the view down.
+      stickToBottom.current = state.unread ? near : true;
+      setAtBottom(near);
+      if (state.loadOlderWanted && node.scrollTop <= 200) {
+        void loadOlderRef.current();
+      }
+    }
+    state.loadOlderWanted = false;
+  }, []);
+  useEffect(() => {
+    endOpeningRef.current = endOpening;
+  }, [endOpening]);
+
+  // Genuine input from the reader takes over from the opening position.
+  useEffect(() => {
+    const node = scrollRef.current;
+    if (!node) {
+      return;
+    }
+    const events = ["wheel", "touchstart", "pointerdown", "keydown"] as const;
+    const stop = () => endOpening();
+    for (const name of events) {
+      node.addEventListener(name, stop, { passive: true });
+    }
+    return () => {
+      for (const name of events) {
+        node.removeEventListener(name, stop);
+      }
+    };
+  }, [endOpening]);
+
+  useEffect(() => {
+    const state = opening.current;
+    return () => {
+      clearTimeout(state.settle);
+      clearTimeout(state.max);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
     const node = scrollRef.current;
     if (!node) {
       return;
     }
     const switched = scrolledConversation.current !== conversationId;
-    if (switched || stickToBottom.current || lastIsMine) {
+    if (switched) {
+      const state = opening.current;
+      clearTimeout(state.settle);
+      clearTimeout(state.max);
+      state.active = true;
+      state.startedAt = 0;
+      state.loadOlderWanted = false;
+    }
+    if (opening.current.active) {
+      applyOpenTarget(virtualizer);
+      stickToBottom.current = true;
+    } else if (stickToBottom.current || lastIsMine) {
       node.scrollTop = node.scrollHeight;
       stickToBottom.current = true;
     }
     scrolledConversation.current = conversationId;
-  }, [conversationId, lastId, lastIsMine]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, lastId, lastIsMine, separatorId]);
 
   const firstId = timeline[0]?.id;
 
@@ -290,6 +425,11 @@ function MessageTimelineInner({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
+          // Not while the opening position is still settling: remember and retry after.
+          if (opening.current.active) {
+            opening.current.loadOlderWanted = true;
+            return;
+          }
           void loadOlderRef.current();
         }
       },
@@ -305,7 +445,9 @@ function MessageTimelineInner({
       return;
     }
     const near = node.scrollHeight - node.scrollTop - node.clientHeight < STICK_THRESHOLD;
-    stickToBottom.current = near;
+    if (!opening.current.active) {
+      stickToBottom.current = near;
+    }
     setAtBottom(near);
   }, []);
 

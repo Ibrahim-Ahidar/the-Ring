@@ -8,7 +8,7 @@ import type { TimelineMessage } from "@/platform/timeline";
 
 import ar from "../messages/ar.json";
 import en from "../messages/en.json";
-import { MessageTimeline } from "./MessageTimeline";
+import { MessageTimeline, openTarget } from "./MessageTimeline";
 
 const loadOlderMessages = vi.fn();
 const emptyMessages: TimelineMessage[] = [];
@@ -126,7 +126,9 @@ describe("MessageTimeline older pages", () => {
   it("loads automatically near the top, once, and shows a spinner", async () => {
     let resolve: () => void = () => {};
     loadOlderMessages.mockReturnValue(new Promise<void>((r) => (resolve = r)));
-    render(ui());
+    const { container } = render(ui());
+    // The opening position is still settling until the reader interacts.
+    fireEvent.wheel(container.querySelector('[role="log"]') as HTMLElement);
     const entries = [{ isIntersecting: true }] as IntersectionObserverEntry[];
     act(() => observerCallback?.(entries, {} as IntersectionObserver));
     act(() => observerCallback?.(entries, {} as IntersectionObserver));
@@ -220,5 +222,49 @@ describe("MessageTimeline virtualization", () => {
     const indexes = Array.from(rows).map((r) => Number(r.getAttribute("data-index")));
     expect(indexes).toEqual([...indexes].sort((a, b) => a - b));
     height.mockRestore();
+  });
+});
+
+describe("openTarget", () => {
+  const rows = [{ id: "a" }, { id: "b" }, { id: "c" }];
+
+  it("lands on the last row when nothing is unread", () => {
+    expect(openTarget(rows, null)).toEqual({ index: 2, align: "end" });
+    expect(openTarget(rows, "missing")).toEqual({ index: 2, align: "end" });
+  });
+
+  it("centres the first unread message", () => {
+    expect(openTarget(rows, "b")).toEqual({ index: 1, align: "center" });
+  });
+
+  it("has no target for an empty timeline", () => {
+    expect(openTarget([], "b")).toBeNull();
+  });
+});
+
+describe("MessageTimeline opening position", () => {
+  it("stays pinned to the bottom when a scroll event reports a gap while opening", () => {
+    const { container, rerender } = render(ui());
+    const log = container.querySelector('[role="log"]') as HTMLElement;
+    setGeometry(log, { scrollHeight: 1500, clientHeight: 400 });
+    log.scrollTop = 900;
+    fireEvent.scroll(log);
+    mockState = makeState([...base, msg("m4", "sara", "2026-01-01T10:02:00.000Z")], false);
+    rerender(ui());
+    expect(log.scrollTop).toBe(1500);
+  });
+
+  it("holds load-older until the opening position settles", () => {
+    loadOlderMessages.mockResolvedValue(undefined);
+    const { container } = render(ui());
+    const entries = [{ isIntersecting: true }] as IntersectionObserverEntry[];
+    act(() => observerCallback?.(entries, {} as IntersectionObserver));
+    expect(loadOlderMessages).not.toHaveBeenCalled();
+    const log = container.querySelector('[role="log"]') as HTMLElement;
+    act(() => {
+      fireEvent.wheel(log);
+    });
+    act(() => observerCallback?.(entries, {} as IntersectionObserver));
+    expect(loadOlderMessages).toHaveBeenCalledTimes(1);
   });
 });
