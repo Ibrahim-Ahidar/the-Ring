@@ -89,7 +89,7 @@ function AudioMessageRendererInner({ message }: Props) {
         disabled={!src}
         aria-label={playing ? t("pauseAudio") : t("playAudio")}
       >
-        {playing ? <Pause size={24} aria-hidden /> : <Play size={24} aria-hidden />}
+        {playing ? <Pause size={18} aria-hidden /> : <Play size={18} aria-hidden />}
       </button>
       <div className={styles.voiceTrack}>
         {waveform.length > 0 ? (
