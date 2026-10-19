@@ -16,7 +16,7 @@ import { joinConversation, type TopicHandle } from "@/platform/realtime-hub";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 import { clearTyping, setTypingEvent } from "@/platform/typing-store";
 
-import { useIsOnline } from "@/features/typing-presence/presence-store";
+import { usePeerOnline } from "@/features/typing-presence/use-peer-online";
 import { fetchSubjectPresence } from "@/features/typing-presence/service";
 import type { SubjectPresenceRow } from "@/features/typing-presence/presence";
 
@@ -302,7 +302,7 @@ export function TypingPresenceProvider({
     };
   }, [conversationId, state.viewerId]);
 
-  const peerOnline = useIsOnline(otherUserId);
+  const peerOnline = usePeerOnline(otherUserId, state.viewerId);
   const subjectOnline =
     otherUserId != null &&
     state.subjectPresence?.presence_allowed === true &&

@@ -104,6 +104,7 @@ function createEntry(
   topic: string,
   tables: TableSubscription[],
   presenceKey: string,
+  isPrivate: boolean,
 ): Entry {
   const listeners: Listeners = {
     change: new Set(),
@@ -134,7 +135,11 @@ function createEntry(
     if (entry.dead) return;
 
     const channel = supabase.channel(topic, {
-      config: { broadcast: { self: false }, presence: { key: presenceKey } },
+      config: {
+        broadcast: { self: false },
+        presence: { key: presenceKey },
+        ...(isPrivate ? { private: true } : {}),
+      },
     });
     for (const { table, filter } of tables) {
       channel.on(
@@ -206,12 +211,13 @@ function join(
   topic: string,
   tables: TableSubscription[],
   presenceKey: string,
+  isPrivate = false,
 ): TopicHandle {
   const entries = entriesFor(supabase);
   let entry = entries.get(topic);
 
   if (!entry) {
-    entry = createEntry(supabase, topic, tables, presenceKey);
+    entry = createEntry(supabase, topic, tables, presenceKey, isPrivate);
     entries.set(topic, entry);
   }
 
@@ -309,12 +315,24 @@ export function joinInbox(supabase: SupabaseClient, userId: string): TopicHandle
   );
 }
 
-/** One app-wide presence topic: every signed-in user tracks here once. */
-export const GLOBAL_PRESENCE_TOPIC = "presence:global";
+/** Per-user private presence topic; RLS on realtime.messages gates who may read it. */
+export function presenceUserTopic(userId: string): string {
+  return `presence:user:${userId}`;
+}
 
-export function joinGlobalPresence(
+/** The viewer tracks only on their own private topic. */
+export function joinOwnPresence(
   supabase: SupabaseClient,
   userId: string,
 ): TopicHandle {
-  return join(supabase, GLOBAL_PRESENCE_TOPIC, [], userId);
+  return join(supabase, presenceUserTopic(userId), [], userId, true);
+}
+
+/** Read-only watch of a peer's topic; the server refuses it unless presence is allowed. */
+export function joinPeerPresence(
+  supabase: SupabaseClient,
+  peerId: string,
+  viewerId: string,
+): TopicHandle {
+  return join(supabase, presenceUserTopic(peerId), [], viewerId, true);
 }

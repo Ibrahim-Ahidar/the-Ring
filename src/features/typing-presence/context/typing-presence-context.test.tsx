@@ -14,8 +14,12 @@ const hub = vi.hoisted(() => {
     leave: vi.fn(),
     send: vi.fn(async () => undefined),
   };
-  return { handle };
+  const peer = {
+    presence: null as null | ((state: Record<string, unknown[]>) => void),
+  };
+  return { handle, peer };
 });
+const peer = hub.peer;
 
 vi.mock("@/platform/supabase/browser", () => ({
   createSupabaseBrowserClient: () => ({
@@ -24,6 +28,14 @@ vi.mock("@/platform/supabase/browser", () => ({
 }));
 vi.mock("@/platform/rpc", () => ({ asRpcClient: (client: unknown) => client }));
 vi.mock("@/platform/realtime-hub", () => ({
+  joinPeerPresence: () => ({
+    onPresence: (cb: typeof peer.presence) => {
+      peer.presence = cb;
+      return () => undefined;
+    },
+    onStatus: () => () => undefined,
+    leave: () => undefined,
+  }),
   joinConversation: () => ({
     onChange: () => () => undefined,
     onBroadcast: (cb: typeof hub.handle.broadcast) => {
@@ -58,7 +70,6 @@ vi.mock("@/features/typing-presence/service", () => ({
   touchLastSeenForMember: vi.fn(async () => undefined),
 }));
 
-import { setOnlineUserIds } from "@/features/typing-presence/presence-store";
 import {
   TypingPresenceProvider,
   useTypingPresence,
@@ -92,7 +103,7 @@ describe("TypingPresenceProvider", () => {
     hub.handle.track.mockClear();
     hub.handle.untrack.mockClear();
     resetTypingStoreForTests();
-    setOnlineUserIds(new Set());
+    peer.presence = null;
   });
   afterEach(() => {
     cleanup();
@@ -119,15 +130,15 @@ describe("TypingPresenceProvider", () => {
     expect(getTyping("c1", "me")).toHaveLength(0);
   });
 
-  it("derives online from the app-wide store, gated by presence_allowed", async () => {
+  it("derives online from the peer's private presence topic, gated by presence_allowed", async () => {
     await mount();
     expect(screen.getByTestId("online").textContent).toBe("false");
     await act(async () => {
-      setOnlineUserIds(new Set(["ada"]));
+      peer.presence?.({ ada: [{}] });
     });
     expect(screen.getByTestId("online").textContent).toBe("true");
     await act(async () => {
-      setOnlineUserIds(new Set());
+      peer.presence?.({});
     });
     expect(screen.getByTestId("online").textContent).toBe("false");
   });

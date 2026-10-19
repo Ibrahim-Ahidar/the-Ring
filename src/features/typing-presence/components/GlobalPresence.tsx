@@ -3,16 +3,15 @@
 import { useEffect, useMemo } from "react";
 
 import { asRpcClient } from "@/platform/rpc";
-import { joinGlobalPresence } from "@/platform/realtime-hub";
+import { joinOwnPresence } from "@/platform/realtime-hub";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 
-import { setOnlineUserIds } from "@/features/typing-presence/presence-store";
 import { touchLastSeenForMember } from "@/features/typing-presence/service";
 
 const PRESENCE_HEARTBEAT_MS = 60_000;
 const HIDDEN_UNTRACK_MS = 30_000;
 
-/** Mounted once in the shell: tracks the viewer on the app-wide presence channel. */
+/** Mounted once in the shell: tracks the viewer on their own private presence topic. */
 export function GlobalPresence() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const rpc = useMemo(() => asRpcClient(supabase), [supabase]);
@@ -22,7 +21,7 @@ export function GlobalPresence() {
     let cleanup: (() => void) | null = null;
 
     function start(viewerId: string): () => void {
-      const handle = joinGlobalPresence(supabase, viewerId);
+      const handle = joinOwnPresence(supabase, viewerId);
       let subscribed = false;
       let tracked = false;
       let hiddenTimer: ReturnType<typeof setTimeout> | null = null;
@@ -45,11 +44,6 @@ export function GlobalPresence() {
         void handle.untrack();
       };
 
-      const removePresence = handle.onPresence((state) => {
-        if (subscribed) {
-          setOnlineUserIds(new Set(Object.keys(state)));
-        }
-      });
       const removeStatus = handle.onStatus((status) => {
         if (status === "SUBSCRIBED") {
           subscribed = true;
@@ -62,7 +56,6 @@ export function GlobalPresence() {
         }
         subscribed = false;
         tracked = false;
-        setOnlineUserIds(new Set());
       });
 
       const onPageHide = () => untrack();
@@ -103,11 +96,9 @@ export function GlobalPresence() {
         window.removeEventListener("pagehide", onPageHide);
         window.removeEventListener("pageshow", onPageShow);
         document.removeEventListener("visibilitychange", onVisibility);
-        removePresence();
         removeStatus();
         untrack();
         handle.leave();
-        setOnlineUserIds(new Set());
       };
     }
 
