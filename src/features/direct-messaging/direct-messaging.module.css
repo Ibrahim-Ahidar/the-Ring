@@ -115,6 +115,7 @@
   grid-template-columns: 0fr;
   flex-shrink: 0;
   opacity: 0;
+  pointer-events: none;
   transform: translateX(var(--space-8));
   transition:
     grid-template-columns var(--motion-medium) var(--motion-ease),
@@ -134,15 +135,20 @@
 }
 
 .chatItem:hover .rowMenu,
-.chatItem:focus-within .rowMenu {
+.chatItem:has(:focus-visible) .rowMenu,
+.chatItem:has([aria-expanded="true"]) .rowMenu {
   grid-template-columns: 1fr;
   opacity: 1;
+  pointer-events: auto;
   transform: none;
 }
 
 @media (hover: none) {
   .rowMenu {
-    display: none;
+    grid-template-columns: 1fr;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
   }
 
   .chatRow {
