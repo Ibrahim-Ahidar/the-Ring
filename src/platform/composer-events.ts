@@ -6,6 +6,8 @@
 export type ComposerActivity =
   | { kind: "input"; conversationId: string; isEmpty: boolean }
   | { kind: "sent"; conversationId: string }
+  /** Voice recording started (active) or ended, sent or cancelled (not active). */
+  | { kind: "recording"; conversationId: string; active: boolean }
   | { kind: "closed"; conversationId: string };
 
 type Listener = (activity: ComposerActivity) => void;
