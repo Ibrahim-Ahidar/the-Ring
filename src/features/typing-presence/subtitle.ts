@@ -8,6 +8,7 @@ export type Subtitle =
     }
   | { kind: "online" }
   | { kind: "lastSeen"; at: Date }
+  | { kind: "offline" }
   | { kind: "none" };
 
 export type SubtitleInput = {
@@ -19,7 +20,7 @@ export type SubtitleInput = {
   subjectOnline: boolean;
 };
 
-/** Pure: typing > online > last seen > nothing. Privacy flags come from the server row. */
+/** Pure: typing > online > last seen > offline > nothing. Privacy flags come from the server row. */
 export function deriveSubtitle(input: SubtitleInput): Subtitle {
   const typers = input.typers.filter((typer) => typer.userId !== input.viewerId);
 
@@ -55,6 +56,10 @@ export function deriveSubtitle(input: SubtitleInput): Subtitle {
     if (!Number.isNaN(at.getTime())) {
       return { kind: "lastSeen", at };
     }
+  }
+  // Last seen hidden or unknown: still say offline when presence is allowed.
+  if (visibility.showOnline) {
+    return { kind: "offline" };
   }
   return { kind: "none" };
 }

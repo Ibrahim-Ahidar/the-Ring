@@ -48,23 +48,23 @@ describe("deriveSubtitle", () => {
     expect(result).toEqual({ kind: "none" });
   });
 
-  it("hides last seen when the user opted out", () => {
+  it("shows offline without a time when the user hides last seen", () => {
     const result = deriveSubtitle({
       ...base,
       subjectOnline: false,
       subjectPresence: row({ show_last_seen: false }),
     });
-    expect(result).toEqual({ kind: "none" });
+    expect(result).toEqual({ kind: "offline" });
   });
 
-  it("shows nothing without a last seen value", () => {
+  it("shows offline without a last seen value", () => {
     expect(
       deriveSubtitle({
         ...base,
         subjectOnline: false,
         subjectPresence: row({ last_seen_at: null }),
       }),
-    ).toEqual({ kind: "none" });
+    ).toEqual({ kind: "offline" });
   });
 
   it("excludes the viewer's own typing", () => {

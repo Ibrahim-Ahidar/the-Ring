@@ -52,7 +52,7 @@ export const HeaderStatusView = memo(function HeaderStatusView({
     );
   } else if (subtitle.kind === "online") {
     content = <span className={styles.online}>{t("online")}</span>;
-  } else if (subtitle.kind === "lastSeen") {
+  } else if (subtitle.kind === "lastSeen" || subtitle.kind === "offline") {
     content = <span className={styles.offline}>{t("offline")}</span>;
   }
 
