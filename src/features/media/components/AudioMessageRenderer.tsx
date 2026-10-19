@@ -15,6 +15,8 @@ import styles from "../media.module.css";
 import { uploadPhase } from "../upload-status";
 import { UploadProgress } from "./UploadProgress";
 
+const WAVE_BARS = 40;
+
 type Props = {
   message: TimelineMessage;
   currentUserId: string;
@@ -38,6 +40,8 @@ function AudioMessageRendererInner({ message, currentUserId }: Props) {
   const recordedRef = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [positionMs, setPositionMs] = useState(0);
+  // Fallback for rows saved without duration_ms; MediaRecorder webm can report Infinity.
+  const [metaDurationMs, setMetaDurationMs] = useState(0);
   const played = useAudioPlayed(message.id, isOwn && message.status !== "pending");
   const src = useDownloadUrl(uploading ? null : attachment?.id);
 
@@ -46,7 +50,7 @@ function AudioMessageRendererInner({ message, currentUserId }: Props) {
     if (!Array.isArray(raw)) {
       return [];
     }
-    return raw.slice(0, 64).map((value) => Number(value));
+    return resampleWaveform(raw.map((value) => Number(value) || 0), WAVE_BARS);
   }, [attachment?.waveform]);
 
   if (uploading) {
@@ -62,7 +66,7 @@ function AudioMessageRendererInner({ message, currentUserId }: Props) {
     return null;
   }
 
-  const durationMs = attachment.duration_ms ?? 0;
+  const durationMs = attachment.duration_ms || metaDurationMs;
   const durationLabel = formatMs(durationMs);
   const progress = durationMs > 0 ? Math.min(1, positionMs / durationMs) : 0;
   const playedBars = Math.round(progress * waveform.length);
@@ -117,27 +121,35 @@ function AudioMessageRendererInner({ message, currentUserId }: Props) {
             <span style={{ inlineSize: `${progress * 100}%` }} />
           </div>
         )}
-        <span
-          className={styles.voiceTime}
-          aria-label={t("durationLabel", { time: durationLabel })}
-        >
-          {started ? `${formatMs(positionMs)} / ${durationLabel}` : durationLabel}
-        </span>
+        <div className={styles.voiceInfo}>
+          <span
+            className={styles.voiceTime}
+            aria-label={t("durationLabel", { time: durationLabel })}
+          >
+            {started ? `${formatMs(positionMs)} / ${durationLabel}` : durationLabel}
+          </span>
+          {isOwn && played ? (
+            <span
+              className={styles.voicePlayed}
+              title={t("audioPlayed")}
+              aria-label={t("audioPlayed")}
+              role="img"
+            >
+              <CheckCheck size={14} aria-hidden />
+            </span>
+          ) : null}
+        </div>
       </div>
-      {isOwn && played ? (
-        <span
-          className={styles.voicePlayed}
-          title={t("audioPlayed")}
-          aria-label={t("audioPlayed")}
-          role="img"
-        >
-          <CheckCheck size={14} aria-hidden />
-        </span>
-      ) : null}
       {src ? (
         <audio
           ref={audioRef}
           src={src}
+          onLoadedMetadata={(event) => {
+            const seconds = event.currentTarget.duration;
+            if (Number.isFinite(seconds) && seconds > 0) {
+              setMetaDurationMs(seconds * 1000);
+            }
+          }}
           onTimeUpdate={(event) => setPositionMs(event.currentTarget.currentTime * 1000)}
           onEnded={() => {
             setPlaying(false);
@@ -148,6 +160,19 @@ function AudioMessageRendererInner({ message, currentUserId }: Props) {
       ) : null}
     </div>
   );
+}
+
+/** Averages any length of samples into a fixed bar count so the wave always fits. */
+function resampleWaveform(samples: number[], bars: number): number[] {
+  if (samples.length === 0) {
+    return [];
+  }
+  return Array.from({ length: bars }, (_, index) => {
+    const start = Math.floor((index * samples.length) / bars);
+    const end = Math.max(start + 1, Math.floor(((index + 1) * samples.length) / bars));
+    const slice = samples.slice(start, end);
+    return Math.min(1, slice.reduce((sum, value) => sum + value, 0) / slice.length);
+  });
 }
 
 export const AudioMessageRenderer = memo(AudioMessageRendererInner);

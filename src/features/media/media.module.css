@@ -119,10 +119,12 @@
 .voice {
   display: flex;
   align-items: center;
-  gap: var(--space-12);
-  width: min(280px, 62vw);
+  gap: 10px;
+  width: min(260px, 62vw);
   min-width: 200px;
-  padding: var(--space-4) 0;
+  padding-block-start: 2px;
+  /* Lets the bubble's floated time sit on the duration row, not a row of its own. */
+  margin-block-end: -15px;
 }
 
 .voicePlay {
@@ -158,20 +160,23 @@
   flex: 1;
   flex-direction: column;
   justify-content: center;
-  gap: var(--space-4);
+  gap: 3px;
   min-width: 0;
 }
 
+/* The inline-end gap keeps the wave clear of the hover menu trigger. */
 .voiceWave {
   display: flex;
   align-items: center;
   gap: 2px;
-  height: 24px;
+  height: 26px;
+  margin-inline-end: 22px;
+  overflow: hidden;
 }
 
 .voiceWave span {
   flex: 1;
-  min-width: 2px;
+  min-width: 0;
   border-radius: 2px;
   background: var(--color-bubble-meta);
   opacity: 0.55;
@@ -184,7 +189,8 @@
 
 .voiceLine {
   height: 4px;
-  margin-block: var(--space-8);
+  margin-block: 11px;
+  margin-inline-end: 22px;
   overflow: hidden;
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--color-bubble-meta) 40%, transparent);
@@ -196,11 +202,18 @@
   background: var(--color-accent);
 }
 
+.voiceInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 15px;
+}
+
 .voiceTime {
   color: var(--color-bubble-meta);
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
-  line-height: 1;
+  line-height: 15px;
 }
 
 /* ---------- Upload progress ---------- */
