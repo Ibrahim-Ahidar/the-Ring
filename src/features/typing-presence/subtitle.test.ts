@@ -22,6 +22,28 @@ const base = {
 };
 
 describe("deriveSubtitle", () => {
+  it("recording beats typing (direct and group)", () => {
+    const typers = [
+      { userId: "a", displayName: "Ann", activity: "typing" as const },
+      { userId: "b", displayName: "Bob", activity: "recording" as const },
+    ];
+    expect(deriveSubtitle({ ...base, typers })).toEqual({
+      kind: "typing",
+      key: "recording",
+      values: {},
+    });
+    expect(
+      deriveSubtitle({ ...base, conversationType: "group", typers }),
+    ).toEqual({ kind: "typing", key: "recordingOne", values: { name: "Bob" } });
+    expect(
+      deriveSubtitle({
+        ...base,
+        conversationType: "group",
+        typers: typers.map((t) => ({ ...t, activity: "recording" as const })),
+      }),
+    ).toEqual({ kind: "typing", key: "recordingMany", values: { count: 2 } });
+  });
+
   it("typing beats online", () => {
     const typers = [{ userId: "ada", displayName: "Ada" }];
     expect(deriveSubtitle({ ...base, typers })).toEqual({

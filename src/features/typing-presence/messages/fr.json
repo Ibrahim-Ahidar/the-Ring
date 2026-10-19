@@ -7,6 +7,9 @@
   "typingOne": "{name} est en train d'écrire",
   "typingMany": "{count, plural, one {# personne écrit} other {# personnes écrivent}}",
   "typing": "écrit…",
+  "recording": "enregistre un audio…",
+  "recordingOne": "{name} enregistre un audio",
+  "recordingMany": "{count, plural, one {# personne enregistre un audio} other {# personnes enregistrent un audio}}",
   "lastSeenRelative": "vu {when}",
   "lastSeenJustNow": "vu à l'instant"
 }

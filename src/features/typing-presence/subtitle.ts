@@ -3,7 +3,13 @@ import { canShowPresence, type SubjectPresenceRow } from "@/features/typing-pres
 export type Subtitle =
   | {
       kind: "typing";
-      key: "typing" | "typingOne" | "typingMany";
+      key:
+        | "typing"
+        | "typingOne"
+        | "typingMany"
+        | "recording"
+        | "recordingOne"
+        | "recordingMany";
       values: { name?: string; count?: number };
     }
   | { kind: "online" }
@@ -15,7 +21,11 @@ export type SubtitleInput = {
   conversationType: "direct" | "group";
   otherUserId?: string;
   viewerId: string | null;
-  typers: ReadonlyArray<{ userId: string; displayName: string }>;
+  typers: ReadonlyArray<{
+    userId: string;
+    displayName: string;
+    activity?: "typing" | "recording";
+  }>;
   subjectPresence: SubjectPresenceRow | null;
   subjectOnline: boolean;
 };
@@ -24,18 +34,23 @@ export type SubtitleInput = {
 export function deriveSubtitle(input: SubtitleInput): Subtitle {
   const typers = input.typers.filter((typer) => typer.userId !== input.viewerId);
 
-  if (typers.length > 0) {
+  // Recording wins over typing.
+  const recording = typers.filter((typer) => typer.activity === "recording");
+  const active = recording.length > 0 ? recording : typers;
+  const prefix = recording.length > 0 ? "recording" : "typing";
+
+  if (active.length > 0) {
     if (input.conversationType === "direct") {
-      return { kind: "typing", key: "typing", values: {} };
+      return { kind: "typing", key: prefix, values: {} };
     }
-    if (typers.length === 1) {
+    if (active.length === 1) {
       return {
         kind: "typing",
-        key: "typingOne",
-        values: { name: typers[0].displayName },
+        key: `${prefix}One`,
+        values: { name: active[0].displayName },
       };
     }
-    return { kind: "typing", key: "typingMany", values: { count: typers.length } };
+    return { kind: "typing", key: `${prefix}Many`, values: { count: active.length } };
   }
 
   const row = input.subjectPresence;

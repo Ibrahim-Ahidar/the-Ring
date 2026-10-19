@@ -2,9 +2,12 @@ import { useSyncExternalStore } from "react";
 
 export const TYPING_EXPIRE_MS = 4000;
 
+export type TypingActivity = "typing" | "recording";
+
 export type TypingEntry = {
   userId: string;
   displayName: string;
+  activity: TypingActivity;
   expiresAt: number;
 };
 
@@ -12,11 +15,26 @@ export type TypingState = {
   typers: TypingEntry[];
 };
 
-export type TypingUser = { userId: string; displayName: string };
+export type TypingUser = {
+  userId: string;
+  displayName: string;
+  activity: TypingActivity;
+};
 
 export type TypingReducerEvent =
-  | { type: "started"; userId: string; displayName: string }
-  | { type: "stopped"; userId: string }
+  | {
+      type: "started";
+      userId: string;
+      displayName: string;
+      /** Defaults to "typing". */
+      activity?: TypingActivity;
+    }
+  | {
+      type: "stopped";
+      userId: string;
+      /** When set, only clears an entry of this activity. */
+      activity?: TypingActivity;
+    }
   | { type: "expire"; now: number };
 
 export const initialTypingState: TypingState = { typers: [] };
@@ -43,7 +61,11 @@ export function reduceTyping(
     if (viewerId && event.userId === viewerId) {
       return next;
     }
-    const typers = next.typers.filter((entry) => entry.userId !== event.userId);
+    const typers = next.typers.filter(
+      (entry) =>
+        entry.userId !== event.userId ||
+        (event.activity !== undefined && entry.activity !== event.activity),
+    );
     return typers.length === next.typers.length ? next : { typers };
   }
 
@@ -52,12 +74,17 @@ export function reduceTyping(
   }
 
   const expiresAt = now + TYPING_EXPIRE_MS;
+  const activity = event.activity ?? "typing";
   const existing = next.typers.find((entry) => entry.userId === event.userId);
   if (existing) {
+    // Recording wins: typing pings do not downgrade a live recording entry.
+    if (existing.activity === "recording" && activity === "typing") {
+      return next;
+    }
     return {
       typers: next.typers.map((entry) =>
         entry.userId === event.userId
-          ? { ...entry, displayName: event.displayName, expiresAt }
+          ? { ...entry, displayName: event.displayName, activity, expiresAt }
           : entry,
       ),
     };
@@ -66,7 +93,7 @@ export function reduceTyping(
   return {
     typers: [
       ...next.typers,
-      { userId: event.userId, displayName: event.displayName, expiresAt },
+      { userId: event.userId, displayName: event.displayName, activity, expiresAt },
     ],
   };
 }
@@ -187,7 +214,9 @@ function sameUsers(a: ReadonlyArray<TypingUser>, b: ReadonlyArray<TypingUser>) {
   return (
     a.length === b.length &&
     a.every(
-      (user, i) => user.userId === b[i].userId && user.displayName === b[i].displayName,
+      (user, i) => user.userId === b[i].userId &&
+        user.displayName === b[i].displayName &&
+        user.activity === b[i].activity,
     )
   );
 }
@@ -204,7 +233,11 @@ function snapshotFor(
   }
   const list = (state?.typers ?? [])
     .filter((entry) => entry.userId !== viewerId)
-    .map(({ userId, displayName }) => ({ userId, displayName }));
+    .map(({ userId, displayName, activity }) => ({
+      userId,
+      displayName,
+      activity,
+    }));
   const stable =
     cached && sameUsers(cached.list, list) ? cached.list : list.length ? list : EMPTY;
   snapshots.set(key, { source: state, list: stable });

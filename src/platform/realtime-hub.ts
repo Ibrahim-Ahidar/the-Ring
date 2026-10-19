@@ -96,6 +96,9 @@ async function applyRealtimeAuth(supabase: SupabaseClient): Promise<void> {
   }
 }
 
+/** Longest `send` waits for the channel to subscribe before sending anyway. */
+const SEND_SUBSCRIBE_WAIT_MS = 3000;
+
 /** Delay before an unreferenced channel is removed (survives effect re-runs). */
 const IDLE_REMOVAL_MS = 0;
 
@@ -251,6 +254,21 @@ function join(
     },
     async send(event, payload) {
       await current.started;
+      // Sending before SUBSCRIBED falls back to REST (or is dropped); wait briefly.
+      if (current.lastStatus !== "SUBSCRIBED") {
+        await new Promise<void>((resolve) => {
+          const done = () => {
+            clearTimeout(timer);
+            current.listeners.status.delete(onStatus);
+            resolve();
+          };
+          const onStatus = (status: string) => {
+            if (status === "SUBSCRIBED") done();
+          };
+          const timer = setTimeout(done, SEND_SUBSCRIBE_WAIT_MS);
+          current.listeners.status.add(onStatus);
+        });
+      }
       await current.channel?.send({ type: "broadcast", event, payload });
     },
     async track(meta) {

@@ -82,4 +82,34 @@ describe("reduceTyping", () => {
     const names = visibleTypers(state, now, viewerId).map((t) => t.displayName);
     expect(names.sort()).toEqual(["Ada", "Ben"]);
   });
+
+  it("recording replaces typing and is not downgraded by typing pings", () => {
+    let state = reduceTyping(
+      initialTypingState,
+      { type: "started", userId: "a", displayName: "Ada" },
+      now,
+      viewerId,
+    );
+    state = reduceTyping(
+      state,
+      { type: "started", userId: "a", displayName: "Ada", activity: "recording" },
+      now,
+      viewerId,
+    );
+    state = reduceTyping(
+      state,
+      { type: "started", userId: "a", displayName: "Ada" },
+      now,
+      viewerId,
+    );
+    expect(state.typers[0].activity).toBe("recording");
+    expect(
+      reduceTyping(state, { type: "stopped", userId: "a", activity: "typing" }, now, viewerId)
+        .typers,
+    ).toHaveLength(1);
+    expect(
+      reduceTyping(state, { type: "stopped", userId: "a", activity: "recording" }, now, viewerId)
+        .typers,
+    ).toHaveLength(0);
+  });
 });

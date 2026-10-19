@@ -22,7 +22,7 @@ describe("typing store", () => {
   it("filters the own viewer id at read time", () => {
     setTypingEvent("c1", { type: "started", userId: "me", displayName: "Me" });
     setTypingEvent("c1", { type: "started", userId: "ada", displayName: "Ada" });
-    expect(getTyping("c1", "me")).toEqual([{ userId: "ada", displayName: "Ada" }]);
+    expect(getTyping("c1", "me")).toEqual([{ userId: "ada", displayName: "Ada", activity: "typing" }]);
   });
 
   it("returns the same snapshot reference while nothing changed", () => {
@@ -51,6 +51,34 @@ describe("typing store", () => {
     expect(getTyping("c1", "me")).toHaveLength(0);
     expect(getTyping("c2", "me")).toHaveLength(0);
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("tracks recording, lets it win over typing, and stops by activity", () => {
+    setTypingEvent("c1", { type: "started", userId: "ada", displayName: "Ada" });
+    setTypingEvent("c1", {
+      type: "started",
+      userId: "ada",
+      displayName: "Ada",
+      activity: "recording",
+    });
+    expect(getTyping("c1", "me")[0].activity).toBe("recording");
+    setTypingEvent("c1", { type: "started", userId: "ada", displayName: "Ada" });
+    expect(getTyping("c1", "me")[0].activity).toBe("recording");
+    setTypingEvent("c1", { type: "stopped", userId: "ada", activity: "typing" });
+    expect(getTyping("c1", "me")).toHaveLength(1);
+    setTypingEvent("c1", { type: "stopped", userId: "ada", activity: "recording" });
+    expect(getTyping("c1", "me")).toHaveLength(0);
+  });
+
+  it("expires recording entries like typing", () => {
+    setTypingEvent("c1", {
+      type: "started",
+      userId: "ada",
+      displayName: "Ada",
+      activity: "recording",
+    });
+    vi.advanceTimersByTime(TYPING_EXPIRE_MS);
+    expect(getTyping("c1", "me")).toHaveLength(0);
   });
 
   it("clearTyping empties a conversation and stops the timer", () => {

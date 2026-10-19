@@ -2,6 +2,7 @@
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { emitComposerActivity } from "@/platform/composer-events";
 import { getTyping, resetTypingStoreForTests } from "@/platform/typing-store";
 
 const hub = vi.hoisted(() => {
@@ -129,6 +130,45 @@ describe("TypingPresenceProvider", () => {
       hub.handle.broadcast?.("typing.started", { userId: "me" });
     });
     expect(getTyping("c1", "me")).toHaveLength(0);
+  });
+
+  it("shows recording from recording.started and clears on recording.stopped", async () => {
+    await mount();
+    await act(async () => {
+      hub.handle.broadcast?.("recording.started", { userId: "ada" });
+    });
+    expect(getTyping("c1", "me")[0]?.activity).toBe("recording");
+    await act(async () => {
+      hub.handle.broadcast?.("recording.stopped", { userId: "ada" });
+    });
+    expect(getTyping("c1", "me")).toHaveLength(0);
+  });
+
+  it("broadcasts recording.started on a repeat and recording.stopped on end", async () => {
+    await mount();
+    hub.handle.send.mockClear();
+    await act(async () => {
+      emitComposerActivity({ kind: "recording", conversationId: "c1", active: true });
+    });
+    expect(hub.handle.send).toHaveBeenCalledWith("recording.started", {
+      conversationId: "c1",
+      userId: "me",
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(hub.handle.send).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      emitComposerActivity({ kind: "recording", conversationId: "c1", active: false });
+    });
+    expect(hub.handle.send).toHaveBeenLastCalledWith("recording.stopped", {
+      conversationId: "c1",
+      userId: "me",
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(9000);
+    });
+    expect(hub.handle.send).toHaveBeenCalledTimes(3);
   });
 
   it("derives online from the peer's private presence topic, gated by presence_allowed", async () => {

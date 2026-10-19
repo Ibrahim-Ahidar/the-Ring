@@ -7,6 +7,9 @@
   "typingOne": "{name} يكتب",
   "typingMany": "{count, plural, one {شخص واحد يكتب} two {شخصان يكتبان} few {# أشخاص يكتبون} many {# شخصًا يكتب} other {# شخص يكتب}}",
   "typing": "يكتب…",
+  "recording": "يسجّل رسالة صوتية…",
+  "recordingOne": "{name} يسجّل رسالة صوتية",
+  "recordingMany": "{count, plural, one {شخص واحد يسجّل رسالة صوتية} two {شخصان يسجّلان رسالة صوتية} few {# أشخاص يسجّلون رسالة صوتية} many {# شخصًا يسجّل رسالة صوتية} other {# شخص يسجّل رسالة صوتية}}",
   "lastSeenRelative": "آخر ظهور {when}",
   "lastSeenJustNow": "آخر ظهور الآن"
 }

@@ -171,7 +171,16 @@ export function TypingPresenceProvider({
       if (typeof userId !== "string" || userId === viewerId) {
         return;
       }
-      if (event === "typing.started") {
+      const activity =
+        event === "typing.started" || event === "typing.stopped"
+          ? "typing"
+          : event === "recording.started" || event === "recording.stopped"
+            ? "recording"
+            : null;
+      if (!activity) {
+        return;
+      }
+      if (event.endsWith(".started")) {
         const name = cachedName(userId);
         if (name) {
           // Synchronous when cached, so a later "stopped" cannot be overtaken.
@@ -179,6 +188,7 @@ export function TypingPresenceProvider({
             type: "started",
             userId,
             displayName: name,
+            activity,
           });
           return;
         }
@@ -195,11 +205,12 @@ export function TypingPresenceProvider({
             type: "started",
             userId,
             displayName: fetched || userId.slice(0, 8),
+            activity,
           });
         });
-      } else if (event === "typing.stopped") {
+      } else {
         stopSeq.set(userId, (stopSeq.get(userId) ?? 0) + 1);
-        setTypingEvent(conversationId, { type: "stopped", userId });
+        setTypingEvent(conversationId, { type: "stopped", userId, activity });
       }
     });
 
@@ -250,6 +261,32 @@ export function TypingPresenceProvider({
       void handle.send("typing.started", { conversationId, userId: viewerId });
     };
 
+    let recording = false;
+    let recordingTimer: ReturnType<typeof setInterval> | null = null;
+
+    const sendRecording = () => {
+      const handle = channelRef.current;
+      if (!handle) {
+        return;
+      }
+      void handle.send("recording.started", { conversationId, userId: viewerId });
+    };
+
+    const stopRecording = () => {
+      if (recordingTimer !== null) {
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+      }
+      if (!recording) {
+        return;
+      }
+      recording = false;
+      const handle = channelRef.current;
+      if (handle) {
+        void handle.send("recording.stopped", { conversationId, userId: viewerId });
+      }
+    };
+
     const clearIdle = () => {
       if (idleTimer !== null) {
         clearTimeout(idleTimer);
@@ -268,6 +305,27 @@ export function TypingPresenceProvider({
     const removeComposer = onComposerActivity((activity) => {
       if (activity.conversationId !== conversationId) {
         return;
+      }
+
+      if (activity.kind === "recording") {
+        if (activity.active) {
+          if (!recording) {
+            recording = true;
+            sendRecording();
+            // Repeat so late joiners see it and the peer's entry never expires.
+            recordingTimer = setInterval(
+              sendRecording,
+              TYPING_BROADCAST_THROTTLE_MS,
+            );
+          }
+        } else {
+          stopRecording();
+        }
+        return;
+      }
+
+      if (activity.kind === "closed") {
+        stopRecording();
       }
 
       if (activity.kind === "closed" || activity.kind === "sent") {
@@ -296,6 +354,7 @@ export function TypingPresenceProvider({
     return () => {
       removeComposer();
       clearIdle();
+      stopRecording();
       if (isComposing) {
         sendStopped();
       }
