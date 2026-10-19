@@ -11,10 +11,28 @@ import en from "../messages/en.json";
 import { MessageTimeline } from "./MessageTimeline";
 
 const loadOlderMessages = vi.fn();
+const emptyMessages: TimelineMessage[] = [];
 let mockState: Record<string, unknown>;
 
 vi.mock("../context/MessagingProvider", () => ({
-  useMessaging: () => ({ state: mockState, retrySend: vi.fn(), clearLive: vi.fn(), loadOlderMessages }),
+  useMessaging: () => ({ state: mockState }),
+  useThreadCached: (id: string) => (mockState as { messagesByConversation: Record<string, unknown> }).messagesByConversation[id] !== undefined,
+  useMessagingActions: () => ({ retrySend: vi.fn(), clearLive: vi.fn(), loadOlderMessages }),
+  useConversationView: (id: string) => {
+    const m = mockState as {
+      messagesByConversation: Record<string, TimelineMessage[]>;
+      pendingSends: { conversationId: string }[];
+      unreadSeparatorByConversation: Record<string, string>;
+      messagesHasMore: Record<string, boolean>;
+    };
+    return {
+      messages: m.messagesByConversation[id] ?? emptyMessages,
+      pending: m.pendingSends.filter((p) => p.conversationId === id),
+      detail: undefined,
+      hasMore: Boolean(m.messagesHasMore[id]),
+      separatorId: m.unreadSeparatorByConversation[id] ?? null,
+    };
+  },
 }));
 vi.mock("../hooks/useReadReceipts", () => ({
   useReadTracker: () => () => () => {},
@@ -133,7 +151,8 @@ describe("MessageTimeline older pages", () => {
     setGeometry(log, { scrollHeight: 1600, clientHeight: 400 });
     rerender(ui());
     await act(async () => resolve());
-    expect(log.scrollTop).toBe(620);
+    // The previously-first row now sits one estimated row (72px) lower; the 20px offset is kept.
+    expect(log.scrollTop).toBe(92);
   });
 });
 

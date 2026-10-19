@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type ComponentProps,
   memo,
   useCallback,
   useEffect,
@@ -22,7 +23,12 @@ import { useHydrated } from "../lib/use-hydrated";
 import { conversationTitle } from "../lib/titles";
 import type { ConversationDetail } from "../types";
 import type { PendingSend } from "../context/types";
-import { useMessaging } from "../context/MessagingProvider";
+import {
+  useConversationView,
+  useMessaging,
+  useMessagingActions,
+  useThreadCached,
+} from "../context/MessagingProvider";
 import { MessageBubble } from "./MessageBubble";
 import { ThreadSkeleton } from "./Skeletons";
 import styles from "../direct-messaging.module.css";
@@ -62,8 +68,6 @@ function prefersReducedMotion(): boolean {
   );
 }
 
-const NO_MESSAGES: TimelineMessage[] = [];
-
 function pendingAsMessage(pending: PendingSend): TimelineMessage {
   return {
     id: `pending-${pending.clientId}`,
@@ -84,6 +88,14 @@ function pendingAsMessage(pending: PendingSend): TimelineMessage {
   };
 }
 
+type BubbleProps = ComponentProps<typeof MessageBubble>;
+
+/** Reads the live flag per row so the timeline itself need not follow every store change. */
+const LiveBubble = memo(function LiveBubble(props: Omit<BubbleProps, "live">) {
+  const { state } = useMessaging();
+  return <MessageBubble {...props} live={Boolean(state.liveClientIds[props.message.client_id])} />;
+});
+
 function MessageTimelineInner({
   conversationId,
   conversationType,
@@ -95,27 +107,24 @@ function MessageTimelineInner({
   const now = useNow({ updateInterval: 60_000 });
   const timeZone = useTimeZone() ?? "UTC";
   const hydrated = useHydrated();
-  const { state, retrySend, clearLive, loadOlderMessages } = useMessaging();
+  const { retrySend, clearLive, loadOlderMessages } = useMessagingActions();
+  const view = useConversationView(conversationId);
+  const stored = view.messages;
   // Not in the store yet: the first page is still streaming in.
-  const loading = state.messagesByConversation[conversationId] === undefined;
-  const stored = state.messagesByConversation[conversationId] ?? NO_MESSAGES;
-  const pending = useMemo(
-    () => state.pendingSends.filter((p) => p.conversationId === conversationId),
-    [conversationId, state.pendingSends],
-  );
-  const separatorId =
-    state.unreadSeparatorByConversation[conversationId] ?? null;
+  const loading = !useThreadCached(conversationId);
+  const pending = view.pending;
+  const separatorId = view.separatorId;
   const scrollRef = useRef<HTMLDivElement>(null);
   const track = useReadTracker(conversationId, scrollRef);
   const stickToBottom = useRef(true);
   const scrolledConversation = useRef<string | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
-  const anchor = useRef<{ height: number; top: number; firstId: string | undefined } | null>(null);
+  const anchor = useRef<{ key: string; offset: number; firstId: string | undefined } | null>(null);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [atBottom, setAtBottom] = useState(true);
   const [seenLastId, setSeenLastId] = useState<string | undefined>(undefined);
-  const hasMore = Boolean(state.messagesHasMore[conversationId]);
+  const hasMore = view.hasMore;
   const listRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
 
@@ -141,10 +150,11 @@ function MessageTimelineInner({
     scrollMargin,
     getItemKey: (index) => timeline[index]?.id ?? index,
     observeElementRect: observeViewport,
-    onChange: () => {
-      // Rows grow as they are measured: keep the newest message in view while pinned.
+    onChange: (instance) => {
+      // Rows grow as they are measured: keep the newest message in view while pinned
+      // (never while the reader is actively scrolling).
       const node = scrollRef.current;
-      if (node && stickToBottom.current && node.scrollHeight - node.scrollTop - node.clientHeight > 1) {
+      if (node && stickToBottom.current && !instance.isScrolling && node.scrollHeight - node.scrollTop - node.clientHeight > 1) {
         node.scrollTop = node.scrollHeight;
       }
     },
@@ -235,8 +245,15 @@ function MessageTimelineInner({
     if (!node || !saved || saved.firstId === firstId) {
       return;
     }
-    node.scrollTop = saved.top + (node.scrollHeight - saved.height);
     anchor.current = null;
+    // Re-pin the row that was at the top of the viewport. Rows measured later are
+    // compensated by the virtualizer itself, so there is no second jump.
+    const index = timeline.findIndex((m) => m.id === saved.key);
+    const item = index >= 0 ? virtualizer.measurementsCache[index] : undefined;
+    if (item) {
+      node.scrollTop = item.start - saved.offset;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firstId]);
 
   const loadOlder = useCallback(async () => {
@@ -246,14 +263,18 @@ function MessageTimelineInner({
     }
     loadingRef.current = true;
     setLoadingOlder(true);
-    anchor.current = { height: node.scrollHeight, top: node.scrollTop, firstId };
+    const top = virtualizer.getVirtualItems()[0];
+    const key = top ? timeline[top.index]?.id : undefined;
+    if (top && key) {
+      anchor.current = { key, offset: top.start - node.scrollTop, firstId };
+    }
     try {
       await loadOlderMessages(conversationId);
     } finally {
       loadingRef.current = false;
       setLoadingOlder(false);
     }
-  }, [conversationId, firstId, loadOlderMessages]);
+  }, [conversationId, firstId, loadOlderMessages, timeline, virtualizer]);
 
   const loadOlderRef = useRef(loadOlder);
   useEffect(() => {
@@ -392,7 +413,7 @@ function MessageTimelineInner({
                     </p>
                   ) : null}
                   {showSeparator ? <p className={styles.unreadDivider}>{t("newMessages")}</p> : null}
-                  <MessageBubble
+                  <LiveBubble
                     message={message}
                     conversationId={conversationId}
                     currentUserId={currentUserId}
@@ -406,7 +427,6 @@ function MessageTimelineInner({
                     quoteAuthor={quote?.author}
                     quoteText={quote?.text}
                     onRetry={retrySend}
-                    live={Boolean(state.liveClientIds[message.client_id])}
                     onLiveDone={clearLive}
                     rowRef={track(message)}
                   />
