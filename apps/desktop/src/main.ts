@@ -1,6 +1,20 @@
-import { app, BrowserWindow, Menu, nativeImage, net, screen, session, shell, Tray } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  nativeImage,
+  net,
+  Notification,
+  screen,
+  session,
+  shell,
+  Tray,
+  type IpcMainEvent,
+} from "electron";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { parseNotifyPayload, parseUnreadCount, trayTooltip } from "./bridge-validation";
 import { shouldHideOnClose } from "./close-policy";
 import { isOfflineError } from "./offline";
 import { isPulseUrl } from "./origin";
@@ -55,6 +69,58 @@ function setupTray(): void {
   tray.setToolTip("Pulse");
   tray.on("click", showWindow);
   refreshTrayMenu();
+}
+
+/** Only frames on the Pulse origin may use the bridge. */
+function fromPulseFrame(event: IpcMainEvent): boolean {
+  const url = event.senderFrame?.url ?? "";
+  return isPulseUrl(url, PULSE_URL);
+}
+
+function badgeImage(): Electron.NativeImage {
+  // 16x16 solid red dot as a BGRA bitmap with a circular alpha mask.
+  const size = 16;
+  const buf = Buffer.alloc(size * size * 4);
+  const c = (size - 1) / 2;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const i = (y * size + x) * 4;
+      if ((x - c) ** 2 + (y - c) ** 2 <= (size / 2 - 0.5) ** 2) {
+        buf[i] = 0x3b;
+        buf[i + 1] = 0x30;
+        buf[i + 2] = 0xe5;
+        buf[i + 3] = 0xff;
+      }
+    }
+  }
+  return nativeImage.createFromBitmap(buf, { width: size, height: size });
+}
+
+function applyUnread(count: number): void {
+  app.setBadgeCount(count);
+  tray?.setToolTip(trayTooltip(count));
+  if (process.platform === "win32" && mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setOverlayIcon(count > 0 ? badgeImage() : null, count > 0 ? `${count} unread` : "");
+  }
+}
+
+function setupBridge(): void {
+  ipcMain.on("pulse:notify", (event, raw) => {
+    if (!fromPulseFrame(event)) return;
+    const payload = parseNotifyPayload(raw);
+    if (!payload || !Notification.isSupported()) return;
+    const n = new Notification({ title: payload.title, body: payload.body, silent: false });
+    n.on("click", () => {
+      showWindow();
+      mainWindow?.webContents.send("pulse:open-chat", payload.chatId);
+    });
+    n.show();
+  });
+  ipcMain.on("pulse:set-unread", (event, raw) => {
+    if (!fromPulseFrame(event)) return;
+    const count = parseUnreadCount(raw);
+    if (count !== null) applyUnread(count);
+  });
 }
 
 function stateFile(): string {
@@ -203,9 +269,10 @@ if (!app.requestSingleInstanceLock()) {
   app.on("second-instance", showWindow);
   void app.whenReady().then(() => {
     setupPermissions();
+    setupBridge();
     mainWindow = createWindow();
     setupTray();
-    // Seams: #167 IPC bridge, #169 updater hook in here.
+    // Seams: #169 updater hook in here.
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
     });
