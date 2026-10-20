@@ -209,6 +209,28 @@
     "logout": {
       "submit": "Se déconnecter",
       "error": "Échec de la déconnexion. Réessayez."
+    },
+    "chats": {
+      "title": "Discussions",
+      "empty": "Aucune discussion pour l'instant.",
+      "untitled": "Discussion",
+      "noMessages": "Aucun message",
+      "deleted": "Message supprimé",
+      "unsupported": "Message non pris en charge",
+      "unread": "{count} non lus",
+      "loadError": "Impossible de charger les discussions. Touchez pour réessayer.",
+      "back": "Retour",
+      "unreadDivider": "Messages non lus",
+      "composerPlaceholder": "Message",
+      "send": "Envoyer",
+      "sendError": "Envoi impossible. Réessayez.",
+      "status": {
+        "pending": "Envoi",
+        "failed": "Échec",
+        "sent": "Envoyé",
+        "delivered": "Remis",
+        "read": "Lu"
+      }
     }
   }
 }

@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import type { TimelineMessage } from "@pulse/core/timeline";
+import type { TimelineMessage } from "./timeline";
 
 import {
   mergeDetailMonotonic,
   outboundDeliveryStatus,
+  firstUnreadMessageId,
+  initialScrollTarget,
   rankDelivery,
 } from "./delivery";
-import type { ConversationDetail } from "./types";
+import type { ConversationDetail } from "./messaging-types";
 
 function message(id: string, createdAt: string): TimelineMessage {
   return {
@@ -155,5 +157,27 @@ describe("mergeDetailMonotonic", () => {
     expect(mergeDetailMonotonic(prev, detail({})).last_read_message_id).toBe(
       "m2",
     );
+  });
+});
+
+describe("initialScrollTarget", () => {
+  const mine = (id: string, at: string) => message(id, at);
+  const theirs = (id: string, at: string) => ({ ...message(id, at), sender_id: "peer" });
+
+  it("lands on the first peer message after the read marker (list is newest first)", () => {
+    const list = [theirs("m4", "4"), mine("m3", "3"), theirs("m2", "2"), theirs("m1", "1")];
+    expect(initialScrollTarget(list, "m1", "me")).toEqual({ kind: "unread", messageId: "m2" });
+    expect(firstUnreadMessageId(list, "m1", "me")).toBe("m2");
+  });
+
+  it("lands on the first peer message when nothing was ever read", () => {
+    const list = [theirs("m2", "2"), theirs("m1", "1")];
+    expect(initialScrollTarget(list, null, "me")).toEqual({ kind: "unread", messageId: "m1" });
+  });
+
+  it("lands at the bottom when everything is read or only own messages follow", () => {
+    const list = [mine("m3", "3"), theirs("m2", "2")];
+    expect(initialScrollTarget(list, "m2", "me")).toEqual({ kind: "bottom" });
+    expect(initialScrollTarget([], null, "me")).toEqual({ kind: "bottom" });
   });
 });

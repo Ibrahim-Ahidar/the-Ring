@@ -209,6 +209,28 @@
     "logout": {
       "submit": "Log out",
       "error": "Couldn't log out. Try again."
+    },
+    "chats": {
+      "title": "Chats",
+      "empty": "No chats yet.",
+      "untitled": "Chat",
+      "noMessages": "No messages yet",
+      "deleted": "Message deleted",
+      "unsupported": "Unsupported message",
+      "unread": "{count} unread",
+      "loadError": "Couldn't load chats. Tap to retry.",
+      "back": "Back",
+      "unreadDivider": "Unread messages",
+      "composerPlaceholder": "Message",
+      "send": "Send",
+      "sendError": "Couldn't send. Try again.",
+      "status": {
+        "pending": "Sending",
+        "failed": "Failed",
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "read": "Read"
+      }
     }
   }
 }
