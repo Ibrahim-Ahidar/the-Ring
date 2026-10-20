@@ -186,5 +186,29 @@
     "conversationNotFound": "Cette conversation n'existe pas ou vous n'y avez plus accès.",
     "loadFailed": "Impossible de charger cette liste. Il peut s'agir d'un problème temporaire, elle n'est donc pas forcément vide.",
     "empty": "Rien ici pour l'instant."
+  },
+  "mobile": {
+    "login": {
+      "title": "Se connecter",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "errors": {
+        "required": "Saisissez votre e-mail et votre mot de passe.",
+        "invalidCredentials": "E-mail ou mot de passe incorrect.",
+        "emailNotConfirmed": "Confirmez votre e-mail avant de vous connecter.",
+        "rateLimited": "Trop de tentatives. Réessayez dans un instant.",
+        "network": "Impossible de joindre le serveur. Vérifiez votre connexion.",
+        "unexpected": "Une erreur est survenue. Réessayez."
+      }
+    },
+    "home": {
+      "title": "Accueil",
+      "signedInAs": "Connecté en tant que {email}"
+    },
+    "logout": {
+      "submit": "Se déconnecter",
+      "error": "Échec de la déconnexion. Réessayez."
+    }
   }
 }

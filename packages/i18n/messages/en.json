@@ -186,5 +186,29 @@
     "conversationNotFound": "This conversation doesn't exist or you no longer have access.",
     "loadFailed": "Couldn't load this list. It may be a temporary problem, so it isn't necessarily empty.",
     "empty": "Nothing here yet."
+  },
+  "mobile": {
+    "login": {
+      "title": "Log in",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Log in",
+      "errors": {
+        "required": "Enter your email and password.",
+        "invalidCredentials": "Incorrect email or password.",
+        "emailNotConfirmed": "Confirm your email before logging in.",
+        "rateLimited": "Too many attempts. Try again in a moment.",
+        "network": "Can't reach the server. Check your connection.",
+        "unexpected": "Something went wrong. Try again."
+      }
+    },
+    "home": {
+      "title": "Home",
+      "signedInAs": "Signed in as {email}"
+    },
+    "logout": {
+      "submit": "Log out",
+      "error": "Couldn't log out. Try again."
+    }
   }
 }
