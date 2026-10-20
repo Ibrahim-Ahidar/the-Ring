@@ -1,5 +1,6 @@
 "use client";
 
+import { useDesktopBridge } from "./useDesktopBridge";
 import { VIEWPORT_COOKIE } from "../lib/page-limit";
 import { usePathname } from "next/navigation";
 import {
@@ -817,6 +818,8 @@ export function MessagingProvider({
       window.removeEventListener("online", goOnline);
     };
   }, [flushPending]);
+
+  useDesktopBridge(state, activeConversationId);
 
   const seeding = useMemo<MessagingSeeding>(
     () => ({
