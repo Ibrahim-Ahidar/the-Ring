@@ -15,3 +15,7 @@ every other link opens in the system browser. The default is the constant `DEFAU
 
 Login persists via the default Electron session. Window size, position and maximised state are
 stored in `window-state.json` under the app's userData folder.
+
+Tray: the app lives in the system tray (menu: Open Pulse, Launch at login, Quit). Closing the
+window hides it; only Quit really exits. "Launch at login" is stored in the OS login items
+(`app.setLoginItemSettings`), with no state file of our own. The icon is `assets/tray.png`.

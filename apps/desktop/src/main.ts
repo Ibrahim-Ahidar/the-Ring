@@ -1,7 +1,9 @@
-import { app, BrowserWindow, screen, session, shell } from "electron";
+import { app, BrowserWindow, Menu, nativeImage, screen, session, shell, Tray } from "electron";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { shouldHideOnClose } from "./close-policy";
 import { isPulseUrl } from "./origin";
+import { buildTrayMenu } from "./tray-menu";
 import {
   parseWindowState,
   sanitizeForDisplays,
@@ -16,6 +18,40 @@ const PULSE_URL = process.env.PULSE_URL || DEFAULT_PULSE_URL;
 app.setAppUserModelId("com.pulse.desktop");
 
 let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let isQuitting = false;
+
+function showWindow(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) mainWindow = createWindow();
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
+function refreshTrayMenu(): void {
+  if (!tray) return;
+  const menu = buildTrayMenu({
+    loginEnabled: app.getLoginItemSettings().openAtLogin,
+    onOpen: showWindow,
+    onToggleLogin: (enabled) => {
+      app.setLoginItemSettings({ openAtLogin: enabled });
+      refreshTrayMenu();
+    },
+    onQuit: () => {
+      isQuitting = true;
+      app.quit();
+    },
+  });
+  tray.setContextMenu(Menu.buildFromTemplate(menu));
+}
+
+function setupTray(): void {
+  const icon = nativeImage.createFromPath(path.join(__dirname, "..", "assets", "tray.png"));
+  tray = new Tray(icon);
+  tray.setToolTip("Pulse");
+  tray.on("click", showWindow);
+  refreshTrayMenu();
+}
 
 function stateFile(): string {
   return path.join(app.getPath("userData"), "window-state.json");
@@ -100,7 +136,13 @@ function createWindow(): BrowserWindow {
   });
 
   watchState(win);
-  // Seam (#168): did-fail-load -> offline screen. Seam (#166): close -> hide to tray.
+  win.on("close", (event) => {
+    if (shouldHideOnClose({ isQuitting })) {
+      event.preventDefault();
+      win.hide();
+    }
+  });
+  // Seam (#168): did-fail-load -> offline screen.
   void win.loadURL(PULSE_URL);
   win.on("closed", () => {
     mainWindow = null;
@@ -123,21 +165,21 @@ function setupPermissions(): void {
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on("second-instance", () => {
-    if (!mainWindow) return;
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.show();
-    mainWindow.focus();
-  });
+  app.on("second-instance", showWindow);
   void app.whenReady().then(() => {
     setupPermissions();
     mainWindow = createWindow();
-    // Seams: #166 tray, #167 IPC bridge, #169 updater hook in here.
+    setupTray();
+    // Seams: #167 IPC bridge, #169 updater hook in here.
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
     });
   });
+  app.on("before-quit", () => {
+    isQuitting = true;
+  });
+  // Stay alive in the tray when the window is closed; Quit exits explicitly.
   app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") app.quit();
+    if (!tray) app.quit();
   });
 }
