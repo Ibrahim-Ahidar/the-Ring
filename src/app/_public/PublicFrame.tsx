@@ -12,7 +12,7 @@ export async function PublicFrame({ children, wide = false }: { children: ReactN
   const t = await getTranslations("shell");
 
   return (
-    <div className={`${styles.page} ${wide ? styles.pageWide : ""}`}>
+    <div className={styles.page}>
       <header className={styles.top}>
         <Link className={styles.brand} href="/">
           <BrandMark size={28} />

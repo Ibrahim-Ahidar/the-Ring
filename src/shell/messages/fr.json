@@ -19,12 +19,10 @@
       }
     ],
     "featuresTitle": "Pourquoi the Ring",
-    "eyebrow": "Aucun numéro de téléphone requis",
     "headline": "Des conversations qui restent les vôtres.",
     "demoLabel": "Aperçu d'une conversation dans the Ring",
     "demo": {
       "name": "Sara",
-      "handle": "@sara",
       "status": "en ligne",
       "messages": [
         {
@@ -42,13 +40,8 @@
           "text": "Je t'ajoute au groupe d'étude.",
           "time": "9:42"
         }
-      ],
-      "typing": "écrit…"
-    },
-    "trust": "Gratuit · Arabe, anglais et français · Clair et sombre",
-    "ctaTitle": "Réservez votre @nom",
-    "ctaBody": "Prêt en moins d'une minute. Choisissez dès le départ qui peut vous joindre.",
-    "ctaButton": "Créer votre compte"
+      ]
+    }
   },
   "nav": {
     "home": "Accueil",
