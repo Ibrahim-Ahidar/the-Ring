@@ -56,16 +56,15 @@
 
 .mainWide {
   max-width: 64rem;
-  padding-inline: var(--space-24);
-  gap: clamp(3rem, 7vw, 5rem);
+  padding: clamp(2rem, 6vw, 4.5rem) var(--space-24) clamp(3rem, 8vw, 6rem);
+  gap: clamp(4rem, 10vw, 7rem);
 }
 
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(2rem, 5vw, 4rem);
-  padding-block-start: clamp(1rem, 4vw, 3rem);
+  gap: clamp(2.5rem, 6vw, 4.5rem);
 }
 
 .heroCopy {
@@ -185,24 +184,59 @@
 
 /* Features */
 
+.featuresSection {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.6vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+[lang="ar"] .sectionTitle {
+  letter-spacing: 0;
+}
+
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: var(--space-24) clamp(1.5rem, 4vw, 3rem);
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 2.5rem clamp(2rem, 5vw, 3.5rem);
   margin: 0;
-  padding: var(--space-32) 0 0;
-  border-top: 1px solid var(--color-border);
+  padding: 0;
   list-style: none;
+  counter-reset: feature;
+}
+
+.feature {
+  padding-block-start: 1.25rem;
+  border-top: 2px solid var(--color-border);
+  counter-increment: feature;
+}
+
+.feature::before {
+  content: counter(feature, decimal-leading-zero);
+  display: block;
+  margin-block-end: var(--space-12);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .feature h3 {
   margin: 0 0 var(--space-8);
   font-size: var(--text-lg);
+  line-height: 1.35;
 }
 
 .feature p {
   margin: 0;
-  line-height: 1.55;
+  max-width: 22rem;
+  line-height: 1.6;
   color: var(--color-text-muted);
 }
 

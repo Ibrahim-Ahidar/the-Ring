@@ -56,7 +56,10 @@ export default async function HomePage() {
         </figure>
       </section>
 
-      <section aria-label={t("landing.featuresTitle")}>
+      <section aria-labelledby="landing-features" className={styles.featuresSection}>
+        <h2 id="landing-features" className={styles.sectionTitle}>
+          {t("landing.featuresTitle")}
+        </h2>
         <ul className={styles.features}>
           {features.map((feature) => (
             <li key={feature.title} className={styles.feature}>
