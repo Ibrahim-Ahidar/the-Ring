@@ -32,6 +32,7 @@ if (await portInUse(PORT)) {
 }
 
 const child = spawn(`npm run dev -- --port ${PORT}`, {
+  cwd: path.join(import.meta.dirname, "..", "apps", "web"),
   stdio: "inherit",
   shell: true,
   env: process.env,

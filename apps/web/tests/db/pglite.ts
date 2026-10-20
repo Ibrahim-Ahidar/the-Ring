@@ -4,8 +4,9 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 
 const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
+const SUPABASE_ROOT = path.resolve(REPO_ROOT, "../..");
 const STUB_PATH = path.join(REPO_ROOT, "tests/db/supabase-stub.sql");
-const MIGRATIONS_DIR = path.join(REPO_ROOT, "supabase/migrations");
+const MIGRATIONS_DIR = path.join(SUPABASE_ROOT, "supabase/migrations");
 
 let templateReady: Promise<PGliteInterface> | null = null;
 

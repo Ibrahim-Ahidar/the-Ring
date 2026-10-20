@@ -28,16 +28,16 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace apps/web
 
       - name: Typecheck
-        run: npm run typecheck
+        run: npm run typecheck --workspace apps/web
 
       - name: Test
-        run: npm test
+        run: npm test --workspace apps/web
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace apps/web
 
   supabase-migrations:
     name: Supabase migrations (local stack)

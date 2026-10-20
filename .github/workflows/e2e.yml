@@ -71,6 +71,7 @@ jobs:
 
       # Playwright has no CLI ignore flag, so wrap the repo config and skip e2e/perf.
       - name: Write CI config (excludes e2e/perf)
+        working-directory: apps/web
         run: |
           cat > playwright.ci.config.ts <<'EOF'
           import { defineConfig } from "@playwright/test";
@@ -84,6 +85,7 @@ jobs:
           EOF
 
       - name: Run e2e
+        working-directory: apps/web
         run: |
           args=(--config playwright.ci.config.ts)
           if [ -n "$GREP" ]; then args+=(--grep "$GREP"); fi
@@ -94,7 +96,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report
+          path: apps/web/playwright-report
           if-no-files-found: warn
 
       - name: Upload test results
@@ -102,7 +104,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: test-results
+          path: apps/web/test-results
           if-no-files-found: warn
 
       - name: Stop local Supabase

@@ -36,7 +36,7 @@ beforeAll(async () => {
   const orgMigration = await readFile(
     path.join(
       import.meta.dirname,
-      "../../supabase/migrations/20261010060000_conversation_organization.sql",
+      "../../../../supabase/migrations/20261010060000_conversation_organization.sql",
     ),
     "utf8",
   );
@@ -49,7 +49,7 @@ beforeAll(async () => {
   ]) {
     await db.exec(
       await readFile(
-        path.join(import.meta.dirname, "../../supabase/migrations", file),
+        path.join(import.meta.dirname, "../../../../supabase/migrations", file),
         "utf8",
       ),
     );
