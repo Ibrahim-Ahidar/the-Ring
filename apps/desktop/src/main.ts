@@ -14,11 +14,13 @@ import {
 } from "electron";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { autoUpdater } from "electron-updater";
 import { parseNotifyPayload, parseUnreadCount, trayTooltip } from "./bridge-validation";
 import { shouldHideOnClose } from "./close-policy";
 import { isOfflineError } from "./offline";
 import { isPulseUrl } from "./origin";
 import { createRetryController } from "./retry-controller";
+import { shouldCheckForUpdates } from "./update-policy";
 import { buildTrayMenu } from "./tray-menu";
 import {
   parseWindowState,
@@ -272,7 +274,11 @@ if (!app.requestSingleInstanceLock()) {
     setupBridge();
     mainWindow = createWindow();
     setupTray();
-    // Seams: #169 updater hook in here.
+    if (shouldCheckForUpdates({ isPackaged: app.isPackaged, env: process.env })) {
+      autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+        console.warn("update check failed:", err instanceof Error ? err.message : err);
+      });
+    }
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
     });
