@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import ar from "@/shell/messages/ar.json";
-import en from "@/shell/messages/en.json";
-import fr from "@/shell/messages/fr.json";
+import ar from "@pulse/i18n/messages/ar.json";
+import en from "@pulse/i18n/messages/en.json";
+import fr from "@pulse/i18n/messages/fr.json";
 
 describe("public page catalogs", () => {
   it.each([

@@ -4,8 +4,8 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import en from "@/shell/messages/en.json";
-import fr from "@/shell/messages/fr.json";
+import en from "@pulse/i18n/messages/en.json";
+import fr from "@pulse/i18n/messages/fr.json";
 
 const { reportError, refresh } = vi.hoisted(() => ({ reportError: vi.fn(), refresh: vi.fn() }));
 vi.mock("@/platform/telemetry", () => ({ reportError }));

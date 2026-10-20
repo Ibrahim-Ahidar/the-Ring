@@ -5,14 +5,14 @@ import { useEffect, useState } from "react";
 import { reportError } from "@/platform/telemetry";
 import { LOCALE_COOKIE, isLocale, isRtl, type Locale } from "@/shell/locale";
 
-import en from "@/shell/messages/en.json";
+import en from "@pulse/i18n/messages/en.json";
 
 type Catalog = typeof en;
 
 /** `en` stays static so the page renders even if chunk loading is broken. */
 const lazyCatalogs: Record<Exclude<Locale, "en">, () => Promise<Catalog>> = {
-  ar: () => import("@/shell/messages/ar.json").then((m) => m.default),
-  fr: () => import("@/shell/messages/fr.json").then((m) => m.default),
+  ar: () => import("@pulse/i18n/messages/ar.json").then((m) => m.default),
+  fr: () => import("@pulse/i18n/messages/fr.json").then((m) => m.default),
 };
 
 /** Root layout is gone here, so there is no intl provider: read the locale cookie directly. */

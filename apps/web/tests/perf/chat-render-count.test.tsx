@@ -11,7 +11,7 @@ import type { ConversationDetail } from "@/features/direct-messaging/types";
 import type { TimelineMessage } from "@/platform/timeline";
 import directMessagingEn from "@/features/direct-messaging/messages/en.json";
 import typingPresenceEn from "@/features/typing-presence/messages/en.json";
-import shellEn from "@/shell/messages/en.json";
+import shellEn from "@pulse/i18n/messages/en.json";
 
 const VIEWER = "viewer-0000-0000";
 const PEER = "peer-00000-0000";

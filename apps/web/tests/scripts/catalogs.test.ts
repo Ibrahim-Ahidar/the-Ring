@@ -7,7 +7,7 @@ const LOCALES = ["ar", "en", "fr"] as const;
 
 function catalogDirs(): string[] {
   const features = path.join(ROOT, "src/features");
-  const dirs = [path.join(ROOT, "src/shell/messages")];
+  const dirs = [path.resolve(ROOT, "../../packages/i18n/messages")];
   for (const name of readdirSync(features)) {
     const dir = path.join(features, name, "messages");
     if (existsSync(dir)) dirs.push(dir);

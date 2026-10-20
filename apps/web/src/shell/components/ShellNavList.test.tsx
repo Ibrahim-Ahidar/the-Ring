@@ -4,8 +4,8 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import shellAr from "../messages/ar.json";
-import shellEn from "../messages/en.json";
+import shellAr from "@pulse/i18n/messages/ar.json";
+import shellEn from "@pulse/i18n/messages/en.json";
 import { AppShell, isConversationRoute } from "./AppShell";
 import { activeNavId, ShellNavList } from "./ShellNavList";
 
