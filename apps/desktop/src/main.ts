@@ -1,8 +1,10 @@
-import { app, BrowserWindow, Menu, nativeImage, screen, session, shell, Tray } from "electron";
+import { app, BrowserWindow, Menu, nativeImage, net, screen, session, shell, Tray } from "electron";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { shouldHideOnClose } from "./close-policy";
+import { isOfflineError } from "./offline";
 import { isPulseUrl } from "./origin";
+import { createRetryController } from "./retry-controller";
 import { buildTrayMenu } from "./tray-menu";
 import {
   parseWindowState,
@@ -14,6 +16,8 @@ import {
 // No production URL exists in the repo yet; override with PULSE_URL.
 const DEFAULT_PULSE_URL = "https://pulse.vercel.app";
 const PULSE_URL = process.env.PULSE_URL || DEFAULT_PULSE_URL;
+const OFFLINE_PAGE = path.join(__dirname, "..", "assets", "offline.html");
+const RETRY_SCHEME = "pulse-retry:";
 
 app.setAppUserModelId("com.pulse.desktop");
 
@@ -130,6 +134,11 @@ function createWindow(): BrowserWindow {
     return { action: "deny" };
   });
   win.webContents.on("will-navigate", (event, url) => {
+    if (url.startsWith(RETRY_SCHEME)) {
+      event.preventDefault();
+      void retry.retryNow();
+      return;
+    }
     if (isPulseUrl(url, PULSE_URL)) return;
     event.preventDefault();
     openExternal(url);
@@ -142,7 +151,33 @@ function createWindow(): BrowserWindow {
       win.hide();
     }
   });
-  // Seam (#168): did-fail-load -> offline screen.
+
+  const showOffline = () => {
+    void win.loadFile(OFFLINE_PAGE);
+    retry.start();
+  };
+  const retry = createRetryController({
+    probe: async () => {
+      try {
+        const res = await net.fetch(PULSE_URL, { method: "HEAD", bypassCustomProtocolHandlers: true });
+        return res.status > 0;
+      } catch {
+        return false;
+      }
+    },
+    onOnline: () => {
+      if (!win.isDestroyed()) void win.loadURL(PULSE_URL);
+    },
+    setTimer: (fn, ms) => setTimeout(fn, ms),
+    clearTimer: (h) => clearTimeout(h as NodeJS.Timeout),
+  });
+  win.webContents.on("did-fail-load", (_e, errorCode, _desc, validatedURL, isMainFrame) => {
+    // Failures of the offline page itself are ignored; retry keeps running.
+    if (!isMainFrame || validatedURL.startsWith("file:") || !isOfflineError(errorCode)) return;
+    showOffline();
+  });
+  win.on("focus", () => void retry.retryNow());
+  win.on("closed", retry.stop);
   void win.loadURL(PULSE_URL);
   win.on("closed", () => {
     mainWindow = null;
