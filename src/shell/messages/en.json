@@ -18,7 +18,37 @@
         "body": "Choose who can message you, block anyone, and set your own language and theme."
       }
     ],
-    "featuresTitle": "Why the Ring"
+    "featuresTitle": "Why the Ring",
+    "eyebrow": "No phone number needed",
+    "headline": "Conversations that stay yours.",
+    "demoLabel": "Preview of a conversation in the Ring",
+    "demo": {
+      "name": "Sara",
+      "handle": "@sara",
+      "status": "online",
+      "messages": [
+        {
+          "side": "in",
+          "text": "Found you by your @username 👋",
+          "time": "9:41"
+        },
+        {
+          "side": "out",
+          "text": "That was quick! No number swapping.",
+          "time": "9:42"
+        },
+        {
+          "side": "in",
+          "text": "Adding you to the study group now.",
+          "time": "9:42"
+        }
+      ],
+      "typing": "typing…"
+    },
+    "trust": "Free · Arabic, English & French · Light and dark",
+    "ctaTitle": "Claim your @username",
+    "ctaBody": "Set up in under a minute. Pick who can reach you from day one.",
+    "ctaButton": "Create your account"
   },
   "nav": {
     "home": "Home",

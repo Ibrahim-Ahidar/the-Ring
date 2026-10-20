@@ -8,11 +8,11 @@ import { BrandMark } from "@/shell/components/BrandMark";
 import styles from "./public.module.css";
 
 /** Frame for signed-out pages: brand bar, language switcher, legal footer. */
-export async function PublicFrame({ children }: { children: ReactNode }) {
+export async function PublicFrame({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   const t = await getTranslations("shell");
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${wide ? styles.pageWide : ""}`}>
       <header className={styles.top}>
         <Link className={styles.brand} href="/">
           <BrandMark size={28} />
@@ -20,7 +20,7 @@ export async function PublicFrame({ children }: { children: ReactNode }) {
         </Link>
         <LanguageSelect />
       </header>
-      <main className={styles.main}>{children}</main>
+      <main className={`${styles.main} ${wide ? styles.mainWide : ""}`}>{children}</main>
       <footer className={styles.footer}>
         <Link href="/legal/terms">{t("routes.terms")}</Link>
         <Link href="/legal/privacy">{t("routes.privacy")}</Link>
