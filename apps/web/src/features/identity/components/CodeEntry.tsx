@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
-import type { Result } from "@/platform/result";
+import type { Result } from "@pulse/core/result";
 import ui from "@/shell/styles/ui.module.css";
 import { useIdentityForm } from "../context/identity-form-context";
 import styles from "../identity.module.css";

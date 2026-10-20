@@ -5,7 +5,7 @@ import { Pin } from "lucide-react";
 import { memo, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import { useMessaging } from "../context/MessagingProvider";
 import { useQueryHref } from "../hooks/useQueryHref";

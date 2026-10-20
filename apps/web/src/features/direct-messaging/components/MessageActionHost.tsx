@@ -13,7 +13,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 import type { MemberRole } from "@/shell/slots/types";
 import { getContributions } from "@/shell/slots";
 

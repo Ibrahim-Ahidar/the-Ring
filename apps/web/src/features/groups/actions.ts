@@ -8,8 +8,8 @@ import {
 } from "@/features/safety/service";
 import { createSupabaseAdminClient } from "@/platform/supabase/admin";
 import { getSessionContext } from "@/platform/session";
-import type { Result } from "@/platform/result";
-import { err } from "@/platform/result";
+import type { Result } from "@pulse/core/result";
+import { err } from "@pulse/core/result";
 
 import * as groups from "./service";
 import type { FailedInvite } from "./service";

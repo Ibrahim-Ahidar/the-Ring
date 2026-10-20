@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ProfileView } from "@/features/discovery-contacts/components/ProfileView";
 import { getProfile } from "@/features/discovery-contacts/service";
-import { asRpcClient } from "@/platform/rpc";
+import { asRpcClient } from "@pulse/core/rpc";
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 import ui from "@/shell/styles/ui.module.css";
 

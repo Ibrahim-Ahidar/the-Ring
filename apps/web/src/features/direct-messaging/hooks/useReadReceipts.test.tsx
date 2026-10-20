@@ -2,7 +2,7 @@
 import { act, render } from "@testing-library/react";
 import { createRef, useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 const markSeenUpTo = vi.fn(async () => true);
 const viewer: { id: string | null } = { id: "me" };

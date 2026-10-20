@@ -4,9 +4,9 @@ import type { PGliteInterface } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { decideInteraction } from "@/platform/interaction";
-import { limit, RATE_LIMITS } from "@/platform/limit";
+import { limit, RATE_LIMITS } from "@pulse/core/limit";
 import { notify } from "@/platform/notify";
-import { validateUsername } from "@/platform/username";
+import { validateUsername } from "@pulse/core/username";
 
 import {
   asSuperuser,

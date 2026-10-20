@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { RpcClient } from "@/platform/rpc";
+import type { RpcClient } from "@pulse/core/rpc";
 
-import { ok } from "@/platform/result";
+import { ok } from "@pulse/core/result";
 
 import { completeUploadFlow } from "./complete-upload-flow";
 

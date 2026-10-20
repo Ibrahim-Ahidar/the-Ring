@@ -4,7 +4,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@pulse/i18n"],
+  transpilePackages: ["@pulse/i18n", "@pulse/core"],
   experimental: {
     // Reuse dynamic pages for 30s on back/forward and revisits instead of refetching.
     staleTimes: { dynamic: 30 },

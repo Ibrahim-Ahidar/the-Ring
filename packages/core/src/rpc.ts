@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { err, ok, type Result } from "@/platform/result";
+import { err, ok, type Result } from "./result";
 
 const FEATURE_ERROR = /^[a-z_]+\.[a-z0-9_]+$/;
 

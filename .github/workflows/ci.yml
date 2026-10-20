@@ -28,13 +28,19 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npm run lint --workspace apps/web
+        run: |
+          npm run lint --workspace apps/web
+          npm run lint --workspace packages/core
 
       - name: Typecheck
-        run: npm run typecheck --workspace apps/web
+        run: |
+          npm run typecheck --workspace apps/web
+          npm run typecheck --workspace packages/core
 
       - name: Test
-        run: npm test --workspace apps/web
+        run: |
+          npm test --workspace apps/web
+          npm test --workspace packages/core
 
       - name: Build
         run: npm run build --workspace apps/web

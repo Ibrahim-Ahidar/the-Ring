@@ -1,6 +1,6 @@
 import "server-only";
 
-import { err, ok, type Result } from "@/platform/result";
+import { err, ok, type Result } from "@pulse/core/result";
 import { createSupabaseAdminClient } from "@/platform/supabase/admin";
 
 const BUCKET = "attachments";

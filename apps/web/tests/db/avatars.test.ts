@@ -1,7 +1,7 @@
 import type { PGliteInterface } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { callRpc } from "@/platform/rpc";
+import { callRpc } from "@pulse/core/rpc";
 
 import { asAnon, asSuperuser, asUser, createTestDb, createUser } from "./pglite";
 import { createRpcClient } from "./rpc-client";

@@ -1,11 +1,11 @@
-import { encodeBase64Url } from "@/platform/base64url";
+import { encodeBase64Url } from "@pulse/core/base64url";
 
 import type {
   DeletionScope,
   MessageAttachment,
   MessageReaction,
   MessageType,
-} from "@/platform/timeline";
+} from "@pulse/core/timeline";
 
 export type RpcMessageRow = {
   id: string;

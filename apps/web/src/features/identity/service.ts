@@ -5,10 +5,10 @@ import {
   IMAGE_MIME_TYPES,
   validateAttachment,
 } from "@/platform/media";
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import { err, ok, type Result } from "@/platform/result";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import { err, ok, type Result } from "@pulse/core/result";
 import { reportError } from "@/platform/telemetry";
-import { validateUsername } from "@/platform/username";
+import { validateUsername } from "@pulse/core/username";
 
 import { meetsPasswordPolicy } from "./password-policy";
 import { emailError } from "./validation";

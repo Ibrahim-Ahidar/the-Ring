@@ -15,7 +15,7 @@ vi.mock("@/platform/supabase/browser", () => ({
     auth: { getUser: async () => ({ data: { user: { id: "me" } } }) },
   }),
 }));
-vi.mock("@/platform/rpc", () => ({ asRpcClient: (client: unknown) => client }));
+vi.mock("@pulse/core/rpc", () => ({ asRpcClient: (client: unknown) => client }));
 vi.mock("@/platform/realtime-hub", () => ({
   joinOwnPresence: () => ({
     onPresence: (cb: typeof hub.presence) => {

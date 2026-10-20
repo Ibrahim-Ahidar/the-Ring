@@ -1,6 +1,6 @@
 import { IMAGE_MAX_BYTES, IMAGE_MIME_TYPES, validateAttachment } from "@/platform/media";
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import { err, ok, type Result } from "@/platform/result";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import { err, ok, type Result } from "@pulse/core/result";
 
 import { parseMemberUsernames } from "./lib/member-usernames";
 import type { GroupMember, GroupSummary, InviteLink, MemberRole } from "./types";

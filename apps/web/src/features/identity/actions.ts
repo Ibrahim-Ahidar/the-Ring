@@ -13,8 +13,8 @@ import {
   tryCreateStatelessSupabaseClient,
   tryCreateSupabaseServerClient,
 } from "@/platform/supabase/safe-server";
-import { asRpcClient } from "@/platform/rpc";
-import { err, ok, type Result } from "@/platform/result";
+import { asRpcClient } from "@pulse/core/rpc";
+import { err, ok, type Result } from "@pulse/core/result";
 
 import {
   clearDeviceId,

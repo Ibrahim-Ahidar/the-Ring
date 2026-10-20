@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 
 import { getSessionContext } from "@/platform/session";
-import type { Result } from "@/platform/result";
+import type { Result } from "@pulse/core/result";
 import {
   ACCENT_COOKIE,
   LOCALE_COOKIE,

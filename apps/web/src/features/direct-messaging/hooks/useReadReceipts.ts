@@ -1,7 +1,7 @@
 "use client";
 
 import { type RefObject, useCallback, useEffect, useMemo, useRef } from "react";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 import {
   useConversationView,
   useMarkSeenUpTo,

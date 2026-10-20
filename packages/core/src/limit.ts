@@ -1,5 +1,5 @@
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import { err, ok, type Result } from "@/platform/result";
+import { callRpc, type RpcClient } from "./rpc";
+import { err, ok, type Result } from "./result";
 
 export const RATE_LIMITS = {
   send_message: { window: "minute" as const, max: 30 },

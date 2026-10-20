@@ -4,7 +4,7 @@ import { memo, useMemo, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import { markAudioPlayedAction } from "../actions";
 import { shouldRecordPlay } from "../audio-played";

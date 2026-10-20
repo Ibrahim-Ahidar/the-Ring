@@ -1,4 +1,4 @@
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 export type UploadPhase = "pending" | "ready" | "failed" | null;
 

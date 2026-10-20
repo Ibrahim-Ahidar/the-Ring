@@ -2,10 +2,10 @@ import {
   decodeMessageCursor,
   encodeMessageCursor,
   type MessageCursor,
-} from "@/platform/pagination";
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import { err, ok, type Result } from "@/platform/result";
-import type { TimelineMessage } from "@/platform/timeline";
+} from "@pulse/core/pagination";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import { err, ok, type Result } from "@pulse/core/result";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import {
   encodeConversationCursor,

@@ -11,7 +11,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { Copy } from "lucide-react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import en from "../messages/en.json";
 import { MessageActionHost } from "./MessageActionHost";

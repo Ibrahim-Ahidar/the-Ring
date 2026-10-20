@@ -1,4 +1,4 @@
-import type { MessageReaction } from "@/platform/timeline";
+import type { MessageReaction } from "@pulse/core/timeline";
 
 export type ReactionsState = {
   byMessage: Record<string, MessageReaction[]>;

@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { useSyncExternalStore } from "react";
 
 import { joinConversation, type TopicHandle } from "@/platform/realtime-hub";
-import type { MessageReaction } from "@/platform/timeline";
+import type { MessageReaction } from "@pulse/core/timeline";
 
 import {
   createInitialReactionsState,

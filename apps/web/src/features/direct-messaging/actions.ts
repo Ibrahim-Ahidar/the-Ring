@@ -2,7 +2,7 @@
 
 import { readPageLimit } from "./page-limit-server";
 import { getSessionContext } from "@/platform/session";
-import type { Result } from "@/platform/result";
+import type { Result } from "@pulse/core/result";
 
 import {
   getArchivedSummary,
@@ -22,7 +22,7 @@ import type {
   ListConversationsResult,
   ListMessagesResult,
 } from "./types";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 async function requireRpc() {
   const session = await getSessionContext();

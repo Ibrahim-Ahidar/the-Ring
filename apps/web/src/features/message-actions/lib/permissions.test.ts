@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import { canDeleteForEveryone, canEdit } from "./permissions";
 

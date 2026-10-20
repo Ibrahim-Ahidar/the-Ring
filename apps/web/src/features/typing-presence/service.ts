@@ -1,5 +1,5 @@
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import type { Result } from "@/platform/result";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import type { Result } from "@pulse/core/result";
 
 import {
   readSubjectPresence,

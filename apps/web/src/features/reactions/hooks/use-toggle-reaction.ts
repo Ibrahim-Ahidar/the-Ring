@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 
-import type { MessageReaction } from "@/platform/timeline";
+import type { MessageReaction } from "@pulse/core/timeline";
 
 import { addReactionAction, removeReactionAction } from "../actions";
 import { dispatchConversationReaction } from "../context/conversation-reactions-store";

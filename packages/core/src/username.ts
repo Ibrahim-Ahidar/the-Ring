@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "@/platform/result";
+import { err, ok, type Result } from "./result";
 
 export const RESERVED_USERNAMES = [
   "admin",

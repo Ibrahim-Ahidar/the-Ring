@@ -14,7 +14,7 @@ import { emitMessageMutation } from "@/features/message-actions/message-actions-
 
 import { validateAttachment } from "@/platform/media";
 import type { AttachmentKind } from "@/platform/media";
-import { randomUUID } from "@/platform/uuid";
+import { randomUUID } from "@pulse/core/uuid";
 
 import {
   completeUploadAction,

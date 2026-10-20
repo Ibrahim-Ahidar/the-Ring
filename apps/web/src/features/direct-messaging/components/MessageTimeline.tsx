@@ -14,7 +14,7 @@ import { observeElementRect, useVirtualizer } from "@tanstack/react-virtual";
 import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
 
 import { useGroupMemberDirectory } from "@/features/groups/hooks/useGroupMemberNames";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import { shouldGroupWithPrevious } from "../delivery";
 import { calendarDaysAgo, isSameCalendarDay } from "../lib/calendar";

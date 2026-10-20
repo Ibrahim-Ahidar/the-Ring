@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 import ui from "@/shell/styles/ui.module.css";
 
 type Props = {

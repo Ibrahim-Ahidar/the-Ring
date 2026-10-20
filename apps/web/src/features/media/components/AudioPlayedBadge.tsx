@@ -3,7 +3,7 @@
 import { Mic } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import { useAudioPlayed } from "../hooks/useAudioPlayed";
 import styles from "../media.module.css";

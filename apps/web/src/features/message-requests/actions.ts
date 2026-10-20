@@ -1,7 +1,7 @@
 "use server";
 
 import { getSessionContext } from "@/platform/session";
-import { err, type Result } from "@/platform/result";
+import { err, type Result } from "@pulse/core/result";
 
 import * as requests from "./service";
 

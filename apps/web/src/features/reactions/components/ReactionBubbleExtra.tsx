@@ -4,7 +4,7 @@ import { memo, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import {
   aggregateEmojiCounts,

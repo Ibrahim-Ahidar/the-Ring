@@ -1,4 +1,4 @@
-import type { RpcClient } from "@/platform/rpc";
+import type { RpcClient } from "@pulse/core/rpc";
 
 import type { InboxPage, ThreadPage } from "./lib/streamed-pages";
 import { listConversations, listMessages, mapMessageRow } from "./service";

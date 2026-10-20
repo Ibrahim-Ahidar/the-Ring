@@ -1,4 +1,4 @@
-import { validateUsername } from "@/platform/username";
+import { validateUsername } from "@pulse/core/username";
 
 import { meetsPasswordPolicy } from "./password-policy";
 

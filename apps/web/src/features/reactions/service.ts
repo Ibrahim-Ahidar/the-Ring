@@ -1,5 +1,5 @@
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import { err, ok, type Result } from "@/platform/result";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import { err, ok, type Result } from "@pulse/core/result";
 
 import type { ReactionRow } from "./types";
 

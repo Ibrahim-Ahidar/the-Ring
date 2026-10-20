@@ -2,8 +2,8 @@ import "server-only";
 
 import { after } from "next/server";
 
-import { callRpc } from "@/platform/rpc";
-import { err, ok, type Result } from "@/platform/result";
+import { callRpc } from "@pulse/core/rpc";
+import { err, ok, type Result } from "@pulse/core/result";
 import type { SessionContext } from "@/platform/session";
 
 import { MFA_REQUIRED } from "./service";

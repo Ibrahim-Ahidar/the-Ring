@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { asRpcClient } from "@/platform/rpc";
+import { asRpcClient } from "@pulse/core/rpc";
 import { joinPeerPresence } from "@/platform/realtime-hub";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 

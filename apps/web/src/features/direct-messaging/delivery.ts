@@ -1,5 +1,5 @@
 import type { ConversationDetail } from "./types";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 export type OutboundDelivery = "pending" | "failed" | "sent" | "delivered" | "read";
 

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RpcClient } from "@/platform/rpc";
+import type { RpcClient } from "@pulse/core/rpc";
 import { setTelemetrySink } from "@/platform/telemetry";
 
 import { changeEmail, changePassword } from "./service";

@@ -1,6 +1,6 @@
-import type { RpcClient } from "@/platform/rpc";
-import { err, ok, type Result } from "@/platform/result";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { RpcClient } from "@pulse/core/rpc";
+import { err, ok, type Result } from "@pulse/core/result";
+import type { TimelineMessage } from "@pulse/core/timeline";
 import type { RpcMessageRow } from "@/features/direct-messaging/types";
 
 import {

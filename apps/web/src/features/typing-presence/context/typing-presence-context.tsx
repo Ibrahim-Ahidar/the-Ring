@@ -11,7 +11,7 @@ import {
 } from "react";
 
 import { onComposerActivity } from "@/platform/composer-events";
-import { asRpcClient } from "@/platform/rpc";
+import { asRpcClient } from "@pulse/core/rpc";
 import { joinConversation, type TopicHandle } from "@/platform/realtime-hub";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 import { clearTyping, setTypingEvent } from "@/platform/typing-store";

@@ -3,7 +3,7 @@
 import { memo, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import { useAttachmentList } from "../hooks/useAttachmentList";
 import { useDownloadUrl } from "../hooks/useDownloadUrl";

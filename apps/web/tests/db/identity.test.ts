@@ -6,8 +6,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { registerDevice, signIn } from "@/features/identity/service";
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import { validateUsername } from "@/platform/username";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import { validateUsername } from "@pulse/core/username";
 
 import { asSuperuser, asUser, createTestDb, createUser } from "./pglite";
 import { createRpcClient, createSuperuserRpcClient } from "./rpc-client";

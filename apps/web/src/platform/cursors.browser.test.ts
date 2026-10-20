@@ -21,7 +21,7 @@ describe("cursor codecs under the browser Buffer polyfill", () => {
   const id = "550e8400-e29b-41d4-a716-446655440000";
 
   it("message cursor round-trips", async () => {
-    const { encodeMessageCursor, decodeMessageCursor } = await import("./pagination");
+    const { encodeMessageCursor, decodeMessageCursor } = await import("@pulse/core/pagination");
     expect(decodeMessageCursor(encodeMessageCursor({ createdAt, id }))).toEqual({ createdAt, id });
   });
 

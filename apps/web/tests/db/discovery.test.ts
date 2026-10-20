@@ -13,7 +13,7 @@ import {
   searchByUsername,
   unfavorite,
 } from "@/features/discovery-contacts/service";
-import { RATE_LIMITS } from "@/platform/limit";
+import { RATE_LIMITS } from "@pulse/core/limit";
 
 import { asSuperuser, asUser, createTestDb, type TestUser } from "./pglite";
 import { createRpcClient } from "./rpc-client";

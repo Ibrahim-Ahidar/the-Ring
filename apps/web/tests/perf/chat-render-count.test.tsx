@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MessagingProvider } from "@/features/direct-messaging/context/MessagingProvider";
 import { ThreadPanel } from "@/features/direct-messaging/components/ThreadPanel";
 import type { ConversationDetail } from "@/features/direct-messaging/types";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 import directMessagingEn from "@/features/direct-messaging/messages/en.json";
 import typingPresenceEn from "@/features/typing-presence/messages/en.json";
 import shellEn from "@pulse/i18n/messages/en.json";

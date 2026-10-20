@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 
-import { asRpcClient } from "@/platform/rpc";
+import { asRpcClient } from "@pulse/core/rpc";
 import { joinOwnPresence } from "@/platform/realtime-hub";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 

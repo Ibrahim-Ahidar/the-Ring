@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "@/platform/result";
+import { err, ok, type Result } from "@pulse/core/result";
 
 const MB = 1024 * 1024;
 

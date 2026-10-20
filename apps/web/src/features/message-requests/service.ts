@@ -1,5 +1,5 @@
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import { ok, type Result } from "@/platform/result";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import { ok, type Result } from "@pulse/core/result";
 
 import type { MessageRequest, RequestStatus } from "./types";
 

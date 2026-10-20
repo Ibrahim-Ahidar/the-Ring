@@ -1,5 +1,5 @@
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import type { Result } from "@/platform/result";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import type { Result } from "@pulse/core/result";
 
 export type InteractionAction = "discover" | "message" | "invite" | "presence";
 export type InteractionDecision = "allow" | "request" | "deny";

@@ -19,8 +19,8 @@ import {
 import { emitComposerActivity } from "@/platform/composer-events";
 import { joinConversation, joinInbox } from "@/platform/realtime-hub";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
-import type { TimelineMessage } from "@/platform/timeline";
-import { randomUUID } from "@/platform/uuid";
+import type { TimelineMessage } from "@pulse/core/timeline";
+import { randomUUID } from "@pulse/core/uuid";
 
 import { getMessageAttachmentsAction } from "@/features/media/actions";
 

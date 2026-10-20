@@ -1,8 +1,8 @@
 "use server";
 
 import { getSessionContext } from "@/platform/session";
-import type { Result } from "@/platform/result";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { Result } from "@pulse/core/result";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import {
   deleteForEveryone,

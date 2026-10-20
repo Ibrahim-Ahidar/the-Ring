@@ -1,7 +1,7 @@
-import { encodeBase64Url } from "@/platform/base64url";
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import { err, ok, type Result } from "@/platform/result";
-import type { MessageAttachment } from "@/platform/timeline";
+import { encodeBase64Url } from "@pulse/core/base64url";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import { err, ok, type Result } from "@pulse/core/result";
+import type { MessageAttachment } from "@pulse/core/timeline";
 import { mapMessageRow } from "@/features/direct-messaging/service";
 import type { RpcMessageRow } from "@/features/direct-messaging/types";
 

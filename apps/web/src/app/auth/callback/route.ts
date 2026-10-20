@@ -6,7 +6,7 @@ import { readDeviceId, writeDeviceId } from "@/features/identity/device-cookie";
 import { deviceLabelFromUserAgent } from "@/features/identity/device-label";
 import { registerDevice } from "@/features/identity/service";
 import { loginPath, safeNextPath, type LoginReason } from "@/platform/login-redirect";
-import { asRpcClient } from "@/platform/rpc";
+import { asRpcClient } from "@pulse/core/rpc";
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 
 const EXPIRED_CODES = new Set(["otp_expired", "flow_state_expired"]);

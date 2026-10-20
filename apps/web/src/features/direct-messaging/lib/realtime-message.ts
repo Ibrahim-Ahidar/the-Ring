@@ -1,5 +1,5 @@
 import { shouldHideMessageForViewer } from "@/features/media/upload-status";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 /** Matches {@link list_messages} tombstone projection for delete-for-everyone. */
 export function applyListMessagesTombstone(message: TimelineMessage): TimelineMessage {

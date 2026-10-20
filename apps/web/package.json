@@ -19,6 +19,7 @@
     "perf:nav": "node scripts/perf-nav.mjs"
   },
   "dependencies": {
+    "@pulse/core": "*",
     "@pulse/i18n": "*",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",

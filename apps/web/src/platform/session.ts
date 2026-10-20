@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { loginPath } from "@/platform/login-redirect";
-import { asRpcClient, callRpc, type RpcClient } from "@/platform/rpc";
+import { asRpcClient, callRpc, type RpcClient } from "@pulse/core/rpc";
 import { tryCreateSupabaseServerClient } from "@/platform/supabase/safe-server";
 
 export const DEVICE_COOKIE_NAME = "pulse_device_id";

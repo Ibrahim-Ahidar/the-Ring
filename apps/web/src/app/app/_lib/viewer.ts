@@ -1,7 +1,7 @@
 import { cache } from "react";
 
 import * as identity from "@/features/identity/service";
-import type { RpcClient } from "@/platform/rpc";
+import type { RpcClient } from "@pulse/core/rpc";
 
 export type Viewer = {
   id: string;

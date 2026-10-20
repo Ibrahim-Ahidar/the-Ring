@@ -1,7 +1,7 @@
 import type { InteractionDecision } from "@/platform/interaction";
 
-import { callRpc, type RpcClient } from "@/platform/rpc";
-import { ok, type Result } from "@/platform/result";
+import { callRpc, type RpcClient } from "@pulse/core/rpc";
+import { ok, type Result } from "@pulse/core/result";
 
 export const LAST_SEEN_TOUCH_MS = 25 * 1000;
 

@@ -1,4 +1,4 @@
-import type { TimelineMessage } from "@/platform/timeline";
+import type { TimelineMessage } from "@pulse/core/timeline";
 import type { ConversationType, MemberRole } from "@/shell/slots/types";
 
 const EDIT_WINDOW_MS = 15 * 60 * 1000;

@@ -1,11 +1,11 @@
 "use server";
 
 import { validateAttachment } from "@/platform/media";
-import { asRpcClient, callRpc } from "@/platform/rpc";
+import { asRpcClient, callRpc } from "@pulse/core/rpc";
 import { getSessionContext } from "@/platform/session";
 import { createSupabaseAdminClient } from "@/platform/supabase/admin";
-import type { Result } from "@/platform/result";
-import type { TimelineMessage } from "@/platform/timeline";
+import type { Result } from "@pulse/core/result";
+import type { TimelineMessage } from "@pulse/core/timeline";
 
 import { completeUploadFlow } from "./complete-upload-flow";
 import {

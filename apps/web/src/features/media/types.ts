@@ -1,4 +1,4 @@
-import type { MessageAttachment } from "@/platform/timeline";
+import type { MessageAttachment } from "@pulse/core/timeline";
 import type { AttachmentKind } from "@/platform/media";
 
 export type PrepareUploadRow = {

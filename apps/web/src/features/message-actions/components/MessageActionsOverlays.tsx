@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { listConversationsAction } from "@/features/direct-messaging/actions";
 import type { ConversationSummary } from "@/features/direct-messaging/types";
-import { randomUUID } from "@/platform/uuid";
+import { randomUUID } from "@pulse/core/uuid";
 
 import {
   deleteForEveryoneAction,
