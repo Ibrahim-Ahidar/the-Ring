@@ -16,3 +16,5 @@ supabase/.branches/
 __pycache__/
 *.pyc
 .cache/
+
+dist/
