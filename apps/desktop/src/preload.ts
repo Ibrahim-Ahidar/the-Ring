@@ -73,3 +73,19 @@ function mountTitleBar(): void {
 }
 
 window.addEventListener("DOMContentLoaded", mountTitleBar);
+
+// The desktop app has no landing page: swallow clicks on links to "/" (e.g. the brand logo)
+// before Next.js navigates, instead of flashing the landing page and redirecting back.
+window.addEventListener(
+  "click",
+  (event) => {
+    const link = (event.target as Element | null)?.closest?.("a[href]");
+    if (!(link instanceof HTMLAnchorElement)) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin === location.origin && url.pathname === "/") {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  },
+  true,
+);
