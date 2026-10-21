@@ -335,6 +335,7 @@
 /* Mobile: single pane */
 @media (max-width: 767px) {
   .pane-app,
+  .pane-app[data-single="true"],
   .pane-app[data-drawer="open"] {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "pane";

@@ -292,6 +292,12 @@
   height: 24px;
 }
 
+.search .iconBtnFull {
+  width: 40px;
+  height: 40px;
+  margin-inline-end: calc(-1 * var(--space-12));
+}
+
 .chips {
   display: flex;
   gap: var(--space-8);
@@ -676,6 +682,12 @@ select.input {
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
+}
+
+:global([dir="rtl"]) select.input {
+  background-position:
+    17px center,
+    12px center;
 }
 
 select.input option {

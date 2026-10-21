@@ -44,7 +44,7 @@ function UsernameSearchInner() {
           />
           <button
             type="submit"
-            className={ui.iconBtn}
+            className={`${ui.iconBtn} ${ui.iconBtnFull}`}
             disabled={state.searching}
             aria-label={t("search.submit")}
             title={t("search.submit")}

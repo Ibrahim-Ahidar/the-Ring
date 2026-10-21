@@ -2,7 +2,7 @@
 
 import { Camera, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import {
@@ -73,9 +73,9 @@ function AccountSettingsInner({
   const locale = useLocale();
   const [displayName, setDisplayName] = useState(profile.display_name ?? "");
   const [bio, setBio] = useState(profile.bio ?? "");
-  const [timezone, setTimezone] = useState(
-    profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-  );
+  // Browser time zone differs from the server's, so resolve it after mount to
+  // keep the server and first client render identical (no hydration warning).
+  const [timezone, setTimezone] = useState(profile.timezone ?? "");
   const [newUsername, setNewUsername] = useState(profile.username);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -88,9 +88,11 @@ function AccountSettingsInner({
   );
   const [deleteFeedback, setDeleteFeedback] = useState<Feedback | null>(null);
   const [changedAt, setChangedAt] = useState(profile.username_changed_at);
-  const zones = useMemo(() => {
+  const [zones, setZones] = useState<string[]>([]);
+  useEffect(() => {
     const browser = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return timeZoneOptions(profile.timezone || browser);
+    setZones(timeZoneOptions(profile.timezone || browser));
+    if (!profile.timezone) setTimezone((cur) => cur || browser);
   }, [profile.timezone]);
   const router = useRouter();
   const [preview, setPreview] = useState<string | null>(null);
@@ -374,7 +376,7 @@ function AccountSettingsInner({
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
             />
-            <datalist id="account-timezone-list" suppressHydrationWarning>
+            <datalist id="account-timezone-list">
               {zones.map((zone) => (
                 <option key={zone} value={zone} />
               ))}
