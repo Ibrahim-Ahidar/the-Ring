@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { decideRedirect } from "@/auth/gate";
 import { SessionProvider, useSession } from "@/auth/session";
 import { AppIntlProvider } from "@/i18n/provider";
+import { PreferencesProvider } from "@/settings/PreferencesProvider";
 import { startConnectivityWatch } from "@/net/useOnline";
 
 function AuthGate() {
@@ -15,7 +16,11 @@ function AuthGate() {
   const group = segments[0] as string | undefined;
 
   useEffect(() => {
-    const target = decideRedirect({ loading, signedIn: session !== null, group });
+    const target = decideRedirect({
+      loading,
+      signedIn: session !== null,
+      group,
+    });
     if (target) router.replace(target);
   }, [loading, session, group, router]);
 
@@ -27,12 +32,14 @@ export default function RootLayout() {
   useEffect(() => startConnectivityWatch(), []);
   return (
     <QueryClientProvider client={queryClient}>
-      <AppIntlProvider>
-        <SessionProvider>
-          <StatusBar style="auto" />
-          <AuthGate />
-        </SessionProvider>
-      </AppIntlProvider>
+      <PreferencesProvider>
+        <AppIntlProvider>
+            <SessionProvider>
+              <StatusBar style="auto" />
+              <AuthGate />
+            </SessionProvider>
+        </AppIntlProvider>
+      </PreferencesProvider>
     </QueryClientProvider>
   );
 }

@@ -86,6 +86,9 @@ export default function ChatListScreen() {
         <Pressable onPress={() => router.push("/profile")} accessibilityRole="button">
           <Text style={styles.link}>{t("mobile.profile.link")}</Text>
         </Pressable>
+        <Pressable onPress={() => router.push("/settings")} accessibilityRole="button">
+          <Text style={styles.link}>{t("mobile.settings.title")}</Text>
+        </Pressable>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
         {chips.map((c) => (

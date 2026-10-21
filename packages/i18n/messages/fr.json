@@ -436,6 +436,32 @@
         "reset_session_expired": "Session expiree. Recommencez.",
         "rate_limited": "Trop de tentatives. Patientez un instant."
       }
+    },
+    "settings": {
+      "title": "Paramètres",
+      "theme": "Thème",
+      "accent": "Couleur d'accent",
+      "language": "Langue",
+      "themes": {
+        "system": "Système",
+        "light": "Clair",
+        "dark": "Sombre"
+      },
+      "accents": {
+        "indigo": "Indigo",
+        "green": "Vert"
+      },
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "ar": "العربية"
+      },
+      "restartRequired": "Fermez et rouvrez l'application pour appliquer le nouveau sens de lecture."
+    },
+    "update": {
+      "title": "Mise à jour requise",
+      "body": "Cette version ({current}) n'est plus prise en charge. La version {minimum} ou plus récente est requise.",
+      "download": "Télécharger la mise à jour"
     }
   }
 }

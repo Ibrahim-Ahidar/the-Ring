@@ -436,6 +436,32 @@
         "reset_session_expired": "انتهت الجلسة. ابدأ من جديد.",
         "rate_limited": "محاولات كثيرة. انتظر قليلا."
       }
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "theme": "المظهر",
+      "accent": "لون التمييز",
+      "language": "اللغة",
+      "themes": {
+        "system": "النظام",
+        "light": "فاتح",
+        "dark": "داكن"
+      },
+      "accents": {
+        "indigo": "نيلي",
+        "green": "أخضر"
+      },
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "ar": "العربية"
+      },
+      "restartRequired": "أغلق التطبيق وأعد فتحه لتطبيق اتجاه النص الجديد."
+    },
+    "update": {
+      "title": "يرجى التحديث",
+      "body": "هذا الإصدار ({current}) لم يعد مدعوما. يلزم الإصدار {minimum} أو أحدث.",
+      "download": "تنزيل التحديث"
     }
   }
 }

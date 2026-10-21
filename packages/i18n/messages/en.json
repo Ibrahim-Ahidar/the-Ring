@@ -436,6 +436,32 @@
         "reset_session_expired": "Reset session expired. Start again.",
         "rate_limited": "Too many attempts. Wait a moment."
       }
+    },
+    "settings": {
+      "title": "Settings",
+      "theme": "Theme",
+      "accent": "Accent colour",
+      "language": "Language",
+      "themes": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "accents": {
+        "indigo": "Indigo",
+        "green": "Green"
+      },
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "ar": "العربية"
+      },
+      "restartRequired": "Close and reopen the app to apply the new text direction."
+    },
+    "update": {
+      "title": "Please update",
+      "body": "This version ({current}) is no longer supported. Version {minimum} or newer is required.",
+      "download": "Download the update"
     }
   }
 }
