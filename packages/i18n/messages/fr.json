@@ -461,7 +461,9 @@
     "update": {
       "title": "Mise à jour requise",
       "body": "Cette version ({current}) n'est plus prise en charge. La version {minimum} ou plus récente est requise.",
-      "download": "Télécharger la mise à jour"
+      "download": "Télécharger la mise à jour",
+      "notice": "La version {latest} est disponible (vous avez {current}).",
+      "dismiss": "Plus tard"
     }
   }
 }

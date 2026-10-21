@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { compareVersions, isBelowMinimum, parseMobileCompat } from "./app-version";
+import { compareVersions, isBelowMinimum, isUpdateAvailable, parseMobileCompat } from "./app-version";
 import { directionChanges, parsePreferences, resolveLanguage } from "./preferences";
 
 describe("preferences", () => {
@@ -36,10 +36,18 @@ describe("app version", () => {
     expect(isBelowMinimum("0.1.0", null)).toBe(false);
   });
   it("parses compat payload", () => {
-    expect(parseMobileCompat({ min_version: " 1.0.0 ", download_url: "" })).toEqual({
+    expect(parseMobileCompat({ min_version: " 1.0.0 ", latest_version: "1.2.0", download_url: "" })).toEqual({
       minVersion: "1.0.0",
+      latestVersion: "1.2.0",
       downloadUrl: null,
     });
-    expect(parseMobileCompat(null)).toEqual({ minVersion: null, downloadUrl: null });
+    expect(parseMobileCompat(null)).toEqual({ minVersion: null, latestVersion: null, downloadUrl: null });
+  });
+  it("detects an available update", () => {
+    expect(isUpdateAvailable("0.1.0", "0.2.0")).toBe(true);
+    expect(isUpdateAvailable("0.2.0", "0.2.0")).toBe(false);
+    expect(isUpdateAvailable("0.3.0", "0.2.0")).toBe(false);
+    expect(isUpdateAvailable("0.1.0", null)).toBe(false);
+    expect(isUpdateAvailable("0.1.0", " ")).toBe(false);
   });
 });

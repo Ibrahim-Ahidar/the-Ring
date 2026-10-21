@@ -461,7 +461,9 @@
     "update": {
       "title": "Please update",
       "body": "This version ({current}) is no longer supported. Version {minimum} or newer is required.",
-      "download": "Download the update"
+      "download": "Download the update",
+      "notice": "Version {latest} is available (you have {current}).",
+      "dismiss": "Later"
     }
   }
 }

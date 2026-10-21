@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { decideRedirect } from "@/auth/gate";
 import { SessionProvider, useSession } from "@/auth/session";
 import { UpdateGate } from "@/compat/UpdateGate";
+import { UpdateNotice } from "@/compat/UpdateNotice";
 import { AppIntlProvider } from "@/i18n/provider";
 import { PreferencesProvider } from "@/settings/PreferencesProvider";
 import { startConnectivityWatch } from "@/net/useOnline";
@@ -38,6 +39,7 @@ export default function RootLayout() {
           <UpdateGate>
             <SessionProvider>
               <StatusBar style="auto" />
+              <UpdateNotice />
               <AuthGate />
             </SessionProvider>
           </UpdateGate>

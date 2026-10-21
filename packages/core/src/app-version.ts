@@ -16,13 +16,21 @@ export function isBelowMinimum(current: string, minimum: string | null | undefin
   return compareVersions(current, minimum) < 0;
 }
 
+/** True when a newer release than the running build is published. No latest means no notice. */
+export function isUpdateAvailable(current: string, latest: string | null | undefined): boolean {
+  if (!latest?.trim()) return false;
+  return compareVersions(current, latest) < 0;
+}
+
 export interface MobileCompat {
   minVersion: string | null;
+  latestVersion: string | null;
   downloadUrl: string | null;
 }
 
 export function parseMobileCompat(raw: unknown): MobileCompat {
   const v = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const str = (x: unknown) => (typeof x === "string" && x.trim() ? x.trim() : null);
-  return { minVersion: str(v.min_version), downloadUrl: str(v.download_url) };
+  return { minVersion: str(v.min_version),
+    latestVersion: str(v.latest_version), downloadUrl: str(v.download_url) };
 }
