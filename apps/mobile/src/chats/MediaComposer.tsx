@@ -1,9 +1,11 @@
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder } from "expo-audio";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text } from "react-native";
+import { Image as ImageIcon, Mic, Square } from "lucide-react-native";
+import { Alert } from "react-native";
 import { useTranslations } from "use-intl";
 
+import { IconButton, Text } from "@/ui";
 import { AUDIO_MAX_DURATION_MS, type MediaUploadInput } from "@/data";
 
 type Upload = Omit<MediaUploadInput, "conversationId" | "clientId">;
@@ -69,33 +71,25 @@ export function MediaComposer({ disabled, onUpload }: { disabled: boolean; onUpl
   return (
     <>
       {!recording ? (
-        <Pressable
+        <IconButton
+          icon={ImageIcon}
+          label={t("mobile.media.attach")}
           onPress={() => void pickImage()}
           disabled={disabled}
-          accessibilityRole="button"
-          accessibilityLabel={t("mobile.media.attach")}
-          style={[styles.btn, disabled && styles.disabled]}
-        >
-          <Text style={styles.glyph}>{"🖼"}</Text>
-        </Pressable>
+        />
       ) : null}
-      <Pressable
+      <IconButton
+        icon={recording ? Square : Mic}
+        label={recording ? t("mobile.media.stop") : t("mobile.media.record")}
+        selected={recording}
         onPress={() => void (recording ? stopAndSend() : start())}
         disabled={disabled && !recording}
-        accessibilityRole="button"
-        accessibilityLabel={recording ? t("mobile.media.stop") : t("mobile.media.record")}
-        style={[styles.btn, disabled && !recording && styles.disabled]}
-      >
-        <Text style={styles.glyph}>{recording ? "⏹" : "🎤"}</Text>
-      </Pressable>
-      {recording ? <Text style={styles.rec}>{t("mobile.media.recording")}</Text> : null}
+      />
+      {recording ? (
+        <Text variant="caption" tone="danger" style={{ alignSelf: "center" }}>
+          {t("mobile.media.recording")}
+        </Text>
+      ) : null}
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  btn: { paddingHorizontal: 6, paddingVertical: 10 },
-  glyph: { fontSize: 20 },
-  disabled: { opacity: 0.5 },
-  rec: { color: "#b00020", alignSelf: "center" },
-});

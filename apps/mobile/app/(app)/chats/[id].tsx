@@ -1,25 +1,15 @@
 import { setStringAsync } from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Check, Send, UsersRound, X } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, FlatList, KeyboardAvoidingView, TextInput, View } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { useSession } from "@/auth/session";
 import { canSend } from "@/chats/composer";
-import { MediaBubble } from "@/chats/MediaBubble";
+import { dayKey, dayLabel } from "@/chats/format";
 import { MediaComposer } from "@/chats/MediaComposer";
+import { MessageBubble } from "@/chats/MessageBubble";
 import { MessageMenu } from "@/chats/MessageMenu";
 import {
   useChatDetail,
@@ -31,25 +21,24 @@ import {
   useSendText,
 } from "@/chats/queries";
 import { snippet } from "@/chats/snippet";
-import { flattenPages, shouldLoadMoreForLanding, tickFor } from "@/chats/timeline";
+import { flattenPages, shouldLoadMoreForLanding } from "@/chats/timeline";
 import { formatLastSeen } from "@/chats/last-seen";
 import { useSubtitle, useTyping } from "@/chats/usePresence";
 import { SafetyMenu } from "@/safety/SafetyMenu";
-import { OfflineBanner } from "@/net/OfflineBanner";
 import { useOnline } from "@/net/useOnline";
 import {
   availableActions,
-  groupReactions,
   initialScrollTarget,
-  outboundDeliveryStatus,
   reactionToggle,
   type InitialScroll,
   type MessageReaction,
   type RpcMessageRow,
 } from "@/data";
+import { AppHeader, Avatar, Banner, ErrorState, IconButton, Screen, Spinner, Text, useTheme } from "@/ui";
 
 export default function ChatScreen() {
   const t = useTranslations();
+  const { colors, spacing, radii, controlHeights } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useSession();
@@ -235,41 +224,46 @@ export default function ChatScreen() {
     ? (reactionsByMessage.get(selected.id) ?? []).filter((r) => r.user_id === userId).map((r) => r.emoji)
     : [];
 
+  const reactMutate = messageActions.react.mutate;
+  const toggleReaction = useCallback(
+    (messageId: string, emoji: string, op: "add" | "remove") => reactMutate({ messageId, emoji, op }),
+    [reactMutate],
+  );
+  const now = new Date();
+  const hasMoreHistory = !!messages.hasNextPage;
+  const actionFailed = messageActions.edit.isError || messageActions.remove.isError || messageActions.react.isError;
+
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.chats.back")}</Text>
-        </Pressable>
-        <View style={styles.flex}>
-          <Text style={styles.title} numberOfLines={1}>
-            {title}
-          </Text>
-          {subtitleText ? (
-            <Text style={styles.subtitle} numberOfLines={1}>
-              {subtitleText}
-            </Text>
-          ) : null}
-        </View>
-        {detail.data?.type === "direct" && detail.data.other_user_id ? (
-          <SafetyMenu userId={detail.data.other_user_id} onBlocked={() => router.back()} />
-        ) : null}
-        {detail.data?.type === "group" ? (
-          <Pressable
-            onPress={() => router.push({ pathname: "/groups/[id]", params: { id } })}
-            accessibilityRole="button"
-          >
-            <Text style={styles.link}>{t("mobile.groups.info")}</Text>
-          </Pressable>
-        ) : null}
-      </View>
-      <OfflineBanner />
-      {messages.isPending || (ready && landing === null) ? <ActivityIndicator style={styles.center} /> : null}
-      {messages.isError ? <Text style={styles.error}>{t("mobile.chats.loadError")}</Text> : null}
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <Screen edges={["bottom", "start", "end"]} background="chatBg">
+      <AppHeader
+        title={title}
+        subtitle={subtitleText ?? undefined}
+        onBack={() => router.back()}
+        backLabel={t("mobile.chats.back")}
+        leading={<Avatar name={title || "?"} seed={id} src={detail.data?.other_avatar_url} size="sm" />}
+        actions={
+          <>
+            {detail.data?.type === "direct" && detail.data.other_user_id ? (
+              <SafetyMenu userId={detail.data.other_user_id} onBlocked={() => router.back()} />
+            ) : null}
+            {detail.data?.type === "group" ? (
+              <IconButton
+                icon={UsersRound}
+                label={t("mobile.groups.info")}
+                onPress={() => router.push({ pathname: "/groups/[id]", params: { id } })}
+              />
+            ) : null}
+          </>
+        }
+      />
+      {!online ? <Banner kind="offline" message={t("mobile.offline.banner")} /> : null}
+      {messages.isPending || (ready && landing === null) ? <Spinner /> : null}
+      {messages.isError ? <ErrorState title={t("mobile.chats.loadError")} onRetry={() => messages.refetch()} /> : null}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <FlatList
           ref={listRef}
-          style={styles.flex}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingVertical: spacing.s8 }}
           inverted
           data={landing ? rows : []}
           keyExtractor={(m) => m.id}
@@ -284,121 +278,109 @@ export default function ChatScreen() {
           onEndReached={() => {
             if (landing && messages.hasNextPage && !messages.isFetchingNextPage) void messages.fetchNextPage();
           }}
-          ListFooterComponent={messages.isFetchingNextPage ? <ActivityIndicator /> : undefined}
-          renderItem={({ item }) => {
-            const mine = item.sender_id === userId;
-            const tick = mine ? tickFor(outboundDeliveryStatus(item, detail.data)) : null;
+          ListFooterComponent={messages.isFetchingNextPage ? <Spinner /> : undefined}
+          renderItem={({ item, index }) => {
+            // Inverted list: the older neighbour sits at index + 1.
+            const older = rows[index + 1];
+            const sameDay = older ? dayKey(older.created_at) === dayKey(item.created_at) : false;
+            const grouped = !!older && sameDay && older.sender_id === item.sender_id;
+            const showDay = older ? !sameDay : !hasMoreHistory;
             return (
-              <View>
-                {item.id === unreadId ? <Text style={styles.divider}>{t("mobile.chats.unreadDivider")}</Text> : null}
-                <Pressable
-                  onLongPress={() => setSelected(item)}
-                  accessibilityHint={t("mobile.actions.menuTitle")}
-                  style={[styles.bubble, mine ? styles.mine : styles.theirs]}
-                >
-                  {item.reply_to_id ? (
-                    <View style={styles.quote}>
-                      <Text style={[styles.quoteText, mine && styles.mineText]} numberOfLines={2}>
-                        {quoteText(item.reply_to_id)}
-                      </Text>
-                    </View>
-                  ) : null}
-                  {item.deletion_scope !== "everyone" && (item.type === "image" || item.type === "audio") ? (
-                    <MediaBubble messageId={item.id} type={item.type} mine={mine} />
-                  ) : (
-                    <Text style={mine ? styles.mineText : undefined}>
-                      {item.deletion_scope === "everyone"
-                        ? t("mobile.chats.deleted")
-                        : item.type === "text"
-                          ? item.body
-                          : t("mobile.chats.unsupported")}
-                    </Text>
-                  )}
-                  <View style={styles.meta}>
-                    {item.edited_at && item.deletion_scope !== "everyone" ? (
-                      <Text style={[styles.time, mine && styles.mineText]}>{t("mobile.actions.edited")}</Text>
-                    ) : null}
-                    <Text style={[styles.time, mine && styles.mineText]}>
-                      {new Date(item.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </Text>
-                    {tick ? (
-                      <Text
-                        accessibilityLabel={t(tick.labelKey)}
-                        style={[styles.time, tick.read ? styles.read : styles.mineText]}
-                      >
-                        {tick.glyph}
-                      </Text>
-                    ) : null}
-                  </View>
-                </Pressable>
-                {item.deletion_scope !== "everyone" && (reactionsByMessage.get(item.id)?.length ?? 0) > 0 ? (
-                  <View style={[styles.chips, mine ? styles.chipsMine : styles.chipsTheirs]}>
-                    {groupReactions(reactionsByMessage.get(item.id) ?? [], userId).map((g) => (
-                      <Pressable
-                        key={g.emoji}
-                        style={[styles.chip, g.mine && styles.chipMine]}
-                        onPress={() =>
-                          messageActions.react.mutate({
-                            messageId: item.id,
-                            emoji: g.emoji,
-                            op: g.mine ? "remove" : "add",
-                          })
-                        }
-                        accessibilityRole="button"
-                        accessibilityLabel={t("mobile.actions.reactionLabel", { emoji: g.emoji })}
-                      >
-                        <Text style={styles.chipText}>
-                          {g.emoji} {g.count}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                ) : null}
-              </View>
+              <MessageBubble
+                item={item}
+                mine={item.sender_id === userId}
+                userId={userId}
+                detail={detail.data}
+                reactions={reactionsByMessage.get(item.id)}
+                quote={item.reply_to_id ? quoteText(item.reply_to_id) : null}
+                grouped={grouped}
+                dayLabel={showDay ? dayLabel(item.created_at, now) : null}
+                unreadDivider={item.id === unreadId}
+                onLongPress={setSelected}
+                onToggleReaction={toggleReaction}
+              />
             );
           }}
         />
-        {send.isError ? <Text style={styles.error}>{t("mobile.chats.sendError")}</Text> : null}
+        {send.isError ? <Banner kind="error" message={t("mobile.chats.sendError")} /> : null}
         {sendMedia.isError ? (
-          <Text style={styles.error}>
-            {mediaErrorKey && t.has(mediaErrorKey) ? t(mediaErrorKey)
-              : t("mobile.media.mediaError")}
-          </Text>
+          <Banner
+            kind="error"
+            message={mediaErrorKey && t.has(mediaErrorKey) ? t(mediaErrorKey) : t("mobile.media.mediaError")}
+          />
         ) : null}
-        {messageActions.edit.isError || messageActions.remove.isError || messageActions.react.isError ? (
-          <Text style={styles.error}>{t("mobile.actions.actionError")}</Text>
-        ) : null}
+        {actionFailed ? <Banner kind="error" message={t("mobile.actions.actionError")} /> : null}
         {replyTo || editing ? (
-          <View style={styles.banner}>
-            <View style={styles.flex}>
-              <Text style={styles.bannerTitle} numberOfLines={1}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing.s8,
+              paddingStart: spacing.s12,
+              paddingEnd: spacing.s4,
+              paddingVertical: spacing.s4,
+              backgroundColor: colors.panel,
+              borderTopWidth: 1,
+              borderTopColor: colors.border,
+            }}
+          >
+            <View
+              style={{
+                flex: 1,
+                borderStartWidth: 3,
+                borderStartColor: colors.accent,
+                paddingStart: spacing.s8,
+              }}
+            >
+              <Text variant="caption" tone="accentStrong" numberOfLines={1}>
                 {editing
                   ? t("mobile.actions.editing")
                   : t("mobile.actions.replyingTo", { name: senderName(replyTo as RpcMessageRow) })}
               </Text>
-              <Text style={styles.bannerBody} numberOfLines={1}>
+              <Text variant="caption" numberOfLines={1}>
                 {snippet((editing ?? replyTo)?.body)}
               </Text>
             </View>
-            <Pressable
+            <IconButton
+              icon={X}
+              label={t("mobile.actions.cancel")}
               onPress={() => {
                 if (editing) setDraft("");
                 setEditing(null);
                 setReplyTo(null);
               }}
-              accessibilityRole="button"
-              accessibilityLabel={t("mobile.actions.cancel")}
-            >
-              <Text style={styles.link}>{"\u2715"}</Text>
-            </Pressable>
+            />
           </View>
         ) : null}
-        <View style={styles.composer}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-end",
+            gap: spacing.s4,
+            paddingHorizontal: spacing.s8,
+            paddingVertical: spacing.s8,
+            backgroundColor: colors.panel,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+          }}
+        >
           {!editing ? (
             <MediaComposer disabled={!online || sendMedia.isPending} onUpload={(u) => sendMedia.mutate(u)} />
           ) : null}
           <TextInput
-            style={styles.input}
+            style={{
+              flex: 1,
+              minHeight: controlHeights.hit,
+              maxHeight: 120,
+              paddingHorizontal: spacing.s12,
+              paddingVertical: spacing.s12,
+              borderRadius: radii.pill,
+              backgroundColor: colors.input,
+              color: colors.text,
+              textAlign: "auto",
+              writingDirection: "auto",
+            }}
+            placeholderTextColor={colors.textMuted}
             value={draft}
             onChangeText={(text) => {
               setDraft(text);
@@ -407,14 +389,14 @@ export default function ChatScreen() {
             placeholder={t("mobile.chats.composerPlaceholder")}
             multiline
           />
-          <Pressable
-            style={[styles.send, !sendable && styles.disabled]}
-            onPress={submit}
+          <IconButton
+            icon={editing ? Check : Send}
+            label={editing ? t("mobile.actions.save") : t("mobile.chats.send")}
+            accent
+            flipRtl={!editing}
             disabled={!sendable}
-            accessibilityRole="button"
-          >
-            <Text style={styles.sendText}>{editing ? t("mobile.actions.save") : t("mobile.chats.send")}</Text>
-          </Pressable>
+            onPress={submit}
+          />
         </View>
       </KeyboardAvoidingView>
       <MessageMenu
@@ -425,49 +407,6 @@ export default function ChatScreen() {
         onAction={runAction}
         onClose={() => setSelected(null)}
       />
-    </SafeAreaView>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  flex: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", gap: 16, padding: 16 },
-  title: { fontSize: 20, fontWeight: "600" },
-  subtitle: { fontSize: 12, color: "#666" },
-  link: { color: "#4f46e5", fontSize: 16 },
-  center: { marginTop: 24 },
-  error: { color: "#b00020", paddingHorizontal: 16 },
-  divider: { alignSelf: "center", color: "#4f46e5", marginVertical: 8, fontSize: 12 },
-  bubble: { maxWidth: "80%", marginHorizontal: 12, marginVertical: 3, padding: 10, borderRadius: 12 },
-  mine: { alignSelf: "flex-end", backgroundColor: "#4f46e5" },
-  theirs: { alignSelf: "flex-start", backgroundColor: "#e5e7eb" },
-  mineText: { color: "#fff" },
-  meta: { flexDirection: "row", gap: 6, alignSelf: "flex-end" },
-  time: { fontSize: 11, color: "#666" },
-  read: { fontSize: 11, color: "#7dd3fc" },
-  quote: { borderLeftWidth: 3, borderLeftColor: "#a5b4fc", paddingLeft: 8, marginBottom: 4 },
-  quoteText: { fontSize: 12, color: "#444" },
-  chips: { flexDirection: "row", gap: 4, marginHorizontal: 12, marginBottom: 2 },
-  chipsMine: { alignSelf: "flex-end" },
-  chipsTheirs: { alignSelf: "flex-start" },
-  chip: { backgroundColor: "#f3f4f6", borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
-  chipMine: { backgroundColor: "#e0e7ff" },
-  chipText: { fontSize: 12 },
-  banner: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingTop: 8 },
-  bannerTitle: { fontSize: 12, fontWeight: "600", color: "#4f46e5" },
-  bannerBody: { fontSize: 12, color: "#666" },
-  composer: { flexDirection: "row", alignItems: "flex-end", gap: 8, padding: 8 },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    maxHeight: 120,
-  },
-  send: { backgroundColor: "#4f46e5", borderRadius: 8, paddingHorizontal: 16, paddingVertical: 12 },
-  disabled: { opacity: 0.5 },
-  sendText: { color: "#fff", fontWeight: "600" },
-});

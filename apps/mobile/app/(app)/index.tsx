@@ -1,16 +1,32 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { MessageSquare, Settings, UsersRound } from "lucide-react-native";
+import { memo, useCallback, useState } from "react";
+import { FlatList, ScrollView, View } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { useSession } from "@/auth/session";
+import { Chip } from "@/chats/Chip";
+import { listTime } from "@/chats/format";
 import { useChatList } from "@/chats/queries";
-import { OfflineBanner } from "@/net/OfflineBanner";
+import { useOnline } from "@/net/useOnline";
 import { ChatActionsSheet } from "@/organization/ChatActionsSheet";
 import { useArchivedSummary, useFolders } from "@/organization/queries";
 import { signOut, type ChatListFilter, type ConversationSummary } from "@/data";
+import {
+  AppHeader,
+  Avatar,
+  Banner,
+  EmptyState,
+  ErrorState,
+  IconButton,
+  ListRow,
+  LoadingState,
+  Screen,
+  Spinner,
+  UnreadCount,
+  useTheme,
+} from "@/ui";
 
 function chatTitle(chat: ConversationSummary, fallback: string): string {
   return chat.type === "group"
@@ -18,11 +34,44 @@ function chatTitle(chat: ConversationSummary, fallback: string): string {
     : (chat.other_display_name ?? chat.other_username ?? fallback);
 }
 
+type RowProps = {
+  chat: ConversationSummary;
+  untitled: string;
+  deleted: string;
+  noMessages: string;
+  hint: string;
+  onOpen: (id: string) => void;
+  onActions: (chat: ConversationSummary) => void;
+};
+
+const ChatRow = memo(function ChatRow({ chat, untitled, deleted, noMessages, hint, onOpen, onActions }: RowProps) {
+  const { controlHeights } = useTheme();
+  const title = chatTitle(chat, untitled);
+  const [nowMs] = useState(() => Date.now());
+  const muted = chat.muted_until !== null && new Date(chat.muted_until).getTime() > nowMs;
+  return (
+    <View style={{ minHeight: controlHeights.row, justifyContent: "center" }}>
+      <ListRow
+        title={title}
+        subtitle={chat.last_message_deletion_scope === "everyone" ? deleted : (chat.last_message_preview ?? noMessages)}
+        leading={<Avatar name={title} seed={chat.id} src={chat.other_avatar_url} />}
+        meta={chat.last_message_at ? listTime(chat.last_message_at, new Date()) : undefined}
+        trailing={<UnreadCount count={chat.unread_count} muted={muted} />}
+        onPress={() => onOpen(chat.id)}
+        onLongPress={() => onActions(chat)}
+        accessibilityHint={hint}
+      />
+    </View>
+  );
+});
+
 export default function ChatListScreen() {
   const t = useTranslations();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { spacing } = useTheme();
   const { session } = useSession();
+  const online = useOnline();
   const [logoutFailed, setLogoutFailed] = useState(false);
   const [filter, setFilter] = useState<ChatListFilter>({ kind: "all" });
   const [actionsFor, setActionsFor] = useState<ConversationSummary | null>(null);
@@ -61,126 +110,72 @@ export default function ChatListScreen() {
   }
 
   const chats = list.data?.pages.flatMap((p) => p.items) ?? [];
+  const open = useCallback((id: string) => router.push({ pathname: "/chats/[id]", params: { id } }), [router]);
+  const untitled = t("mobile.chats.untitled");
+  const deleted = t("mobile.chats.deleted");
+  const noMessages = t("mobile.chats.noMessages");
+  const hint = t("mobile.organization.longPressHint");
+
+  const rowStyle = {
+    gap: spacing.s8,
+    paddingHorizontal: spacing.s16,
+    paddingVertical: spacing.s8,
+    alignItems: "center",
+  } as const;
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t("mobile.chats.title")}</Text>
-        <Pressable onPress={() => router.push("/groups/new")} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.groups.newGroup")}</Text>
-        </Pressable>
-        <Pressable onPress={logout} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.logout.submit")}</Text>
-        </Pressable>
-      </View>
-      <View style={styles.links}>
-        <Pressable onPress={() => router.push("/requests")} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.safety.requests")}</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push("/blocked")} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.safety.blocked")}</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push("/contacts")} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.contacts.link")}</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push("/profile")} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.profile.link")}</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push("/settings")} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.settings.title")}</Text>
-        </Pressable>
-      </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
+    <Screen edges={["bottom", "start", "end"]}>
+      <AppHeader
+        title={t("mobile.chats.title")}
+        actions={
+          <>
+            <IconButton icon={UsersRound} label={t("mobile.groups.newGroup")} onPress={() => router.push("/groups/new")} />
+            <IconButton icon={Settings} label={t("mobile.settings.title")} onPress={() => router.push("/settings")} />
+          </>
+        }
+      />
+      {!online ? <Banner kind="offline" message={t("mobile.offline.banner")} /> : null}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={rowStyle} style={{ flexGrow: 0 }}>
         {chips.map((c) => (
-          <Pressable
-            key={c.key}
-            onPress={() => setFilter(c.value)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: isActive(c.value) }}
-            style={[styles.chip, isActive(c.value) && styles.chipActive]}
-          >
-            <Text style={isActive(c.value) ? styles.chipTextActive : styles.chipText}>{c.label}</Text>
-          </Pressable>
+          <Chip key={c.key} label={c.label} active={isActive(c.value)} onPress={() => setFilter(c.value)} />
         ))}
-        <Pressable onPress={() => router.push("/folders")} accessibilityRole="button" style={styles.chip}>
-          <Text style={styles.link}>{t("mobile.organization.manageFolders")}</Text>
-        </Pressable>
+        <Chip label={t("mobile.organization.manageFolders")} onPress={() => router.push("/folders")} />
       </ScrollView>
-      <OfflineBanner />
-      {logoutFailed ? <Text style={styles.error}>{t("mobile.logout.error")}</Text> : null}
-      {list.isPending ? <ActivityIndicator style={styles.center} /> : null}
-      {list.isError ? (
-        <Pressable onPress={() => list.refetch()} accessibilityRole="button">
-          <Text style={styles.error}>{t("mobile.chats.loadError")}</Text>
-        </Pressable>
-      ) : null}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={rowStyle} style={{ flexGrow: 0 }}>
+        <Chip label={t("mobile.safety.requests")} onPress={() => router.push("/requests")} />
+        <Chip label={t("mobile.safety.blocked")} onPress={() => router.push("/blocked")} />
+        <Chip label={t("mobile.contacts.link")} onPress={() => router.push("/contacts")} />
+        <Chip label={t("mobile.profile.link")} onPress={() => router.push("/profile")} />
+        <Chip label={t("mobile.logout.submit")} onPress={logout} />
+      </ScrollView>
+      {logoutFailed ? <Banner kind="error" message={t("mobile.logout.error")} /> : null}
+      {list.isPending ? <LoadingState /> : null}
+      {list.isError ? <ErrorState title={t("mobile.chats.loadError")} onRetry={() => list.refetch()} /> : null}
       <FlatList
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingHorizontal: spacing.s8, flexGrow: 1 }}
         data={chats}
         keyExtractor={(c) => c.id}
         onEndReached={() => {
           if (list.hasNextPage && !list.isFetchingNextPage) void list.fetchNextPage();
         }}
+        ListFooterComponent={list.isFetchingNextPage ? <Spinner /> : undefined}
         ListEmptyComponent={
-          list.isPending || list.isError ? undefined : <Text style={styles.empty}>{t("mobile.chats.empty")}</Text>
+          list.isPending || list.isError ? undefined : <EmptyState icon={MessageSquare} title={t("mobile.chats.empty")} />
         }
         renderItem={({ item }) => (
-          <Pressable
-            style={styles.row}
-            accessibilityRole="button"
-            onPress={() => router.push({ pathname: "/chats/[id]", params: { id: item.id } })}
-            onLongPress={() => setActionsFor(item)}
-            accessibilityHint={t("mobile.organization.longPressHint")}
-          >
-            <View style={styles.rowText}>
-              <Text style={styles.rowTitle} numberOfLines={1}>
-                {chatTitle(item, t("mobile.chats.untitled"))}
-              </Text>
-              <Text style={styles.preview} numberOfLines={1}>
-                {item.last_message_deletion_scope === "everyone"
-                  ? t("mobile.chats.deleted")
-                  : (item.last_message_preview ?? t("mobile.chats.noMessages"))}
-              </Text>
-            </View>
-            {item.unread_count > 0 ? (
-              <View style={styles.badge} accessibilityLabel={t("mobile.chats.unread", { count: item.unread_count })}>
-                <Text style={styles.badgeText}>{item.unread_count}</Text>
-              </View>
-            ) : null}
-          </Pressable>
+          <ChatRow
+            chat={item}
+            untitled={untitled}
+            deleted={deleted}
+            noMessages={noMessages}
+            hint={hint}
+            onOpen={open}
+            onActions={setActionsFor}
+          />
         )}
       />
       <ChatActionsSheet chat={actionsFor} onClose={() => setActionsFor(null)} />
-    </SafeAreaView>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  chipScroll: { flexGrow: 0 },
-  chips: { gap: 8, paddingHorizontal: 16, paddingBottom: 8, alignItems: "center" },
-  chip: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1, borderColor: "#ccc" },
-  chipActive: { backgroundColor: "#4f46e5", borderColor: "#4f46e5" },
-  chipText: { color: "#333" },
-  chipTextActive: { color: "#fff", fontWeight: "600" },
-  links: { flexDirection: "row", gap: 16, paddingHorizontal: 16, paddingBottom: 8 },
-  screen: { flex: 1 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16 },
-  title: { fontSize: 24, fontWeight: "600" },
-  link: { color: "#4f46e5", fontSize: 16 },
-  center: { marginTop: 24 },
-  error: { color: "#b00020", paddingHorizontal: 16 },
-  empty: { textAlign: "center", marginTop: 32, color: "#666" },
-  row: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
-  rowText: { flex: 1, gap: 2 },
-  rowTitle: { fontSize: 16, fontWeight: "600" },
-  preview: { color: "#666" },
-  badge: {
-    minWidth: 24,
-    paddingHorizontal: 6,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#4f46e5",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  badgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
-});
