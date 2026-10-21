@@ -10,7 +10,7 @@
     "android": {
       "package": "app.thering.mobile"
     },
-    "plugins": ["expo-router", "expo-secure-store", "expo-localization"],
+    "plugins": ["expo-router", "expo-secure-store", "expo-localization", "expo-notifications"],
     "experiments": {
       "typedRoutes": true
     }

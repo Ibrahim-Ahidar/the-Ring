@@ -41,3 +41,4 @@ export {
   type Subtitle,
   type TypingState,
 } from "@pulse/core";
+export { registerDevice, unregisterDevice } from "./devices";

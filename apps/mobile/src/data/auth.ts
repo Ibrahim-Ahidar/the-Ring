@@ -2,6 +2,8 @@ import { err, ok, type Result } from "@pulse/core";
 
 import { mapAuthError } from "./auth-errors";
 import { supabase } from "./client";
+import { devices } from "./devices";
+import { withDeviceLifecycle } from "./devices-core";
 
 export interface AppSession {
   userId: string;
@@ -27,7 +29,7 @@ export function onSessionChange(handler: (session: AppSession | null) => void): 
   return () => data.subscription.unsubscribe();
 }
 
-export async function signInWithPassword(email: string, password: string): Promise<Result<AppSession>> {
+async function rawSignInWithPassword(email: string, password: string): Promise<Result<AppSession>> {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return err(mapAuthError(error));
@@ -38,8 +40,16 @@ export async function signInWithPassword(email: string, password: string): Promi
   }
 }
 
-export async function signOut(): Promise<Result<null>> {
+async function rawSignOut(): Promise<Result<null>> {
   // scope "local" ends only this device's session and always clears local storage.
   const { error } = await supabase.auth.signOut({ scope: "local" });
   return error ? err("mobile.logout.error") : ok(null);
 }
+
+const actions = withDeviceLifecycle<AppSession>({ signIn: rawSignInWithPassword, signOut: rawSignOut, devices });
+
+/** Signs in, then registers this phone for push without blocking login. */
+export const signInWithPassword = actions.signIn;
+
+/** Removes this phone Device, then signs out. */
+export const signOut = actions.signOut;
