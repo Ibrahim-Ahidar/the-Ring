@@ -1,15 +1,16 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { groupErrorKey } from "@/groups/errors";
 import { useCreateGroup } from "@/groups/queries";
+import { AppHeader, Banner, Button, Screen, TextField, useTheme } from "@/ui";
 
 export default function NewGroupScreen() {
   const t = useTranslations();
   const router = useRouter();
+  const { spacing } = useTheme();
   const create = useCreateGroup();
   const [name, setName] = useState("");
   const [members, setMembers] = useState("");
@@ -29,23 +30,18 @@ export default function NewGroupScreen() {
 
   const code = create.error?.message ?? "";
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.chats.back")}</Text>
-        </Pressable>
-        <Text style={styles.title}>{t("mobile.groups.newTitle")}</Text>
-      </View>
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
+    <Screen edges={["bottom", "start", "end"]} scroll>
+      <AppHeader title={t("mobile.groups.newTitle")} onBack={() => router.back()} backLabel={t("mobile.chats.back")} />
+      <View style={{ padding: spacing.s16, gap: spacing.s16 }}>
+        <TextField
+          label={t("mobile.groups.name")}
           value={name}
           onChangeText={setName}
           placeholder={t("mobile.groups.name")}
           accessibilityLabel={t("mobile.groups.name")}
         />
-        <TextInput
-          style={styles.input}
+        <TextField
+          label={t("mobile.groups.membersHint")}
           value={members}
           onChangeText={setMembers}
           autoCapitalize="none"
@@ -53,45 +49,26 @@ export default function NewGroupScreen() {
           placeholder={t("mobile.groups.membersHint")}
           accessibilityLabel={t("mobile.groups.membersHint")}
         />
-        {create.isError ? (
-          <Text style={styles.error}>
-            {t(groupErrorKey(code, t.has))}
-          </Text>
-        ) : null}
+        {create.isError ? <Banner kind="error" message={t(groupErrorKey(code, t.has))} /> : null}
         {failed.length > 0 && createdId ? (
-          <View>
-            <Text style={styles.error}>{t("mobile.groups.invitesFailed", { names: failed.join(", ") })}</Text>
-            <Pressable
+          <View style={{ gap: spacing.s12 }}>
+            <Banner kind="error" message={t("mobile.groups.invitesFailed", { names: failed.join(", ") })} />
+            <Button
+              title={t("mobile.groups.openGroup")}
+              block
               onPress={() => router.replace({ pathname: "/chats/[id]", params: { id: createdId } })}
-              accessibilityRole="button"
-            >
-              <Text style={styles.link}>{t("mobile.groups.openGroup")}</Text>
-            </Pressable>
+            />
           </View>
         ) : (
-          <Pressable
-            style={[styles.button, (create.isPending || !name.trim()) && styles.disabled]}
+          <Button
+            title={t("mobile.groups.create")}
+            block
+            loading={create.isPending}
             disabled={create.isPending || !name.trim()}
             onPress={() => void submit()}
-            accessibilityRole="button"
-          >
-            <Text style={styles.buttonText}>{t("mobile.groups.create")}</Text>
-          </Pressable>
+          />
         )}
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", gap: 16, padding: 16 },
-  title: { fontSize: 20, fontWeight: "600" },
-  link: { color: "#4f46e5", fontSize: 16 },
-  form: { padding: 16, gap: 12 },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12, fontSize: 16 },
-  error: { color: "#b00020" },
-  button: { backgroundColor: "#4f46e5", padding: 14, borderRadius: 8, alignItems: "center" },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  disabled: { opacity: 0.5 },
-});

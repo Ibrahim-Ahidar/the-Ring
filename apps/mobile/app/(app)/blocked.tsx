@@ -1,9 +1,20 @@
 import { useRouter } from "expo-router";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Ban } from "lucide-react-native";
+import { FlatList } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { useBlocks, useSafetyActions } from "@/safety/queries";
+import {
+  AppHeader,
+  Avatar,
+  Banner,
+  Button,
+  EmptyState,
+  ErrorState,
+  ListRow,
+  LoadingState,
+  Screen,
+} from "@/ui";
 
 export default function BlockedScreen() {
   const t = useTranslations();
@@ -12,44 +23,36 @@ export default function BlockedScreen() {
   const actions = useSafetyActions();
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.chats.back")}</Text>
-        </Pressable>
-        <Text style={styles.title}>{t("mobile.safety.blocked")}</Text>
-      </View>
-      {blocks.isPending ? <ActivityIndicator /> : null}
-      {blocks.isError || actions.unblock.isError ? <Text style={styles.error}>{t("mobile.safety.error")}</Text> : null}
-      {blocks.isSuccess && blocks.data.length === 0 ? <Text style={styles.empty}>{t("mobile.safety.noBlocked")}</Text> : null}
-      <FlatList
-        data={blocks.data ?? []}
-        keyExtractor={(b) => b.blockedId}
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <View style={styles.flex}>
-              <Text style={styles.name}>{item.displayName ?? item.username}</Text>
-              <Text style={styles.sub}>@{item.username}</Text>
-            </View>
-            <Pressable onPress={() => actions.unblock.mutate(item.blockedId)} accessibilityRole="button">
-              <Text style={styles.link}>{t("mobile.safety.unblock")}</Text>
-            </Pressable>
-          </View>
-        )}
-      />
-    </SafeAreaView>
+    <Screen edges={["bottom", "start", "end"]}>
+      <AppHeader title={t("mobile.safety.blocked")} onBack={() => router.back()} backLabel={t("mobile.chats.back")} />
+      {actions.unblock.isError ? <Banner kind="error" message={t("mobile.safety.error")} /> : null}
+      {blocks.isPending ? (
+        <LoadingState />
+      ) : blocks.isError ? (
+        <ErrorState message={t("mobile.safety.error")} onRetry={() => void blocks.refetch()} />
+      ) : (
+        <FlatList
+          data={blocks.data}
+          keyExtractor={(b) => b.blockedId}
+          contentContainerStyle={{ flexGrow: 1 }}
+          ListEmptyComponent={<EmptyState icon={Ban} title={t("mobile.safety.noBlocked")} />}
+          renderItem={({ item }) => (
+            <ListRow
+              title={item.displayName ?? item.username}
+              subtitle={`@${item.username}`}
+              leading={<Avatar name={item.displayName ?? item.username} seed={item.blockedId} />}
+              trailing={
+                <Button
+                  title={t("mobile.safety.unblock")}
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => actions.unblock.mutate(item.blockedId)}
+                />
+              }
+            />
+          )}
+        />
+      )}
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  flex: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", gap: 16, padding: 16 },
-  title: { fontSize: 20, fontWeight: "600" },
-  link: { color: "#4f46e5", fontSize: 16 },
-  error: { color: "#b00020", paddingHorizontal: 16 },
-  empty: { padding: 16, color: "#666" },
-  row: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, gap: 14 },
-  name: { fontSize: 16, fontWeight: "600" },
-  sub: { color: "#666" },
-});
