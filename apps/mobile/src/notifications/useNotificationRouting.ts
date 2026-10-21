@@ -1,9 +1,11 @@
 import { useEffect } from "react";
-import * as Notifications from "expo-notifications";
+import type * as NotificationsTypes from "expo-notifications";
 import { useRouter } from "expo-router";
 
+import { loadNotifications } from "./optional";
+
 function conversationIdOf(
-  response: Notifications.NotificationResponse | null,
+  response: NotificationsTypes.NotificationResponse | null,
 ): string | null {
   const data = response?.notification.request.content.data as
     | { conversationId?: unknown }
@@ -16,8 +18,10 @@ export function useNotificationRouting(): void {
   const router = useRouter();
 
   useEffect(() => {
+    const Notifications = loadNotifications();
+    if (!Notifications) return;
     let handled: string | null = null;
-    const open = (response: Notifications.NotificationResponse | null) => {
+    const open = (response: NotificationsTypes.NotificationResponse | null) => {
       const id = conversationIdOf(response);
       const key = response?.notification.request.identifier ?? null;
       if (!id || key === handled) return;

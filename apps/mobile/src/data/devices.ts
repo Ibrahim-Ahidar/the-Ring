@@ -1,11 +1,11 @@
 import Constants from "expo-constants";
 import * as Device from "expo-device";
-import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
 import type { AppSession } from "./auth";
 import { createDeviceLifecycle, startDeviceSync as startSync } from "./devices-core";
+import { loadNotifications } from "../notifications/optional";
 import { rpc } from "./rpc";
 
 const DEVICE_ID_KEY = "pulse.device_id";
@@ -13,6 +13,8 @@ const DEVICE_ID_KEY = "pulse.device_id";
 async function getPushToken(): Promise<string | null> {
   // Push tokens need a physical device.
   if (!Device.isDevice) return null;
+  const Notifications = loadNotifications();
+  if (!Notifications) return null;
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("messages", {
       name: "Messages",
@@ -49,6 +51,8 @@ export const unregisterDevice = () => devices.unregister();
 /** Registers this phone for `session` and follows push token changes. Returns an unsubscribe. */
 export function startDeviceSync(session: AppSession | null): () => void {
   return startSync(session, devices, (onChange) => {
+    const Notifications = loadNotifications();
+    if (!Notifications) return () => {};
     const sub = Notifications.addPushTokenListener(onChange);
     return () => sub.remove();
   });
