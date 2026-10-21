@@ -112,3 +112,12 @@ export {
   uploadMyAvatar,
 } from "./profile";
 export { BIO_MAX, DISPLAY_NAME_MAX } from "@pulse/core";
+export {
+  checkUsernameAvailable,
+  requestPasswordReset,
+  resendSignupCode,
+  resetPasswordWithCode,
+  signUpWithPassword,
+  verifySignupCode,
+} from "./account";
+export { meetsPasswordPolicy, isOtpCode, validateUsername, MIN_PASSWORD_LENGTH } from "@pulse/core";

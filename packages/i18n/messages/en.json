@@ -405,6 +405,37 @@
       "error": "Could not save. Check the image type and size.",
       "loadError": "Could not load your profile",
       "link": "Profile"
+    },
+    "account": {
+      "forgot": "Forgot password?",
+      "createAccount": "Create an account",
+      "signupTitle": "Create account",
+      "signupSubmit": "Send code",
+      "username": "Username",
+      "passwordHint": "At least 8 characters.",
+      "code": "6-digit code",
+      "codeSentTo": "We sent a 6-digit code to {email}.",
+      "codeResent": "A new code was sent.",
+      "resend": "Resend code",
+      "verify": "Verify",
+      "haveAccount": "I already have an account",
+      "resetTitle": "Reset password",
+      "sendCode": "Send code",
+      "newPassword": "New password",
+      "resetSubmit": "Set password",
+      "backToLogin": "Back to sign in",
+      "errors": {
+        "unexpected": "Something went wrong. Try again.",
+        "code_expired": "This code has expired. Request a new one.",
+        "code_invalid": "That code is not valid.",
+        "email_registered": "An account with this email already exists.",
+        "email_required": "Enter your email.",
+        "password_weak": "Password must be at least 8 characters.",
+        "username_taken": "That username is taken.",
+        "username_invalid": "Usernames use 3-20 letters, numbers or underscores.",
+        "reset_session_expired": "Reset session expired. Start again.",
+        "rate_limited": "Too many attempts. Wait a moment."
+      }
     }
   }
 }

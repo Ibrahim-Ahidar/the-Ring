@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,6 +8,7 @@ import { signInWithPassword } from "@/data";
 
 export default function LoginScreen() {
   const t = useTranslations();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -65,6 +67,12 @@ export default function LoginScreen() {
         >
           {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t("mobile.login.submit")}</Text>}
         </Pressable>
+        <Pressable onPress={() => router.push("/forgot-password")} accessibilityRole="button">
+          <Text style={styles.link}>{t("mobile.account.forgot")}</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/signup")} accessibilityRole="button">
+          <Text style={styles.link}>{t("mobile.account.createAccount")}</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -76,6 +84,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: "600", marginBottom: 8 },
   input: { borderWidth: 1, borderColor: "#999", borderRadius: 8, padding: 12, fontSize: 16 },
   error: { color: "#b00020" },
+  link: { color: "#4f46e5", fontSize: 16 },
   button: { backgroundColor: "#4f46e5", borderRadius: 8, padding: 14, alignItems: "center" },
   buttonBusy: { opacity: 0.7 },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },

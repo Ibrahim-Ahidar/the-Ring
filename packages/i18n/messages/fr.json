@@ -405,6 +405,37 @@
       "error": "Enregistrement impossible. Verifiez le type et la taille de l'image.",
       "loadError": "Impossible de charger votre profil",
       "link": "Profil"
+    },
+    "account": {
+      "forgot": "Mot de passe oublie ?",
+      "createAccount": "Creer un compte",
+      "signupTitle": "Creer un compte",
+      "signupSubmit": "Envoyer le code",
+      "username": "Nom d utilisateur",
+      "passwordHint": "Au moins 8 caracteres.",
+      "code": "Code a 6 chiffres",
+      "codeSentTo": "Nous avons envoye un code a 6 chiffres a {email}.",
+      "codeResent": "Un nouveau code a ete envoye.",
+      "resend": "Renvoyer le code",
+      "verify": "Verifier",
+      "haveAccount": "J ai deja un compte",
+      "resetTitle": "Reinitialiser le mot de passe",
+      "sendCode": "Envoyer le code",
+      "newPassword": "Nouveau mot de passe",
+      "resetSubmit": "Definir le mot de passe",
+      "backToLogin": "Retour a la connexion",
+      "errors": {
+        "unexpected": "Une erreur est survenue. Reessayez.",
+        "code_expired": "Ce code a expire. Demandez-en un nouveau.",
+        "code_invalid": "Ce code n est pas valide.",
+        "email_registered": "Un compte existe deja avec cet e-mail.",
+        "email_required": "Saisissez votre e-mail.",
+        "password_weak": "Le mot de passe doit contenir au moins 8 caracteres.",
+        "username_taken": "Ce nom d utilisateur est pris.",
+        "username_invalid": "3 a 20 lettres, chiffres ou tirets bas.",
+        "reset_session_expired": "Session expiree. Recommencez.",
+        "rate_limited": "Trop de tentatives. Patientez un instant."
+      }
     }
   }
 }

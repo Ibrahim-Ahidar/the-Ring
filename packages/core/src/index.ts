@@ -20,3 +20,4 @@ export * from "./profile";
 export type * from "./profile-types";
 export * from "./contacts";
 export type * from "./contacts-types";
+export * from "./account";
