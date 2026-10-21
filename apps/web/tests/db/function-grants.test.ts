@@ -14,10 +14,13 @@ const ANON_CALLABLE = new Set<string>([
   "discovery_get_profile",
   // Signup form availability check; signup itself would reveal a taken name anyway.
   "identity_is_username_available",
+  // Mobile update gate runs before sign-in; returns only public app version config.
+  "get_mobile_compat",
 ]);
 
 const DEFINER_WITHOUT_AUTH_UID = new Set<string>([
   "identity_is_username_available",
+  "get_mobile_compat",
   // Read-only predicates used by RLS policies; they reveal only facts about the caller
   // or refuse third-party probes internally.
   "is_member",
