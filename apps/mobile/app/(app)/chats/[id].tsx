@@ -249,6 +249,14 @@ export default function ChatScreen() {
             </Text>
           ) : null}
         </View>
+        {detail.data?.type === "group" ? (
+          <Pressable
+            onPress={() => router.push({ pathname: "/groups/[id]", params: { id } })}
+            accessibilityRole="button"
+          >
+            <Text style={styles.link}>{t("mobile.groups.info")}</Text>
+          </Pressable>
+        ) : null}
       </View>
       <OfflineBanner />
       {messages.isPending || (ready && landing === null) ? <ActivityIndicator style={styles.center} /> : null}

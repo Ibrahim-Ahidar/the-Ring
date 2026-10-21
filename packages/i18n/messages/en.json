@@ -289,6 +289,43 @@
         "media.rejected": "The upload was rejected.",
         "media.storage_error": "Storage error. Try again."
       }
+    },
+    "groups": {
+      "newTitle": "New group",
+      "newGroup": "New group",
+      "info": "Group info",
+      "name": "Group name",
+      "description": "Description (optional)",
+      "membersHint": "Members: @username, @username",
+      "create": "Create group",
+      "save": "Save",
+      "addMember": "Add member",
+      "add": "Add",
+      "remove": "Remove",
+      "leave": "Leave group",
+      "leaveConfirm": "Leave this group?",
+      "cancel": "Cancel",
+      "openGroup": "Open group",
+      "error": "Couldn't complete that. Try again.",
+      "invitesFailed": "Group created, but these invites failed: {names}",
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "errors": {
+        "name_required": "Enter a group name.",
+        "name_too_long": "That name is too long.",
+        "description_too_long": "That description is too long.",
+        "forbidden": "You can't do that.",
+        "not_allowed": "You can't do that.",
+        "not_found": "Group not found.",
+        "not_member": "You're not in this group.",
+        "user_not_found": "User not found.",
+        "member_limit": "The group is full.",
+        "owner_must_transfer": "Transfer ownership before leaving.",
+        "cannot_target_owner": "You can't change the owner."
+      }
     }
   }
 }

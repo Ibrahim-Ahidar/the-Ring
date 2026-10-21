@@ -60,3 +60,15 @@ export {
 } from "@pulse/core";
 export { getAttachmentUrl, listMessageAttachments, sendChatMedia, type MediaUploadInput } from "./media";
 export { AUDIO_MAX_DURATION_MS, normalizeMimeType, validateAttachment, type MessageAttachment } from "@pulse/core";
+export {
+  createChatGroup,
+  getChatGroup,
+  inviteGroupMember,
+  leaveChatGroup,
+  listGroupMembers,
+  removeGroupMember,
+  updateChatGroup,
+  type FailedInvite,
+  type GroupMember,
+  type GroupSummary,
+} from "./groups";

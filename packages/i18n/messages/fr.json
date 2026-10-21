@@ -289,6 +289,43 @@
         "media.rejected": "L'envoi a été rejeté.",
         "media.storage_error": "Erreur de stockage. Réessayez."
       }
+    },
+    "groups": {
+      "newTitle": "Nouveau groupe",
+      "newGroup": "Nouveau groupe",
+      "info": "Infos du groupe",
+      "name": "Nom du groupe",
+      "description": "Description (facultatif)",
+      "membersHint": "Membres : @pseudo, @pseudo",
+      "create": "Créer le groupe",
+      "save": "Enregistrer",
+      "addMember": "Ajouter un membre",
+      "add": "Ajouter",
+      "remove": "Retirer",
+      "leave": "Quitter le groupe",
+      "leaveConfirm": "Quitter ce groupe ?",
+      "cancel": "Annuler",
+      "openGroup": "Ouvrir le groupe",
+      "error": "Action impossible. Réessayez.",
+      "invitesFailed": "Groupe créé, mais ces invitations ont échoué : {names}",
+      "roles": {
+        "owner": "Propriétaire",
+        "admin": "Admin",
+        "member": "Membre"
+      },
+      "errors": {
+        "name_required": "Saisissez un nom de groupe.",
+        "name_too_long": "Ce nom est trop long.",
+        "description_too_long": "Cette description est trop longue.",
+        "forbidden": "Vous ne pouvez pas faire cela.",
+        "not_allowed": "Vous ne pouvez pas faire cela.",
+        "not_found": "Groupe introuvable.",
+        "not_member": "Vous n'êtes pas dans ce groupe.",
+        "user_not_found": "Utilisateur introuvable.",
+        "member_limit": "Le groupe est complet.",
+        "owner_must_transfer": "Transférez la propriété avant de partir.",
+        "cannot_target_owner": "Vous ne pouvez pas modifier le propriétaire."
+      }
     }
   }
 }

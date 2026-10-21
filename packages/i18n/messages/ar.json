@@ -289,6 +289,43 @@
         "media.rejected": "تم رفض الرفع.",
         "media.storage_error": "خطأ في التخزين. حاول مرة أخرى."
       }
+    },
+    "groups": {
+      "newTitle": "مجموعة جديدة",
+      "newGroup": "مجموعة جديدة",
+      "info": "معلومات المجموعة",
+      "name": "اسم المجموعة",
+      "description": "الوصف (اختياري)",
+      "membersHint": "الأعضاء: @اسم, @اسم",
+      "create": "إنشاء المجموعة",
+      "save": "حفظ",
+      "addMember": "إضافة عضو",
+      "add": "إضافة",
+      "remove": "إزالة",
+      "leave": "مغادرة المجموعة",
+      "leaveConfirm": "هل تريد مغادرة هذه المجموعة؟",
+      "cancel": "إلغاء",
+      "openGroup": "فتح المجموعة",
+      "error": "تعذر إكمال ذلك. حاول مرة أخرى.",
+      "invitesFailed": "تم إنشاء المجموعة لكن فشلت هذه الدعوات: {names}",
+      "roles": {
+        "owner": "المالك",
+        "admin": "مشرف",
+        "member": "عضو"
+      },
+      "errors": {
+        "name_required": "أدخل اسم المجموعة.",
+        "name_too_long": "الاسم طويل جدا.",
+        "description_too_long": "الوصف طويل جدا.",
+        "forbidden": "لا يمكنك فعل ذلك.",
+        "not_allowed": "لا يمكنك فعل ذلك.",
+        "not_found": "المجموعة غير موجودة.",
+        "not_member": "لست في هذه المجموعة.",
+        "user_not_found": "المستخدم غير موجود.",
+        "member_limit": "المجموعة ممتلئة.",
+        "owner_must_transfer": "انقل الملكية قبل المغادرة.",
+        "cannot_target_owner": "لا يمكنك تعديل المالك."
+      }
     }
   }
 }

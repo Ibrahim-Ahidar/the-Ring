@@ -38,6 +38,9 @@ export default function ChatListScreen() {
     <SafeAreaView style={styles.screen}>
       <View style={styles.header}>
         <Text style={styles.title}>{t("mobile.chats.title")}</Text>
+        <Pressable onPress={() => router.push("/groups/new")} accessibilityRole="button">
+          <Text style={styles.link}>{t("mobile.groups.newGroup")}</Text>
+        </Pressable>
         <Pressable onPress={logout} accessibilityRole="button">
           <Text style={styles.link}>{t("mobile.logout.submit")}</Text>
         </Pressable>
