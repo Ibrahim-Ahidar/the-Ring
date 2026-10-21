@@ -7,6 +7,7 @@ import { useTranslations } from "use-intl";
 
 import { useSession } from "@/auth/session";
 import { useChatList } from "@/chats/queries";
+import { OfflineBanner } from "@/net/OfflineBanner";
 import { signOut, type ConversationSummary } from "@/data";
 
 function chatTitle(chat: ConversationSummary, fallback: string): string {
@@ -41,6 +42,7 @@ export default function ChatListScreen() {
           <Text style={styles.link}>{t("mobile.logout.submit")}</Text>
         </Pressable>
       </View>
+      <OfflineBanner />
       {logoutFailed ? <Text style={styles.error}>{t("mobile.logout.error")}</Text> : null}
       {list.isPending ? <ActivityIndicator style={styles.center} /> : null}
       {list.isError ? (

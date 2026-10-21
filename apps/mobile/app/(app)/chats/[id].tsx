@@ -15,8 +15,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslations } from "use-intl";
 
 import { useSession } from "@/auth/session";
+import { canSend } from "@/chats/composer";
 import { useChatDetail, useChatMessages, useMarkRead, useSendText } from "@/chats/queries";
 import { flattenPages, shouldLoadMoreForLanding, tickFor } from "@/chats/timeline";
+import { OfflineBanner } from "@/net/OfflineBanner";
+import { useOnline } from "@/net/useOnline";
 import { initialScrollTarget, outboundDeliveryStatus, type InitialScroll, type RpcMessageRow } from "@/data";
 
 export default function ChatScreen() {
@@ -29,6 +32,7 @@ export default function ChatScreen() {
   const detail = useChatDetail(id);
   const messages = useChatMessages(id);
   const send = useSendText(id);
+  const online = useOnline();
   const [draft, setDraft] = useState("");
   const listRef = useRef<FlatList<RpcMessageRow>>(null);
 
@@ -83,9 +87,11 @@ export default function ChatScreen() {
       : (detail.data.other_display_name ?? detail.data.other_username ?? t("mobile.chats.untitled"))
     : "";
 
+  const sendable = canSend({ online, draft, pending: send.isPending });
+
   function submit() {
     const body = draft.trim();
-    if (!body || send.isPending) return;
+    if (!canSend({ online, draft, pending: send.isPending })) return;
     send.mutate(body, { onSuccess: () => setDraft("") });
   }
 
@@ -99,6 +105,7 @@ export default function ChatScreen() {
           {title}
         </Text>
       </View>
+      <OfflineBanner />
       {messages.isPending || (ready && landing === null) ? <ActivityIndicator style={styles.center} /> : null}
       {messages.isError ? <Text style={styles.error}>{t("mobile.chats.loadError")}</Text> : null}
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -162,9 +169,9 @@ export default function ChatScreen() {
             multiline
           />
           <Pressable
-            style={[styles.send, (!draft.trim() || send.isPending) && styles.disabled]}
+            style={[styles.send, !sendable && styles.disabled]}
             onPress={submit}
-            disabled={!draft.trim() || send.isPending}
+            disabled={!sendable}
             accessibilityRole="button"
           >
             <Text style={styles.sendText}>{t("mobile.chats.send")}</Text>

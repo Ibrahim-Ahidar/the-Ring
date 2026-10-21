@@ -231,6 +231,9 @@
         "delivered": "Delivered",
         "read": "Read"
       }
+    },
+    "offline": {
+      "banner": "You're offline. Showing saved chats; sending is paused."
     }
   }
 }

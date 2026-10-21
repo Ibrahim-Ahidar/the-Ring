@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { decideRedirect } from "@/auth/gate";
 import { SessionProvider, useSession } from "@/auth/session";
 import { AppIntlProvider } from "@/i18n/provider";
+import { startConnectivityWatch } from "@/net/useOnline";
 
 function AuthGate() {
   const { loading, session } = useSession();
@@ -23,6 +24,7 @@ function AuthGate() {
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
+  useEffect(() => startConnectivityWatch(), []);
   return (
     <QueryClientProvider client={queryClient}>
       <AppIntlProvider>

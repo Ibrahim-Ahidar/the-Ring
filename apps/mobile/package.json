@@ -13,6 +13,7 @@
   "dependencies": {
     "@pulse/core": "*",
     "@pulse/i18n": "*",
+    "@react-native-community/netinfo": "12.0.1",
     "@supabase/supabase-js": "^2.117.3",
     "@tanstack/react-query": "^5.0.0",
     "expo": "~58.0.16",

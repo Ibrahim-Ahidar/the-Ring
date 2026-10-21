@@ -231,6 +231,9 @@
         "delivered": "Remis",
         "read": "Lu"
       }
+    },
+    "offline": {
+      "banner": "Vous êtes hors ligne. Les discussions enregistrées restent visibles; l'envoi est en pause."
     }
   }
 }
