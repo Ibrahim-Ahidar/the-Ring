@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulse - offline</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fff; --fg:#1b1b1f; --muted:#6b6b76; --accent:#4f46e5; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16161a; --fg:#f2f2f5; --muted:#9a9aa6; --accent:#818cf8; } }
+  html, body { height: 100%; margin: 0; }
+  body { display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--fg);
+         font-family: system-ui, -apple-system, "Segoe UI", sans-serif; text-align:center; }
+  main { padding: 24px; max-width: 360px; }
+  h1 { font-size: 1.4rem; margin: 0 0 8px; }
+  p { color: var(--muted); margin: 0 0 24px; line-height: 1.5; }
+  a.btn { display:inline-block; background:var(--accent); color:#fff; text-decoration:none;
+          padding:10px 20px; border-radius:8px; font-weight:600; }
+  a.btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>You are offline</h1>
+  <p>Pulse cannot be reached. We will keep trying and reconnect as soon as the network is back.</p>
+  <a class="btn" href="pulse-retry://now">Try again</a>
+</main>
+</body>
+</html>

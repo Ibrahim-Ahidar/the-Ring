@@ -7,7 +7,7 @@ coverage/
 test-results/
 playwright-report/
 next-env.d.ts
-src/shell/generated/
+apps/web/src/shell/generated/
 supabase/.temp/
 supabase/.branches/
 *.tsbuildinfo
@@ -16,3 +16,8 @@ supabase/.branches/
 __pycache__/
 *.pyc
 .cache/
+
+dist/
+
+# Firebase config (manual, never committed)
+google-services.json

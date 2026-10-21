@@ -1,0 +1,15 @@
+{
+  "online": "Online",
+  "offline": "Offline",
+  "lastSeen": "Last seen {when}",
+  "lastSeenToday": "Last seen today at {time}",
+  "lastSeenYesterday": "Last seen yesterday at {time}",
+  "typingOne": "{name} is typing",
+  "typingMany": "{count, plural, one {# person is typing} other {# people are typing}}",
+  "typing": "typing…",
+  "recording": "recording audio…",
+  "recordingOne": "{name} is recording audio",
+  "recordingMany": "{count, plural, one {# person is recording audio} other {# people are recording audio}}",
+  "lastSeenRelative": "last seen {when}",
+  "lastSeenJustNow": "last seen just now"
+}

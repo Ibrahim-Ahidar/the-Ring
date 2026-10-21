@@ -78,6 +78,33 @@ Without Docker, do not run `supabase start` on this machine; use a hosted Supaba
 
 On every pull request and on pushes to `main`, GitHub Actions runs lint, typecheck, test, build, and a separate job that applies migrations against the Supabase CLI local stack (Docker). Workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
+## Android release (APK)
+
+Pushing a `mobile-v*` tag runs [.github/workflows/android-release.yml](.github/workflows/android-release.yml): it runs `expo prebuild`, builds a signed release APK with Gradle on the runner (no EAS), and attaches it to a GitHub Release for the tag. The keystore is never committed; it is read from GitHub Actions secrets. These are manual steps for the maintainer:
+
+1. Generate a keystore once and keep it somewhere safe (losing it means users cannot update in place):
+
+   ```bash
+   keytool -genkeypair -v -storetype PKCS12 -keystore release.keystore \
+     -alias thering -keyalg RSA -keysize 2048 -validity 10000
+   base64 -w0 release.keystore > release.keystore.b64   # macOS: base64 -i release.keystore
+   ```
+
+2. In the repository, go to Settings, Secrets and variables, Actions, and add:
+   - `ANDROID_KEYSTORE_BASE64`: contents of `release.keystore.b64`
+   - `ANDROID_KEYSTORE_PASSWORD`: the keystore password
+   - `ANDROID_KEY_ALIAS`: the alias (`thering` above)
+   - `ANDROID_KEY_PASSWORD`: the key password
+
+3. Tag and push. The workflow writes the tag version into `app.json` (`expo.version`) and sets `expo.android.versionCode` to major*10000+minor*100+patch, so no version bump commit is needed:
+
+   ```bash
+   git tag mobile-v0.2.0
+   git push origin mobile-v0.2.0
+   ```
+
+4. Tell installed apps about the release by setting `mobile_latest_version` (and `mobile_download_url`, the Release asset link) in the `app_config` table with the service role. Apps older than that show a dismissible update notice; apps older than `min_supported_mobile_version` are blocked by the update gate.
+
 ## Deploy to Vercel
 
 1. Connect the repository to Vercel (Next.js preset).

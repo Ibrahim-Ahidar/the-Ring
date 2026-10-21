@@ -1,0 +1,469 @@
+{
+  "landing": {
+    "title": "the Ring",
+    "proposition": "Find people by username, start a conversation, and keep communication organized.",
+    "login": "Log in",
+    "signup": "Sign up",
+    "features": [
+      {
+        "title": "Find by username",
+        "body": "No phone numbers needed. Share your @username and people can find you."
+      },
+      {
+        "title": "Organized conversations",
+        "body": "Direct chats and groups, with read receipts and presence you control."
+      },
+      {
+        "title": "Yours to control",
+        "body": "Choose who can message you, block anyone, and set your own language and theme."
+      }
+    ],
+    "featuresTitle": "Why the Ring",
+    "headline": "Conversations that stay yours.",
+    "demoLabel": "Preview of a conversation in the Ring",
+    "demo": {
+      "name": "Sara",
+      "status": "online",
+      "messages": [
+        {
+          "side": "in",
+          "text": "Found you by your @username 👋",
+          "time": "9:41"
+        },
+        {
+          "side": "out",
+          "text": "That was quick! No number swapping.",
+          "time": "9:42"
+        },
+        {
+          "side": "in",
+          "text": "Adding you to the study group now.",
+          "time": "9:42"
+        }
+      ]
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "chats": "Chats",
+    "groups": "Groups",
+    "search": "Search",
+    "contacts": "Contacts",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "back": "Back",
+    "backToChats": "Back to chats",
+    "profileAndSettings": "Profile and settings",
+    "primary": "Main navigation"
+  },
+  "settings": {
+    "title": "Settings",
+    "more": "More",
+    "chooseSection": "Choose a section to change your settings.",
+    "accountDesc": "Profile, username, photo, delete account",
+    "privacyDesc": "Last seen, read receipts, who can message you, blocked",
+    "securityDesc": "Active sessions, sign out",
+    "notificationsDesc": "In-app, push, mentions only",
+    "appearanceDesc": "Light, dark or system theme"
+  },
+  "skipLink": "Skip to content",
+  "loading": "Loading",
+  "routes": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "home": "Home",
+    "chats": "Chats",
+    "chatsNew": "New chat",
+    "chatsRequests": "Message requests",
+    "chat": "Chat",
+    "groups": "Groups",
+    "groupsNew": "New group",
+    "group": "Group",
+    "search": "Search",
+    "contacts": "Contacts",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "publicProfile": "Public profile",
+    "settingsAccount": "Account",
+    "settingsSecurity": "Security",
+    "settingsPrivacy": "Privacy",
+    "settingsNotifications": "Notifications",
+    "settingsAppearance": "Appearance",
+    "settingsLanguage": "Language",
+    "media": "Media",
+    "terms": "Terms",
+    "privacy": "Privacy"
+  },
+  "legal": {
+    "terms": {
+      "intro": "These terms govern your use of the Ring. By creating an account or using the service you agree to them.",
+      "sections": [
+        {
+          "title": "Your account",
+          "body": "You must provide accurate information and keep your sign-in details secure. You are responsible for activity under your account. You must be old enough to enter into a binding agreement where you live."
+        },
+        {
+          "title": "Acceptable use",
+          "body": "Do not use the service to harass, threaten or impersonate others, send spam or malware, break the law, or try to disrupt or gain unauthorized access to the service or other accounts."
+        },
+        {
+          "title": "Your content",
+          "body": "You keep ownership of the messages and media you send. You give us the limited permission needed to store and deliver them to the people you choose. You are responsible for what you share."
+        },
+        {
+          "title": "Reporting and enforcement",
+          "body": "You can block and report other users. We may remove content, limit features or suspend accounts that break these terms or put others at risk."
+        },
+        {
+          "title": "Availability",
+          "body": "The service is provided as is and may change, be interrupted or be discontinued. We do not guarantee it will be uninterrupted or error-free."
+        },
+        {
+          "title": "Ending your use",
+          "body": "You can delete your account at any time from your settings. We may suspend or end access if these terms are violated."
+        },
+        {
+          "title": "Changes and contact",
+          "body": "We may update these terms and will indicate the date of the latest version on this page. Continued use after a change means you accept it. Questions about these terms can be sent through the contact channel provided in the app."
+        }
+      ]
+    },
+    "privacy": {
+      "intro": "This page explains what information the Ring handles and the choices you have.",
+      "sections": [
+        {
+          "title": "Information we collect",
+          "body": "Account details you provide (such as your email address, username, display name, photo and bio), the messages and media you send, and basic technical data such as your language, theme and time zone preferences."
+        },
+        {
+          "title": "How we use it",
+          "body": "To run the service: sign you in, deliver your messages, show your profile to people who look you up, send notifications you enable, and keep the service secure and free of abuse."
+        },
+        {
+          "title": "What others can see",
+          "body": "Your username and public profile can be seen by anyone with the link. Presence, last seen and read receipts are shown according to your privacy settings."
+        },
+        {
+          "title": "Sharing",
+          "body": "We do not sell your personal information. We rely on infrastructure and service providers to host and operate the service, and may disclose information when required by law."
+        },
+        {
+          "title": "Retention and deletion",
+          "body": "We keep your data while your account is active. You can delete your account from settings, which removes your profile and associated data, subject to legal and security retention needs."
+        },
+        {
+          "title": "Your choices",
+          "body": "You can edit your profile, control who can message you, hide last seen and read receipts, manage notifications and block users from your settings."
+        },
+        {
+          "title": "Cookies and storage",
+          "body": "We use essential cookies and local storage to keep you signed in and remember your language and theme."
+        },
+        {
+          "title": "Changes and contact",
+          "body": "We may update this policy and will indicate the date of the latest version on this page. Privacy questions can be sent through the contact channel provided in the app."
+        }
+      ]
+    }
+  },
+  "public": {
+    "back": "Back to home",
+    "loginToMessage": "Log in to message @{username}",
+    "signupCta": "Create an account",
+    "profileTitle": "@{username}",
+    "profileDesc": "{name} is on the Ring. Log in to start a conversation.",
+    "home": "Home",
+    "desc": "Username-first realtime chat. Find people, start a conversation, keep it organized."
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "body": "We couldn't load this page. Your messages are safe.",
+    "retry": "Try again",
+    "reference": "Reference: {digest}",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This page doesn't exist or has moved.",
+    "backToChats": "Back to chats",
+    "conversationNotFound": "This conversation doesn't exist or you no longer have access.",
+    "loadFailed": "Couldn't load this list. It may be a temporary problem, so it isn't necessarily empty.",
+    "empty": "Nothing here yet."
+  },
+  "mobile": {
+    "login": {
+      "title": "Log in",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Log in",
+      "errors": {
+        "required": "Enter your email and password.",
+        "invalidCredentials": "Incorrect email or password.",
+        "emailNotConfirmed": "Confirm your email before logging in.",
+        "rateLimited": "Too many attempts. Try again in a moment.",
+        "network": "Can't reach the server. Check your connection.",
+        "unexpected": "Something went wrong. Try again."
+      }
+    },
+    "home": {
+      "title": "Home",
+      "signedInAs": "Signed in as {email}"
+    },
+    "logout": {
+      "submit": "Log out",
+      "error": "Couldn't log out. Try again."
+    },
+    "chats": {
+      "title": "Chats",
+      "empty": "No chats yet.",
+      "untitled": "Chat",
+      "noMessages": "No messages yet",
+      "deleted": "Message deleted",
+      "unsupported": "Unsupported message",
+      "unread": "{count} unread",
+      "loadError": "Couldn't load chats. Tap to retry.",
+      "back": "Back",
+      "unreadDivider": "Unread messages",
+      "composerPlaceholder": "Message",
+      "send": "Send",
+      "sendError": "Couldn't send. Try again.",
+      "status": {
+        "pending": "Sending",
+        "failed": "Failed",
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "read": "Read"
+      }
+    },
+    "offline": {
+      "banner": "You're offline. Showing saved chats; sending is paused."
+    },
+    "presence": {
+      "online": "Online",
+      "offline": "Offline",
+      "typing": "typing…",
+      "typingOne": "{name} is typing",
+      "typingMany": "{count, plural, one {# person is typing} other {# people are typing}}",
+      "recording": "recording audio…",
+      "recordingOne": "{name} is recording audio",
+      "recordingMany": "{count, plural, one {# person is recording audio} other {# people are recording audio}}",
+      "lastSeenJustNow": "last seen just now",
+      "lastSeenMinutes": "last seen {count, plural, one {# minute} other {# minutes}} ago",
+      "lastSeenHours": "last seen {count, plural, one {# hour} other {# hours}} ago",
+      "lastSeenDays": "last seen {count, plural, one {# day} other {# days}} ago",
+      "lastSeenDate": "last seen {date}",
+      "someone": "Someone"
+    },
+    "actions": {
+      "reply": "Reply",
+      "copy": "Copy",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save",
+      "menuTitle": "Message",
+      "replyingTo": "Replying to {name}",
+      "you": "You",
+      "editing": "Editing message",
+      "edited": "edited",
+      "originalDeleted": "Original message deleted",
+      "deleteTitle": "Delete message?",
+      "deleteBody": "This removes it for everyone.",
+      "actionError": "That didn't work. Try again.",
+      "reactionLabel": "React {emoji}",
+      "copied": "Copied"
+    },
+    "media": {
+      "photo": "Photo",
+      "voiceNote": "Voice note",
+      "attach": "Attach photo",
+      "record": "Record voice note",
+      "stop": "Stop and send",
+      "recording": "Recording…",
+      "play": "Play",
+      "pause": "Pause",
+      "mediaError": "Couldn't send the attachment.",
+      "mediaLoadError": "Couldn't load the attachment.",
+      "permission": "Allow access in Settings to continue.",
+      "errors": {
+        "unsupported_type": "This file type isn't supported.",
+        "too_large": "The file is too large.",
+        "too_long": "The voice note is too long (3 minutes max).",
+        "rejected": "The upload was rejected.",
+        "storage_error": "Storage error. Try again."
+      }
+    },
+    "groups": {
+      "newTitle": "New group",
+      "newGroup": "New group",
+      "info": "Group info",
+      "name": "Group name",
+      "description": "Description (optional)",
+      "membersHint": "Members: @username, @username",
+      "create": "Create group",
+      "save": "Save",
+      "addMember": "Add member",
+      "add": "Add",
+      "remove": "Remove",
+      "leave": "Leave group",
+      "leaveConfirm": "Leave this group?",
+      "cancel": "Cancel",
+      "openGroup": "Open group",
+      "error": "Couldn't complete that. Try again.",
+      "invitesFailed": "Group created, but these invites failed: {names}",
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "errors": {
+        "name_required": "Enter a group name.",
+        "name_too_long": "That name is too long.",
+        "description_too_long": "That description is too long.",
+        "forbidden": "You can't do that.",
+        "not_allowed": "You can't do that.",
+        "not_found": "Group not found.",
+        "not_member": "You're not in this group.",
+        "user_not_found": "User not found.",
+        "member_limit": "The group is full.",
+        "owner_must_transfer": "Transfer ownership before leaving.",
+        "cannot_target_owner": "You can't change the owner."
+      }
+    },
+    "safety": {
+      "requests": "Message requests",
+      "blocked": "Blocked users",
+      "noRequests": "No pending requests.",
+      "noBlocked": "You haven't blocked anyone.",
+      "accept": "Accept",
+      "decline": "Decline",
+      "unblock": "Unblock",
+      "menu": "More",
+      "block": "Block user",
+      "report": "Report user",
+      "reported": "Report sent.",
+      "error": "That didn't work. Try again.",
+      "categories": {
+        "spam": "Spam",
+        "harassment": "Harassment",
+        "impersonation": "Impersonation",
+        "other": "Other"
+      }
+    },
+    "organization": {
+      "filters": {
+        "all": "All",
+        "unread": "Unread",
+        "groups": "Groups",
+        "archived": "Archived",
+        "archivedCount": "Archived ({count})"
+      },
+      "folders": "Folders",
+      "manageFolders": "Edit folders",
+      "noFolders": "No folders yet.",
+      "folderName": "Folder name",
+      "create": "Create",
+      "rename": "Rename",
+      "save": "Save",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "deleteTitle": "Delete \"{name}\"?",
+      "deleteBody": "Only the folder is removed. Its chats stay in your list and are not archived or deleted.",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "moveTo": "Move to {name}",
+      "removeFromFolder": "Remove from folder",
+      "longPressHint": "Long press for archive and folder options",
+      "error": "Something went wrong. Try again.",
+      "errors": {
+        "not_found": "Conversation not found.",
+        "invalid_name": "Folder name must be 1-40 characters.",
+        "invalid_order": "Could not reorder folders."
+      }
+    },
+    "contacts": {
+      "title": "Contacts",
+      "placeholder": "Search by username",
+      "search": "Search",
+      "noResult": "No user found",
+      "message": "Message",
+      "add": "Add",
+      "remove": "Remove",
+      "saved": "Saved contacts",
+      "empty": "No saved contacts yet",
+      "error": "Something went wrong. Try again.",
+      "link": "Contacts"
+    },
+    "profile": {
+      "title": "Profile",
+      "avatar": "Avatar",
+      "changeAvatar": "Change photo",
+      "removeAvatar": "Remove photo",
+      "displayName": "Display name",
+      "bio": "Bio",
+      "save": "Save",
+      "saved": "Saved",
+      "error": "Could not save. Check the image type and size.",
+      "loadError": "Could not load your profile",
+      "link": "Profile"
+    },
+    "account": {
+      "forgot": "Forgot password?",
+      "createAccount": "Create an account",
+      "signupTitle": "Create account",
+      "signupSubmit": "Send code",
+      "username": "Username",
+      "passwordHint": "At least 8 characters.",
+      "code": "6-digit code",
+      "codeSentTo": "We sent a 6-digit code to {email}.",
+      "codeResent": "A new code was sent.",
+      "resend": "Resend code",
+      "verify": "Verify",
+      "haveAccount": "I already have an account",
+      "resetTitle": "Reset password",
+      "sendCode": "Send code",
+      "newPassword": "New password",
+      "resetSubmit": "Set password",
+      "backToLogin": "Back to sign in",
+      "errors": {
+        "unexpected": "Something went wrong. Try again.",
+        "code_expired": "This code has expired. Request a new one.",
+        "code_invalid": "That code is not valid.",
+        "email_registered": "An account with this email already exists.",
+        "email_required": "Enter your email.",
+        "password_weak": "Password must be at least 8 characters.",
+        "username_taken": "That username is taken.",
+        "username_invalid": "Usernames use 3-20 letters, numbers or underscores.",
+        "reset_session_expired": "Reset session expired. Start again.",
+        "rate_limited": "Too many attempts. Wait a moment."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "theme": "Theme",
+      "accent": "Accent colour",
+      "language": "Language",
+      "themes": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "accents": {
+        "indigo": "Indigo",
+        "green": "Green"
+      },
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "ar": "العربية"
+      },
+      "restartRequired": "Close and reopen the app to apply the new text direction."
+    },
+    "update": {
+      "title": "Please update",
+      "body": "This version ({current}) is no longer supported. Version {minimum} or newer is required.",
+      "download": "Download the update",
+      "notice": "Version {latest} is available (you have {current}).",
+      "dismiss": "Later"
+    }
+  }
+}
