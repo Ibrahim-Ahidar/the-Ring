@@ -20,7 +20,12 @@ type ProfileViewProps = {
   footer?: ReactNode;
 };
 
-function ProfileViewInner({ profile, signedIn, newChatHref, footer }: ProfileViewProps) {
+function ProfileViewInner({
+  profile,
+  signedIn,
+  newChatHref,
+  footer,
+}: ProfileViewProps) {
   const t = useTranslations("discovery-contacts");
   const format = useFormatter();
   const [favorited, setFavorited] = useState(profile.isFavorited ?? false);
@@ -70,15 +75,26 @@ function ProfileViewInner({ profile, signedIn, newChatHref, footer }: ProfileVie
   return (
     <>
       <header className={ui.profileHero}>
-        <Avatar name={name} seed={profile.id} src={profile.avatarUrl} size="xl" />
+        <Avatar
+          name={name}
+          seed={profile.id}
+          src={profile.avatarUrl}
+          size="xl"
+        />
         <h2 className={`${ui.profileHeroName} bidi-auto`}>{name}</h2>
         <p className={`${ui.profileHeroHandle} handle`}>@{profile.username}</p>
         {presenceLine ? (
-          <p className={styles.presence} data-online={profile.isOnline ? "true" : "false"}>
+          <p
+            suppressHydrationWarning
+            className={styles.presence}
+            data-online={profile.isOnline ? "true" : "false"}
+          >
             {presenceLine}
           </p>
         ) : null}
-        {profile.bio ? <p className={`${styles.bio} bidi-auto`}>{profile.bio}</p> : null}
+        {profile.bio ? (
+          <p className={`${styles.bio} bidi-auto`}>{profile.bio}</p>
+        ) : null}
         {signedIn ? (
           <div className={ui.profileActions}>
             <Link href={newChatHref} className={`${ui.btn} ${ui.btnPrimary}`}>
@@ -97,15 +113,24 @@ function ProfileViewInner({ profile, signedIn, newChatHref, footer }: ProfileVie
                   : t("profile.favorite", { username: profile.username })
               }
             >
-              <Star size={18} aria-hidden fill={favorited ? "currentColor" : "none"} />
-              {favorited ? t("profile.unfavoriteShort") : t("profile.favoriteShort")}
+              <Star
+                size={18}
+                aria-hidden
+                fill={favorited ? "currentColor" : "none"}
+              />
+              {favorited
+                ? t("profile.unfavoriteShort")
+                : t("profile.favoriteShort")}
             </button>
           </div>
         ) : null}
       </header>
 
       {signedIn && profile.sharedGroups !== undefined ? (
-        <section className={ui.settingsCard} aria-labelledby="shared-groups-heading">
+        <section
+          className={ui.settingsCard}
+          aria-labelledby="shared-groups-heading"
+        >
           <div className={ui.settingsCardHead}>
             <h2 id="shared-groups-heading" className={ui.settingsCardTitle}>
               {t("profile.sharedGroups")}

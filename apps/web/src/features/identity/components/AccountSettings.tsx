@@ -64,7 +64,11 @@ type AccountSettingsProps = {
   pendingEmail: string | null;
 };
 
-function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsProps) {
+function AccountSettingsInner({
+  profile,
+  email,
+  pendingEmail,
+}: AccountSettingsProps) {
   const t = useTranslations("identity");
   const locale = useLocale();
   const [displayName, setDisplayName] = useState(profile.display_name ?? "");
@@ -79,7 +83,9 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
   const [usernameBusy, setUsernameBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [profileFeedback, setProfileFeedback] = useState<Feedback | null>(null);
-  const [usernameFeedback, setUsernameFeedback] = useState<Feedback | null>(null);
+  const [usernameFeedback, setUsernameFeedback] = useState<Feedback | null>(
+    null,
+  );
   const [deleteFeedback, setDeleteFeedback] = useState<Feedback | null>(null);
   const [changedAt, setChangedAt] = useState(profile.username_changed_at);
   const zones = useMemo(() => {
@@ -89,7 +95,9 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
   const router = useRouter();
   const [preview, setPreview] = useState<string | null>(null);
   const [removed, setRemoved] = useState(false);
-  const [avatarBusy, setAvatarBusy] = useState<"upload" | "remove" | null>(null);
+  const [avatarBusy, setAvatarBusy] = useState<"upload" | "remove" | null>(
+    null,
+  );
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [avatarStatus, setAvatarStatus] = useState<string | null>(null);
 
@@ -131,7 +139,10 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
       setProfileFeedback({ kind: "success", message: t("savedProfile") });
       router.refresh();
     } else {
-      setProfileFeedback({ kind: "error", message: errorMessageFor(result.error.code) });
+      setProfileFeedback({
+        kind: "error",
+        message: errorMessageFor(result.error.code),
+      });
     }
   }
 
@@ -152,14 +163,19 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
       });
       router.refresh();
     } else {
-      setUsernameFeedback({ kind: "error", message: errorMessageFor(result.error.code) });
+      setUsernameFeedback({
+        kind: "error",
+        message: errorMessageFor(result.error.code),
+      });
     }
   }
 
   function showAvatarProblem(problem: AvatarFileProblem, sizeBytes: number) {
     if (problem === "too_large") {
       const sizeMb = (sizeBytes / (1024 * 1024)).toFixed(1);
-      setAvatarError(t("avatarTooLarge", { sizeMb, maxMb: String(AVATAR_MAX_MB) }));
+      setAvatarError(
+        t("avatarTooLarge", { sizeMb, maxMb: String(AVATAR_MAX_MB) }),
+      );
     } else if (problem === "empty") {
       setAvatarError(t("avatarEmpty"));
     } else {
@@ -236,7 +252,10 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
     const result = await deleteAccountAction(deleteConfirm.replace(/^@/, ""));
     if (!result.ok) {
       setDeleteBusy(false);
-      setDeleteFeedback({ kind: "error", message: errorMessageFor(result.error.code) });
+      setDeleteFeedback({
+        kind: "error",
+        message: errorMessageFor(result.error.code),
+      });
     }
   }
 
@@ -249,12 +268,16 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
             seed={profile.id}
             src={avatarSrc}
             size="xl"
-            className={avatarBusy === "upload" ? styles.avatarPending : undefined}
+            className={
+              avatarBusy === "upload" ? styles.avatarPending : undefined
+            }
           />
           <span className={ui.profileHeroName}>
             {profile.display_name || profile.username}
           </span>
-          <span className={`${ui.profileHeroHandle} handle`}>@{profile.username}</span>
+          <span className={`${ui.profileHeroHandle} handle`}>
+            @{profile.username}
+          </span>
           <div className={`${ui.profileActions} ${styles.avatarUpload}`}>
             <input
               id="account-avatar"
@@ -351,7 +374,7 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
             />
-            <datalist id="account-timezone-list">
+            <datalist id="account-timezone-list" suppressHydrationWarning>
               {zones.map((zone) => (
                 <option key={zone} value={zone} />
               ))}
@@ -379,9 +402,11 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
           <h2 id="username-heading" className={ui.settingsCardTitle}>
             {t("changeUsername")}
           </h2>
-          <p className={ui.settingsCardDesc}>{coolingDown && nextChange
+          <p className={ui.settingsCardDesc}>
+            {coolingDown && nextChange
               ? t("usernameNextChange", { date: formatDate(nextChange) })
-              : t("usernameCooldownHint")}</p>
+              : t("usernameCooldownHint")}
+          </p>
         </div>
         <div className={ui.settingsCardBody}>
           <div className={ui.field}>
@@ -419,7 +444,9 @@ function AccountSettingsInner({ profile, email, pendingEmail }: AccountSettingsP
         <div className={ui.settingsCardHead}>
           <h2 id="export-heading" className={ui.settingsCardTitle}>
             {t("exportTitle")}{" "}
-            <span className={`${ui.tag} ${ui.tagNeutral}`}>{t("comingSoon")}</span>
+            <span className={`${ui.tag} ${ui.tagNeutral}`}>
+              {t("comingSoon")}
+            </span>
           </h2>
           <p className={ui.settingsCardDesc}>{t("exportHint")}</p>
         </div>

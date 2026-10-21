@@ -272,6 +272,7 @@
 
 .pane-header__profile {
   display: grid;
+  text-decoration: none;
   place-items: center;
   border-radius: var(--radius-pill);
   transition: box-shadow var(--motion-fast) var(--motion-ease);

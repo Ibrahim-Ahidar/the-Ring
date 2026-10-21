@@ -213,6 +213,10 @@
 }
 
 .authQuote {
+  position: relative;
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--color-accent-soft) 92%, transparent);
   font-size: var(--text-xl);
   font-weight: var(--weight-medium);
   line-height: 1.35;
