@@ -14,4 +14,13 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, "node_modules"),
 ];
 
+// Skip git worktrees, agent folders and build output: each worktree carries its own
+// node_modules, which makes the file crawl take minutes and duplicates every package.
+config.resolver.blockList = [
+  /[\\/]\.worktrees[\\/].*/,
+  /[\\/]\.claude[\\/].*/,
+  /[\\/]apps[\\/]desktop[\\/](dist|release)[\\/].*/,
+  /[\\/]apps[\\/]web[\\/]\.next[\\/].*/,
+];
+
 module.exports = config;
