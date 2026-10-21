@@ -16,3 +16,7 @@ export * from "./subtitle";
 export * from "./message-actions";
 export * from "./reactions";
 export * from "./media";
+export * from "./profile";
+export type * from "./profile-types";
+export * from "./contacts";
+export type * from "./contacts-types";

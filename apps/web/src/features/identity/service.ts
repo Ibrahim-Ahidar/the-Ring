@@ -1,10 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import {
-  IMAGE_MAX_BYTES,
-  IMAGE_MIME_TYPES,
-  validateAttachment,
-} from "@/platform/media";
 import { callRpc, type RpcClient } from "@pulse/core/rpc";
 import { err, ok, type Result } from "@pulse/core/result";
 import { reportError } from "@/platform/telemetry";
@@ -14,7 +9,6 @@ import { meetsPasswordPolicy } from "./password-policy";
 import { emailError } from "./validation";
 import type {
   DeviceSession,
-  OwnProfile,
   SignInInput,
   SignUpInput,
   SignUpResult,
@@ -718,97 +712,14 @@ export async function signOut(supabase: SupabaseClient): Promise<Result<void>> {
   return ok(undefined);
 }
 
-export async function getOwnProfile(
-  rpc: RpcClient,
-): Promise<Result<OwnProfile | null>> {
-  const result = await callRpc<OwnProfile[]>(rpc, "identity_get_own_profile");
-  if (!result.ok) {
-    return result;
-  }
-  const rows = result.value;
-  if (!rows?.length) {
-    return ok(null);
-  }
-  return ok(rows[0]!);
-}
-
-export async function updateProfile(
-  rpc: RpcClient,
-  input: {
-    displayName?: string;
-    bio?: string;
-    timezone?: string;
-  },
-): Promise<Result<void>> {
-  const result = await callRpc<null>(rpc, "identity_update_profile", {
-    p_display_name: input.displayName ?? null,
-    p_bio: input.bio ?? null,
-    p_timezone: input.timezone ?? null,
-  });
-  if (!result.ok) {
-    return result;
-  }
-  return ok(undefined);
-}
-
-export async function changeUsername(
-  rpc: RpcClient,
-  username: string,
-): Promise<Result<void>> {
-  const validated = validateUsername(username);
-  if (!validated.ok) {
-    return validated;
-  }
-
-  const result = await callRpc<null>(rpc, "identity_change_username", {
-    p_username: validated.value.display,
-  });
-  if (!result.ok) {
-    return result;
-  }
-  return ok(undefined);
-}
-
-export async function setAvatarPath(
-  rpc: RpcClient,
-  storagePath: string,
-): Promise<Result<void>> {
-  const result = await callRpc<null>(rpc, "identity_set_avatar_path", {
-    p_storage_path: storagePath,
-  });
-  if (!result.ok) {
-    return result;
-  }
-  return ok(undefined);
-}
-
-/** Clears the caller's photo; returns the previous stored value (if any). */
-export async function clearAvatar(
-  rpc: RpcClient,
-): Promise<Result<string | null>> {
-  const result = await callRpc<string | null>(rpc, "identity_clear_avatar");
-  if (!result.ok) {
-    return result;
-  }
-  return ok(result.value ?? null);
-}
-
-export function validateAvatarUpload(
-  mimeType: string,
-  sizeBytes: number,
-): Result<{ kind: "image" }> {
-  if (!(IMAGE_MIME_TYPES as readonly string[]).includes(mimeType)) {
-    return err("identity.avatar_rejected");
-  }
-  const attachment = validateAttachment({ mimeType, sizeBytes });
-  if (!attachment.ok) {
-    return err("identity.avatar_rejected");
-  }
-  if (sizeBytes > IMAGE_MAX_BYTES) {
-    return err("identity.avatar_rejected");
-  }
-  return ok({ kind: "image" });
-}
+export {
+  changeUsername,
+  clearAvatar,
+  getOwnProfile,
+  setAvatarPath,
+  updateProfile,
+  validateAvatarUpload,
+} from "@pulse/core/profile";
 
 export async function listSessions(
   rpc: RpcClient,

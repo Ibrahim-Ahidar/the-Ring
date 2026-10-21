@@ -379,6 +379,32 @@
         "invalid_name": "Folder name must be 1-40 characters.",
         "invalid_order": "Could not reorder folders."
       }
+    },
+    "contacts": {
+      "title": "Contacts",
+      "placeholder": "Search by username",
+      "search": "Search",
+      "noResult": "No user found",
+      "message": "Message",
+      "add": "Add",
+      "remove": "Remove",
+      "saved": "Saved contacts",
+      "empty": "No saved contacts yet",
+      "error": "Something went wrong. Try again.",
+      "link": "Contacts"
+    },
+    "profile": {
+      "title": "Profile",
+      "avatar": "Avatar",
+      "changeAvatar": "Change photo",
+      "removeAvatar": "Remove photo",
+      "displayName": "Display name",
+      "bio": "Bio",
+      "save": "Save",
+      "saved": "Saved",
+      "error": "Could not save. Check the image type and size.",
+      "loadError": "Could not load your profile",
+      "link": "Profile"
     }
   }
 }

@@ -379,6 +379,32 @@
         "invalid_name": "Le nom du dossier doit comporter 1 à 40 caractères.",
         "invalid_order": "Impossible de réorganiser les dossiers."
       }
+    },
+    "contacts": {
+      "title": "Contacts",
+      "placeholder": "Rechercher par nom d'utilisateur",
+      "search": "Rechercher",
+      "noResult": "Aucun utilisateur trouve",
+      "message": "Ecrire",
+      "add": "Ajouter",
+      "remove": "Retirer",
+      "saved": "Contacts enregistres",
+      "empty": "Aucun contact enregistre",
+      "error": "Une erreur est survenue. Reessayez.",
+      "link": "Contacts"
+    },
+    "profile": {
+      "title": "Profil",
+      "avatar": "Avatar",
+      "changeAvatar": "Changer la photo",
+      "removeAvatar": "Supprimer la photo",
+      "displayName": "Nom affiche",
+      "bio": "Bio",
+      "save": "Enregistrer",
+      "saved": "Enregistre",
+      "error": "Enregistrement impossible. Verifiez le type et la taille de l'image.",
+      "loadError": "Impossible de charger votre profil",
+      "link": "Profil"
     }
   }
 }

@@ -99,3 +99,16 @@ export {
   unarchiveChat,
   type ChatFolder,
 } from "./organization";
+export {
+  addContact,
+  avatarUrl,
+  getMyProfile,
+  listContacts,
+  removeContact,
+  removeMyAvatar,
+  saveMyProfile,
+  searchUser,
+  startDirectChat,
+  uploadMyAvatar,
+} from "./profile";
+export { BIO_MAX, DISPLAY_NAME_MAX } from "@pulse/core";
