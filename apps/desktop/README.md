@@ -11,7 +11,7 @@ npm test -w @pulse/desktop
 
 `PULSE_URL` overrides the URL the window loads. Its origin is the only one that stays in the app;
 every other link opens in the system browser. The default is the constant `DEFAULT_PULSE_URL` in
-`src/main.ts` (a placeholder until the production URL is fixed).
+`src/main.ts` (the production site, https://the-ring-five.vercel.app).
 
 Login persists via the default Electron session. Window size, position and maximised state are
 stored in `window-state.json` under the app's userData folder.

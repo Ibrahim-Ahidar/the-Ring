@@ -29,8 +29,8 @@ import {
   type WindowState,
 } from "./window-state";
 
-// No production URL exists in the repo yet; override with PULSE_URL.
-const DEFAULT_PULSE_URL = "https://pulse.vercel.app";
+// Production web app (Vercel project the-ring); override with PULSE_URL.
+const DEFAULT_PULSE_URL = "https://the-ring-five.vercel.app";
 const PULSE_URL = process.env.PULSE_URL || DEFAULT_PULSE_URL;
 const OFFLINE_PAGE = path.join(__dirname, "..", "assets", "offline.html");
 const RETRY_SCHEME = "pulse-retry:";
@@ -270,6 +270,8 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on("second-instance", showWindow);
   void app.whenReady().then(() => {
+    // Drop the default File/Edit/View/Window menu bar; the web app has its own UI.
+    Menu.setApplicationMenu(null);
     setupPermissions();
     setupBridge();
     mainWindow = createWindow();
