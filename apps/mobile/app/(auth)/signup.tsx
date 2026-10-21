@@ -1,11 +1,11 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslations } from "use-intl";
 
 import { accountErrorKey } from "@/account/errors";
+import { AuthLink, AuthShell } from "@/auth/AuthShell";
 import { resendSignupCode, signUpWithPassword, verifySignupCode } from "@/data";
+import { Button, TextField } from "@/ui";
 
 export default function SignupScreen() {
   const t = useTranslations();
@@ -43,92 +43,61 @@ export default function SignupScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.form}>
-        <Text style={styles.title}>{t("mobile.account.signupTitle")}</Text>
-        {codeSent ? (
-          <>
-            <Text>{t("mobile.account.codeSentTo", { email: email.trim() })}</Text>
-            <TextInput
-              style={styles.input}
-              value={code}
-              onChangeText={setCode}
-              placeholder={t("mobile.account.code")}
-              accessibilityLabel={t("mobile.account.code")}
-              keyboardType="number-pad"
-              maxLength={6}
-              autoComplete="one-time-code"
-              textContentType="oneTimeCode"
-            />
-            <Pressable onPress={() => void resend()} accessibilityRole="button">
-              <Text style={styles.link}>{t("mobile.account.resend")}</Text>
-            </Pressable>
-          </>
-        ) : (
-          <>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder={t("mobile.login.email")}
-              accessibilityLabel={t("mobile.login.email")}
-              autoCapitalize="none"
-              autoComplete="email"
-              keyboardType="email-address"
-            />
-            <TextInput
-              style={styles.input}
-              value={username}
-              onChangeText={setUsername}
-              placeholder={t("mobile.account.username")}
-              accessibilityLabel={t("mobile.account.username")}
-              autoCapitalize="none"
-              autoCorrect={false}
-              maxLength={20}
-            />
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              placeholder={t("mobile.login.password")}
-              accessibilityLabel={t("mobile.login.password")}
-              autoCapitalize="none"
-              secureTextEntry
-              textContentType="newPassword"
-            />
-            <Text style={styles.hint}>{t("mobile.account.passwordHint")}</Text>
-          </>
-        )}
-        {errorCode ? (
-          <Text style={styles.error} accessibilityRole="alert">
-            {t(accountErrorKey(errorCode, t.has))}
-          </Text>
-        ) : null}
-        {info ? <Text>{info}</Text> : null}
-        <Pressable style={[styles.button, busy && styles.busy]} onPress={() => void submit()} disabled={busy} accessibilityRole="button">
-          {busy ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>{codeSent ? t("mobile.account.verify") : t("mobile.account.signupSubmit")}</Text>
-          )}
-        </Pressable>
-        <Pressable onPress={() => router.replace("/login")} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.account.haveAccount")}</Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+    <AuthShell
+      title={t("mobile.account.signupTitle")}
+      subtitle={codeSent ? t("mobile.account.codeSentTo", { email: email.trim() }) : undefined}
+      error={errorCode ? t(accountErrorKey(errorCode, t.has)) : null}
+      info={info}
+      footer={<AuthLink label={t("mobile.account.haveAccount")} onPress={() => router.replace("/login")} />}
+    >
+      {codeSent ? (
+        <>
+          <TextField
+            label={t("mobile.account.code")}
+            value={code}
+            onChangeText={setCode}
+            keyboardType="number-pad"
+            maxLength={6}
+            autoComplete="one-time-code"
+            textContentType="oneTimeCode"
+          />
+          <Button title={t("mobile.account.verify")} onPress={() => void submit()} loading={busy} block />
+          <Button title={t("mobile.account.resend")} variant="ghost" onPress={() => void resend()} block />
+        </>
+      ) : (
+        <>
+          <TextField
+            label={t("mobile.login.email")}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            returnKeyType="next"
+          />
+          <TextField
+            label={t("mobile.account.username")}
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            autoCorrect={false}
+            maxLength={20}
+            returnKeyType="next"
+          />
+          <TextField
+            label={t("mobile.login.password")}
+            hint={t("mobile.account.passwordHint")}
+            value={password}
+            onChangeText={setPassword}
+            autoCapitalize="none"
+            secure
+            textContentType="newPassword"
+            returnKeyType="go"
+            onSubmitEditing={() => void submit()}
+          />
+          <Button title={t("mobile.account.signupSubmit")} onPress={() => void submit()} loading={busy} block />
+        </>
+      )}
+    </AuthShell>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, justifyContent: "center", paddingHorizontal: 24 },
-  form: { gap: 12 },
-  title: { fontSize: 28, fontWeight: "600", marginBottom: 8 },
-  input: { borderWidth: 1, borderColor: "#999", borderRadius: 8, padding: 12, fontSize: 16 },
-  hint: { color: "#666" },
-  error: { color: "#b00020" },
-  link: { color: "#4f46e5", fontSize: 16 },
-  button: { backgroundColor: "#4f46e5", borderRadius: 8, padding: 14, alignItems: "center" },
-  busy: { opacity: 0.7 },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-});
