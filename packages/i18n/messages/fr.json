@@ -456,7 +456,10 @@
         "fr": "Français",
         "ar": "العربية"
       },
-      "restartRequired": "Fermez et rouvrez l'application pour appliquer le nouveau sens de lecture."
+      "restartRequired": "Fermez et rouvrez l'application pour appliquer le nouveau sens de lecture.",
+      "account": "Compte",
+      "logoutConfirm": "Vous déconnecter de Pulse ?",
+      "cancel": "Annuler"
     },
     "update": {
       "title": "Mise à jour requise",

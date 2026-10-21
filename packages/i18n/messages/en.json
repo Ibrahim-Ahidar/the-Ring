@@ -456,7 +456,10 @@
         "fr": "Français",
         "ar": "العربية"
       },
-      "restartRequired": "Close and reopen the app to apply the new text direction."
+      "restartRequired": "Close and reopen the app to apply the new text direction.",
+      "account": "Account",
+      "logoutConfirm": "Log out of Pulse?",
+      "cancel": "Cancel"
     },
     "update": {
       "title": "Please update",
