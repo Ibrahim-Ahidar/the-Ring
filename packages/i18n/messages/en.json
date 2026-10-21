@@ -269,6 +269,26 @@
       "actionError": "That didn't work. Try again.",
       "reactionLabel": "React {emoji}",
       "copied": "Copied"
+    },
+    "media": {
+      "photo": "Photo",
+      "voiceNote": "Voice note",
+      "attach": "Attach photo",
+      "record": "Record voice note",
+      "stop": "Stop and send",
+      "recording": "Recording…",
+      "play": "Play",
+      "pause": "Pause",
+      "mediaError": "Couldn't send the attachment.",
+      "mediaLoadError": "Couldn't load the attachment.",
+      "permission": "Allow access in Settings to continue.",
+      "errors": {
+        "media.unsupported_type": "This file type isn't supported.",
+        "media.too_large": "The file is too large.",
+        "media.too_long": "The voice note is too long (3 minutes max).",
+        "media.rejected": "The upload was rejected.",
+        "media.storage_error": "Storage error. Try again."
+      }
     }
   }
 }

@@ -58,3 +58,5 @@ export {
   type MessageReaction,
   type ReactionGroup,
 } from "@pulse/core";
+export { getAttachmentUrl, listMessageAttachments, sendChatMedia, type MediaUploadInput } from "./media";
+export { AUDIO_MAX_DURATION_MS, normalizeMimeType, validateAttachment, type MessageAttachment } from "@pulse/core";

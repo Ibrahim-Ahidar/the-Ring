@@ -269,6 +269,26 @@
       "actionError": "لم تنجح العملية. حاول مرة أخرى.",
       "reactionLabel": "تفاعل {emoji}",
       "copied": "تم النسخ"
+    },
+    "media": {
+      "photo": "صورة",
+      "voiceNote": "رسالة صوتية",
+      "attach": "إرفاق صورة",
+      "record": "تسجيل رسالة صوتية",
+      "stop": "إيقاف وإرسال",
+      "recording": "جارٍ التسجيل…",
+      "play": "تشغيل",
+      "pause": "إيقاف مؤقت",
+      "mediaError": "تعذر إرسال المرفق.",
+      "mediaLoadError": "تعذر تحميل المرفق.",
+      "permission": "اسمح بالوصول من الإعدادات للمتابعة.",
+      "errors": {
+        "media.unsupported_type": "نوع الملف غير مدعوم.",
+        "media.too_large": "الملف كبير جدًا.",
+        "media.too_long": "الرسالة الصوتية طويلة جدًا (3 دقائق كحد أقصى).",
+        "media.rejected": "تم رفض الرفع.",
+        "media.storage_error": "خطأ في التخزين. حاول مرة أخرى."
+      }
     }
   }
 }

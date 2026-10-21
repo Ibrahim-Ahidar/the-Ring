@@ -18,6 +18,8 @@ import { useTranslations } from "use-intl";
 
 import { useSession } from "@/auth/session";
 import { canSend } from "@/chats/composer";
+import { MediaBubble } from "@/chats/MediaBubble";
+import { MediaComposer } from "@/chats/MediaComposer";
 import { MessageMenu } from "@/chats/MessageMenu";
 import {
   useChatDetail,
@@ -25,6 +27,7 @@ import {
   useMarkRead,
   useMessageActions,
   useReactions,
+  useSendMedia,
   useSendText,
 } from "@/chats/queries";
 import { snippet } from "@/chats/snippet";
@@ -54,6 +57,7 @@ export default function ChatScreen() {
   const detail = useChatDetail(id);
   const messages = useChatMessages(id);
   const send = useSendText(id);
+  const sendMedia = useSendMedia(id);
   const messageActions = useMessageActions(id);
   const online = useOnline();
   const [draft, setDraft] = useState("");
@@ -286,13 +290,17 @@ export default function ChatScreen() {
                       </Text>
                     </View>
                   ) : null}
-                  <Text style={mine ? styles.mineText : undefined}>
-                    {item.deletion_scope === "everyone"
-                      ? t("mobile.chats.deleted")
-                      : item.type === "text"
-                        ? item.body
-                        : t("mobile.chats.unsupported")}
-                  </Text>
+                  {item.deletion_scope !== "everyone" && (item.type === "image" || item.type === "audio") ? (
+                    <MediaBubble messageId={item.id} type={item.type} mine={mine} />
+                  ) : (
+                    <Text style={mine ? styles.mineText : undefined}>
+                      {item.deletion_scope === "everyone"
+                        ? t("mobile.chats.deleted")
+                        : item.type === "text"
+                          ? item.body
+                          : t("mobile.chats.unsupported")}
+                    </Text>
+                  )}
                   <View style={styles.meta}>
                     {item.edited_at && item.deletion_scope !== "everyone" ? (
                       <Text style={[styles.time, mine && styles.mineText]}>{t("mobile.actions.edited")}</Text>
@@ -338,6 +346,13 @@ export default function ChatScreen() {
           }}
         />
         {send.isError ? <Text style={styles.error}>{t("mobile.chats.sendError")}</Text> : null}
+        {sendMedia.isError ? (
+          <Text style={styles.error}>
+            {sendMedia.error.message.startsWith("media.") && t.has(`mobile.media.errors.${sendMedia.error.message}`)
+              ? t(`mobile.media.errors.${sendMedia.error.message}`)
+              : t("mobile.media.mediaError")}
+          </Text>
+        ) : null}
         {messageActions.edit.isError || messageActions.remove.isError || messageActions.react.isError ? (
           <Text style={styles.error}>{t("mobile.actions.actionError")}</Text>
         ) : null}
@@ -367,6 +382,9 @@ export default function ChatScreen() {
           </View>
         ) : null}
         <View style={styles.composer}>
+          {!editing ? (
+            <MediaComposer disabled={!online || sendMedia.isPending} onUpload={(u) => sendMedia.mutate(u)} />
+          ) : null}
           <TextInput
             style={styles.input}
             value={draft}

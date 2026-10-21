@@ -15,3 +15,4 @@ export * from "./presence";
 export * from "./subtitle";
 export * from "./message-actions";
 export * from "./reactions";
+export * from "./media";

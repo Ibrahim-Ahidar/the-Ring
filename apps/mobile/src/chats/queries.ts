@@ -3,6 +3,10 @@ import { useEffect } from "react";
 
 import {
   addChatReaction,
+  getAttachmentUrl,
+  listMessageAttachments,
+  sendChatMedia,
+  type MediaUploadInput,
   deleteChatMessageForEveryone,
   editChatMessage,
   getChat,
@@ -146,4 +150,33 @@ export function useMessageActions(conversationId: string) {
     onSuccess: refresh,
   });
   return { edit, remove, react };
+}
+
+/** Picks up an image or voice note from a local URI and sends it as a media message. */
+export function useSendMedia(conversationId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Omit<MediaUploadInput, "conversationId" | "clientId">) =>
+      unwrap(await sendChatMedia({ ...input, conversationId, clientId: newClientId() })),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: messagesKey(conversationId) });
+      void queryClient.invalidateQueries({ queryKey: chatsKey });
+    },
+  });
+}
+
+/** The attachment and a signed URL for one image or audio message. */
+export function useMessageMedia(messageId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["media", messageId],
+    enabled,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const list = unwrap(await listMessageAttachments(messageId));
+      const attachment = list[0];
+      if (!attachment) throw new Error("media.missing");
+      const { url } = unwrap(await getAttachmentUrl(attachment.id));
+      return { attachment, url };
+    },
+  });
 }

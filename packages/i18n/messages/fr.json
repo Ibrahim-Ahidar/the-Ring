@@ -269,6 +269,26 @@
       "actionError": "Échec. Réessayez.",
       "reactionLabel": "Réagir {emoji}",
       "copied": "Copié"
+    },
+    "media": {
+      "photo": "Photo",
+      "voiceNote": "Message vocal",
+      "attach": "Joindre une photo",
+      "record": "Enregistrer un message vocal",
+      "stop": "Arrêter et envoyer",
+      "recording": "Enregistrement…",
+      "play": "Lire",
+      "pause": "Pause",
+      "mediaError": "Impossible d'envoyer la pièce jointe.",
+      "mediaLoadError": "Impossible de charger la pièce jointe.",
+      "permission": "Autorisez l'accès dans les réglages pour continuer.",
+      "errors": {
+        "media.unsupported_type": "Ce type de fichier n'est pas pris en charge.",
+        "media.too_large": "Le fichier est trop volumineux.",
+        "media.too_long": "Le message vocal est trop long (3 minutes max).",
+        "media.rejected": "L'envoi a été rejeté.",
+        "media.storage_error": "Erreur de stockage. Réessayez."
+      }
     }
   }
 }
