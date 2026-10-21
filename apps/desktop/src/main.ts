@@ -20,6 +20,7 @@ import { shouldHideOnClose } from "./close-policy";
 import { isOfflineError } from "./offline";
 import { isPulseUrl } from "./origin";
 import { createRetryController } from "./retry-controller";
+import { TITLE_BAR_HEIGHT, isLandingUrl, parseTitleBarColors, startUrl } from "./title-bar";
 import { shouldCheckForUpdates } from "./update-policy";
 import { buildTrayMenu } from "./tray-menu";
 import {
@@ -32,6 +33,8 @@ import {
 // Production web app (Vercel project the-ring); override with PULSE_URL.
 const DEFAULT_PULSE_URL = "https://the-ring-five.vercel.app";
 const PULSE_URL = process.env.PULSE_URL || DEFAULT_PULSE_URL;
+const START_URL = startUrl(PULSE_URL);
+const APP_ICON = path.join(__dirname, "..", "assets", "icon.png");
 const OFFLINE_PAGE = path.join(__dirname, "..", "assets", "offline.html");
 const RETRY_SCHEME = "pulse-retry:";
 
@@ -123,6 +126,12 @@ function setupBridge(): void {
     const count = parseUnreadCount(raw);
     if (count !== null) applyUnread(count);
   });
+  ipcMain.on("pulse:title-bar-colors", (event, raw) => {
+    if (!fromPulseFrame(event)) return;
+    const colors = parseTitleBarColors(raw);
+    if (!colors || !mainWindow || process.platform === "darwin") return;
+    mainWindow.setTitleBarOverlay({ ...colors, height: TITLE_BAR_HEIGHT });
+  });
 }
 
 function stateFile(): string {
@@ -185,6 +194,12 @@ function createWindow(): BrowserWindow {
     y: state.y,
     show: false,
     title: "Pulse",
+    icon: APP_ICON,
+    // Frameless look: the preload draws the bar, the OS keeps its window buttons.
+    titleBarStyle: "hidden",
+    ...(process.platform === "darwin"
+      ? {}
+      : { titleBarOverlay: { color: "#f6f7f9", symbolColor: "#0a0a0a", height: TITLE_BAR_HEIGHT } }),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -205,6 +220,11 @@ function createWindow(): BrowserWindow {
     if (url.startsWith(RETRY_SCHEME)) {
       event.preventDefault();
       void retry.retryNow();
+      return;
+    }
+    if (isLandingUrl(url, PULSE_URL)) {
+      event.preventDefault();
+      void win.loadURL(START_URL);
       return;
     }
     if (isPulseUrl(url, PULSE_URL)) return;
@@ -234,7 +254,7 @@ function createWindow(): BrowserWindow {
       }
     },
     onOnline: () => {
-      if (!win.isDestroyed()) void win.loadURL(PULSE_URL);
+      if (!win.isDestroyed()) void win.loadURL(START_URL);
     },
     setTimer: (fn, ms) => setTimeout(fn, ms),
     clearTimer: (h) => clearTimeout(h as NodeJS.Timeout),
@@ -244,9 +264,16 @@ function createWindow(): BrowserWindow {
     if (!isMainFrame || validatedURL.startsWith("file:") || !isOfflineError(errorCode)) return;
     showOffline();
   });
+  // Client-side links to "/" never hit will-navigate; catch them after the fact.
+  win.webContents.on("did-navigate-in-page", (_e, url, isMainFrame) => {
+    if (isMainFrame && isLandingUrl(url, PULSE_URL)) void win.loadURL(START_URL);
+  });
+  win.webContents.on("did-navigate", (_e, url) => {
+    if (isLandingUrl(url, PULSE_URL)) void win.loadURL(START_URL);
+  });
   win.on("focus", () => void retry.retryNow());
   win.on("closed", retry.stop);
-  void win.loadURL(PULSE_URL);
+  void win.loadURL(START_URL);
   win.on("closed", () => {
     mainWindow = null;
   });

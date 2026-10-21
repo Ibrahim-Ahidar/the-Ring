@@ -3,7 +3,7 @@
 .auth {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--desktop-titlebar, 0px));
   background: var(--color-bg);
 }
 

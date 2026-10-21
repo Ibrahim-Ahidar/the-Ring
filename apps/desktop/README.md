@@ -54,3 +54,9 @@ Exposed by `src/preload.ts` to pages on the Pulse origin only:
 - `notify({ chatId, title, body })` - show a native notification; clicking it focuses the window.
 - `setUnreadCount(count)` - set the app badge, Windows taskbar overlay and tray tooltip.
 - `onOpenChat(cb)` - `cb(chatId)` when a notification is clicked; returns an unsubscribe function.
+
+## Window chrome
+
+The app opens on `/app` (never the landing page) with the Pulse icon (`assets/icon.png`)
+and a frameless window. The preload draws a 36px draggable title bar in the app's theme
+colours; the native minimise/maximise/close buttons follow those colours.
