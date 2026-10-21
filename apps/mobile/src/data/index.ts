@@ -122,3 +122,4 @@ export {
 } from "./account";
 export { meetsPasswordPolicy, isOtpCode, validateUsername, MIN_PASSWORD_LENGTH } from "@pulse/core";
 export { loadPreferences, savePreferences } from "./preferences";
+export { getMobileCompat } from "./compat";

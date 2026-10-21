@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { decideRedirect } from "@/auth/gate";
 import { SessionProvider, useSession } from "@/auth/session";
+import { UpdateGate } from "@/compat/UpdateGate";
 import { AppIntlProvider } from "@/i18n/provider";
 import { PreferencesProvider } from "@/settings/PreferencesProvider";
 import { startConnectivityWatch } from "@/net/useOnline";
@@ -34,10 +35,12 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <PreferencesProvider>
         <AppIntlProvider>
+          <UpdateGate>
             <SessionProvider>
               <StatusBar style="auto" />
               <AuthGate />
             </SessionProvider>
+          </UpdateGate>
         </AppIntlProvider>
       </PreferencesProvider>
     </QueryClientProvider>

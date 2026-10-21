@@ -22,3 +22,4 @@ export * from "./contacts";
 export type * from "./contacts-types";
 export * from "./account";
 export * from "./preferences";
+export * from "./app-version";
