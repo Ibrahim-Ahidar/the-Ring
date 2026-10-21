@@ -9,12 +9,8 @@ import {
   reportChatUser,
   unblockChatUser,
   type ReportCategory,
+  unwrap,
 } from "@/data";
-
-function unwrap<T>(result: { ok: true; value: T } | { ok: false; error: { code: string } }): T {
-  if (!result.ok) throw new Error(result.error.code);
-  return result.value;
-}
 
 export function useMessageRequests() {
   return useQuery({ queryKey: ["message-requests"], queryFn: async () => unwrap(await listMessageRequests()) });

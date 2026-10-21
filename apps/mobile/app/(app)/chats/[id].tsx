@@ -1,6 +1,6 @@
 import { setStringAsync } from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -87,9 +87,7 @@ export default function ChatScreen() {
 
   // The read marker at open time; later refreshes must not move the landing spot.
   const [openedLastRead, setOpenedLastRead] = useState<string | null | undefined>(undefined);
-  useEffect(() => {
-    if (openedLastRead === undefined && detail.data) setOpenedLastRead(detail.data.last_read_message_id);
-  }, [detail.data, openedLastRead]);
+  if (openedLastRead === undefined && detail.data) setOpenedLastRead(detail.data.last_read_message_id);
 
   const ready = openedLastRead !== undefined && messages.data !== undefined;
   const [landing, setLanding] = useState<InitialScroll | null>(null);
@@ -109,20 +107,23 @@ export default function ChatScreen() {
   }, [needsHistory, isFetchingNextPage, fetchNextPage]);
 
   // Decide the landing spot once, after the history it needs has loaded.
-  useEffect(() => {
-    if (ready && !needsHistory && landing === null) {
-      setLanding(initialScrollTarget(rows, openedLastRead ?? null, userId));
-    }
-  }, [ready, needsHistory, landing, rows, openedLastRead, userId]);
+  if (ready && !needsHistory && landing === null) {
+    setLanding(initialScrollTarget(rows, openedLastRead ?? null, userId));
+  }
+
+  const mediaErrorMessage = sendMedia.error?.message ?? "";
+  const mediaErrorKey = mediaErrorMessage.startsWith("media.")
+    ? `mobile.media.errors.${mediaErrorMessage.slice("media.".length)}`
+    : null;
 
   const unreadId = landing?.kind === "unread" ? landing.messageId : null;
   const landingIndex = unreadId ? rows.findIndex((m) => m.id === unreadId) : -1;
   const scrolled = useRef(false);
-  const scrollToLanding = useCallback(() => {
+  const scrollToLanding = () => {
     if (scrolled.current || landingIndex < 0) return;
     scrolled.current = true;
     listRef.current?.scrollToIndex({ index: landingIndex, viewPosition: 0.5, animated: false });
-  }, [landingIndex]);
+  };
 
   const newestIncoming = rows.find((m) => m.sender_id !== userId)?.id ?? null;
   useMarkRead(id, landing ? newestIncoming : null);
@@ -360,8 +361,7 @@ export default function ChatScreen() {
         {send.isError ? <Text style={styles.error}>{t("mobile.chats.sendError")}</Text> : null}
         {sendMedia.isError ? (
           <Text style={styles.error}>
-            {sendMedia.error.message.startsWith("media.") && t.has(`mobile.media.errors.${sendMedia.error.message}`)
-              ? t(`mobile.media.errors.${sendMedia.error.message}`)
+            {mediaErrorKey && t.has(mediaErrorKey) ? t(mediaErrorKey)
               : t("mobile.media.mediaError")}
           </Text>
         ) : null}

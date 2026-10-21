@@ -283,11 +283,11 @@
       "mediaLoadError": "Couldn't load the attachment.",
       "permission": "Allow access in Settings to continue.",
       "errors": {
-        "media.unsupported_type": "This file type isn't supported.",
-        "media.too_large": "The file is too large.",
-        "media.too_long": "The voice note is too long (3 minutes max).",
-        "media.rejected": "The upload was rejected.",
-        "media.storage_error": "Storage error. Try again."
+        "unsupported_type": "This file type isn't supported.",
+        "too_large": "The file is too large.",
+        "too_long": "The voice note is too long (3 minutes max).",
+        "rejected": "The upload was rejected.",
+        "storage_error": "Storage error. Try again."
       }
     },
     "groups": {

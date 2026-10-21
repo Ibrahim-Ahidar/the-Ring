@@ -4,7 +4,8 @@ import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-import { createDeviceLifecycle } from "./devices-core";
+import type { AppSession } from "./auth";
+import { createDeviceLifecycle, startDeviceSync as startSync } from "./devices-core";
 import { rpc } from "./rpc";
 
 const DEVICE_ID_KEY = "pulse.device_id";
@@ -44,3 +45,11 @@ export const devices = createDeviceLifecycle({
 
 export const registerDevice = () => devices.register();
 export const unregisterDevice = () => devices.unregister();
+
+/** Registers this phone for `session` and follows push token changes. Returns an unsubscribe. */
+export function startDeviceSync(session: AppSession | null): () => void {
+  return startSync(session, devices, (onChange) => {
+    const sub = Notifications.addPushTokenListener(onChange);
+    return () => sub.remove();
+  });
+}

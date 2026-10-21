@@ -6,7 +6,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslations } from "use-intl";
 
-import { getMobileCompat } from "@/data";
+import { getMobileCompat, unwrap } from "@/data";
 import { usePreferences } from "@/settings/PreferencesProvider";
 
 export const APP_VERSION = Constants.expoConfig?.version ?? "0.0.0";
@@ -17,11 +17,7 @@ export function UpdateGate({ children }: { children: ReactNode }) {
   const { accentColor } = usePreferences();
   const compat = useQuery({
     queryKey: ["mobile-compat"],
-    queryFn: async () => {
-      const r = await getMobileCompat();
-      if (!r.ok) throw new Error(r.error.code);
-      return r.value;
-    },
+    queryFn: async () => unwrap(await getMobileCompat()),
     retry: 1,
     staleTime: 5 * 60_000,
   });

@@ -283,11 +283,11 @@
       "mediaLoadError": "Impossible de charger la pièce jointe.",
       "permission": "Autorisez l'accès dans les réglages pour continuer.",
       "errors": {
-        "media.unsupported_type": "Ce type de fichier n'est pas pris en charge.",
-        "media.too_large": "Le fichier est trop volumineux.",
-        "media.too_long": "Le message vocal est trop long (3 minutes max).",
-        "media.rejected": "L'envoi a été rejeté.",
-        "media.storage_error": "Erreur de stockage. Réessayez."
+        "unsupported_type": "Ce type de fichier n'est pas pris en charge.",
+        "too_large": "Le fichier est trop volumineux.",
+        "too_long": "Le message vocal est trop long (3 minutes max).",
+        "rejected": "L'envoi a été rejeté.",
+        "storage_error": "Erreur de stockage. Réessayez."
       }
     },
     "groups": {

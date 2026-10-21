@@ -8,12 +8,8 @@ import {
   listGroupMembers,
   removeGroupMember,
   updateChatGroup,
+  unwrap,
 } from "@/data";
-
-function unwrap<T>(result: { ok: true; value: T } | { ok: false; error: { code: string } }): T {
-  if (!result.ok) throw new Error(result.error.code);
-  return result.value;
-}
 
 const groupKey = (id: string) => ["group", id] as const;
 const membersKey = (id: string) => ["group-members", id] as const;

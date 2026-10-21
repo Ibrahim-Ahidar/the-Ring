@@ -21,17 +21,13 @@ import {
   sendChatText,
   subscribeChat,
   subscribeChatList,
+  unwrap,
 } from "@/data";
 
 const chatsKey = ["chats"] as const;
 const chatKey = (id: string) => ["chat", id] as const;
 const messagesKey = (id: string) => ["messages", id] as const;
 const reactionsKey = (id: string) => ["reactions", id] as const;
-
-function unwrap<T>(result: { ok: true; value: T } | { ok: false; error: { code: string } }): T {
-  if (!result.ok) throw new Error(result.error.code);
-  return result.value;
-}
 
 /** Chat list pages; refreshes on inbox realtime changes. */
 export function useChatList(userId: string, filter: ChatListFilter = { kind: "all" }) {

@@ -25,6 +25,11 @@ function json(body: unknown, status = 200): Response {
 function fail(code: string, status = 400): Response {
   return json({ ok: false, error: { code } }, status);
 }
+/** Logs the raw database error and returns a stable code; 403 for authorization-style rejections. */
+function reject(message: string | undefined, status: 403 | 500 = 403): Response {
+  console.error("media:", message);
+  return status === 403 ? fail("media.rejected", 403) : fail("platform.unexpected", 500);
+}
 
 /** Same rules as packages/core/src/media.ts validateAttachment. */
 function validate(mime: string, size: number, durationMs?: number | null): string | null {
@@ -86,7 +91,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         p_duration_ms: durationMs,
       });
       const row = first(prepared.data as Record<string, string> | Record<string, string>[] | null);
-      if (prepared.error || !row) return fail(prepared.error?.message ?? "platform.unexpected", 403);
+      if (prepared.error || !row) return reject(prepared.error?.message);
 
       const signed = await storage.createSignedUploadUrl(row.storage_path);
       if (signed.error || !signed.data) return fail("media.storage_error", 500);
@@ -122,8 +127,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       const size = (listed.data?.[0]?.metadata as { size?: number } | undefined)?.size;
       if (typeof size !== "number" || size !== attachment.size_bytes) return fail("media.rejected");
 
+      // The service-role call below bypasses RLS, so only the sender may trigger it.
+      const owner = await admin.from("messages").select("sender_id").eq("id", messageId).maybeSingle();
+      if (owner.error) return reject(owner.error.message, 500);
+      if (!owner.data || owner.data.sender_id !== who.user.id) return fail("media.rejected", 403);
+
       const marked = await admin.rpc("media_mark_object_verified", { p_message_id: messageId });
-      if (marked.error) return fail("media.rejected");
+      if (marked.error) return reject(marked.error.message, 500);
 
       const completed = await user.rpc("complete_upload", {
         p_message_id: messageId,
@@ -132,7 +142,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         p_height: num(b.height),
         p_waveform: Array.isArray(b.waveform) ? b.waveform : null,
       });
-      if (completed.error) return fail(completed.error.message, 403);
+      if (completed.error) return reject(completed.error.message);
       return json({ ok: true, value: first(completed.data) });
     }
 
@@ -141,7 +151,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       if (!messageId) return fail("platform.bad_request");
       const failed = await user.rpc("fail_upload", { p_message_id: messageId });
       const row = first(failed.data as { storage_path: string } | { storage_path: string }[] | null);
-      if (failed.error || !row) return fail(failed.error?.message ?? "platform.unexpected", 403);
+      if (failed.error || !row) return reject(failed.error?.message);
       await storage.remove([row.storage_path]);
       return json({ ok: true, value: null });
     }
@@ -151,7 +161,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       if (!attachmentId) return fail("platform.bad_request");
       const meta = await user.rpc("get_attachment_download", { p_attachment_id: attachmentId });
       const row = first(meta.data as { storage_path: string; file_name: string } | { storage_path: string; file_name: string }[] | null);
-      if (meta.error || !row) return fail(meta.error?.message ?? "platform.unexpected", 403);
+      if (meta.error || !row) return reject(meta.error?.message);
       const signed = await storage.createSignedUrl(row.storage_path, DOWNLOAD_TTL_SEC);
       if (signed.error || !signed.data) return fail("media.storage_error", 500);
       return json({ ok: true, value: { url: signed.data.signedUrl, fileName: row.file_name } });

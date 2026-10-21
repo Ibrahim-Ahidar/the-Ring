@@ -27,7 +27,7 @@ built-in `assets/offline.html` and retries with backoff (2s, 4s, 8s ... capped a
 ## Release
 
 Installers are built by `.github/workflows/desktop-release.yml` (Windows NSIS `.exe`, Linux
-AppImage). To release, bump `version` in `apps/desktop/package.json`, then tag and push:
+AppImage). To release, tag and push. The workflow sets the `apps/desktop/package.json` version from the tag (`desktop-v0.2.0` becomes `0.2.0`), so no version bump commit is needed:
 
 ```
 git tag desktop-v0.2.0

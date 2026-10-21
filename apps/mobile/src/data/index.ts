@@ -42,7 +42,7 @@ export {
   type Subtitle,
   type TypingState,
 } from "@pulse/core";
-export { registerDevice, unregisterDevice } from "./devices";
+export { registerDevice, startDeviceSync, unregisterDevice } from "./devices";
 export {
   addChatReaction,
   deleteChatMessageForEveryone,
@@ -123,3 +123,4 @@ export {
 export { meetsPasswordPolicy, isOtpCode, validateUsername, MIN_PASSWORD_LENGTH } from "@pulse/core";
 export { loadPreferences, savePreferences } from "./preferences";
 export { getMobileCompat } from "./compat";
+export { unwrap } from "./unwrap";

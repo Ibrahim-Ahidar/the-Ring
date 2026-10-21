@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-import { getSession, onSessionChange, type AppSession } from "@/data";
+import { getSession, onSessionChange, startDeviceSync, type AppSession } from "@/data";
 
 interface SessionState {
   loading: boolean;
@@ -24,6 +24,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       unsubscribe();
     };
   }, []);
+
+  // Register on restore and on token change; stops on sign-out.
+  const userId = state.session?.userId ?? null;
+  useEffect(() => {
+    if (!userId) return;
+    return startDeviceSync({ userId, email: null });
+  }, [userId]);
 
   const value = useMemo(() => state, [state]);
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

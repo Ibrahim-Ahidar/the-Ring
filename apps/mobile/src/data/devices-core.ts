@@ -61,6 +61,21 @@ export function createDeviceLifecycle(deps: DeviceDeps): DeviceLifecycle {
   };
 }
 
+/**
+ * Keeps the Device registered while a session is active: registers now (covers a
+ * session restored on startup) and again whenever the push token changes.
+ * Returns an unsubscribe for sign-out. A null session does nothing.
+ */
+export function startDeviceSync(
+  session: unknown | null,
+  lifecycle: Pick<DeviceLifecycle, "register">,
+  subscribeToTokenChanges: (onChange: () => void) => () => void,
+): () => void {
+  if (!session) return () => {};
+  void lifecycle.register();
+  return subscribeToTokenChanges(() => void lifecycle.register());
+}
+
 export interface AuthActionsDeps<S> {
   signIn(email: string, password: string): Promise<Result<S>>;
   signOut(): Promise<Result<null>>;

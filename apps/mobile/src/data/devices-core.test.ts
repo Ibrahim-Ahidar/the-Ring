@@ -1,6 +1,6 @@
 import { err, ok } from "@pulse/core";
 
-import { createDeviceLifecycle, withDeviceLifecycle, type DeviceDeps } from "./devices-core";
+import { createDeviceLifecycle, startDeviceSync, withDeviceLifecycle, type DeviceDeps } from "./devices-core";
 
 function makeDeps(over: Partial<DeviceDeps> = {}) {
   const calls: string[] = [];
@@ -107,5 +107,34 @@ describe("withDeviceLifecycle", () => {
     });
     await a.signOut();
     expect(signOut).toHaveBeenCalled();
+  });
+});
+
+describe("startDeviceSync", () => {
+  it("registers on start for a restored session and again when the push token changes", async () => {
+    const t = makeDeps();
+    let fire: () => void = () => {};
+    const unsubscribe = jest.fn();
+    const stop = startDeviceSync({ userId: "u1" }, createDeviceLifecycle(t.deps), (onChange) => {
+      fire = onChange;
+      return unsubscribe;
+    });
+    await new Promise((r) => setImmediate(r));
+    expect(t.calls).toHaveLength(1);
+    fire();
+    await new Promise((r) => setImmediate(r));
+    expect(t.calls).toHaveLength(2);
+    expect(t.calls[1]).toContain("register_device");
+    stop();
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  it("does nothing without a session", async () => {
+    const t = makeDeps();
+    const subscribe = jest.fn(() => () => {});
+    startDeviceSync(null, createDeviceLifecycle(t.deps), subscribe)();
+    await new Promise((r) => setImmediate(r));
+    expect(t.calls).toEqual([]);
+    expect(subscribe).not.toHaveBeenCalled();
   });
 });

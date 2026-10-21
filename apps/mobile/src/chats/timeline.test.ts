@@ -1,6 +1,7 @@
-jest.mock("@/data", () => ({}));
-
 import { flattenPages, shouldLoadMoreForLanding, tickFor } from "./timeline";
+
+// Hoisted above the import by babel-jest.
+jest.mock("@/data", () => ({}));
 
 const row = (id: string) => ({ id }) as never;
 

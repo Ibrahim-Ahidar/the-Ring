@@ -16,14 +16,29 @@ import {
 
 const EXPO_URL = "https://exp.host/--/api/v2/push/send";
 
+/** Constant-time string compare (length is not secret). */
+function safeEqual(a: string, b: string): boolean {
+  const x = new TextEncoder().encode(a);
+  const y = new TextEncoder().encode(b);
+  if (x.length !== y.length) return false;
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
+  return diff === 0;
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method !== "POST") return new Response("method not allowed", { status: 405 });
   const secret = Deno.env.get("PUSH_WEBHOOK_SECRET");
-  if (!secret || req.headers.get("x-webhook-secret") !== secret) {
+  if (!secret || !safeEqual(req.headers.get("x-webhook-secret") ?? "", secret)) {
     return new Response("unauthorized", { status: 401 });
   }
 
-  const payload = (await req.json()) as { type?: string; record?: NotificationRow };
+  let payload: { type?: string; record?: NotificationRow };
+  try {
+    payload = (await req.json()) as { type?: string; record?: NotificationRow };
+  } catch {
+    return new Response("bad request", { status: 400 });
+  }
   const n = payload.record;
   if (payload.type !== "INSERT" || !n || !n.conversation_id) {
     return Response.json({ skipped: "not a conversation notification" });
@@ -49,6 +64,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     db.from("devices").select("push_token").eq("user_id", n.recipient_id)
       .not("push_token", "is", null).is("revoked_at", null),
   ]);
+
+  for (const [name, r] of [["member", member], ["prefs", prefs], ["devices", devices]] as const) {
+    if (r.error) {
+      console.error(`push-notify: ${name} query failed`, r.error.message);
+      return new Response("query failed", { status: 500 });
+    }
+  }
 
   const ok = shouldPush(n, {
     mutedUntil: member.data?.muted_until ?? null,

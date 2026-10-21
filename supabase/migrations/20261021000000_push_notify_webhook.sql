@@ -7,7 +7,15 @@
 --   select vault.create_secret('<same value as the PUSH_WEBHOOK_SECRET function secret>', 'push_notify_secret');
 -- Without them the trigger does nothing.
 
-create extension if not exists pg_net with schema extensions;
+-- pg_net exists on Supabase but not in PGlite (db tests). The function below only
+-- references net.http_post at run time and swallows errors, so it is safe without it.
+do $$
+begin
+  if exists (select 1 from pg_available_extensions where name = 'pg_net') then
+    create extension if not exists pg_net with schema extensions;
+  end if;
+end
+$$;
 
 create or replace function public.push_notify_dispatch()
 returns trigger

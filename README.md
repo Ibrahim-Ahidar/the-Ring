@@ -96,7 +96,7 @@ Pushing a `mobile-v*` tag runs [.github/workflows/android-release.yml](.github/w
    - `ANDROID_KEY_ALIAS`: the alias (`thering` above)
    - `ANDROID_KEY_PASSWORD`: the key password
 
-3. Bump `version` in `apps/mobile/app.json`, commit, then tag and push:
+3. Tag and push. The workflow writes the tag version into `app.json` (`expo.version`) and sets `expo.android.versionCode` to major*10000+minor*100+patch, so no version bump commit is needed:
 
    ```bash
    git tag mobile-v0.2.0
