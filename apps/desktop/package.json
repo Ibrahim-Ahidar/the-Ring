@@ -1,0 +1,63 @@
+{
+  "name": "@pulse/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Pulse Desktop Client: thin Electron shell around the Web Client",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && cross-env PULSE_URL=http://localhost:3000 electron .",
+    "test": "vitest run",
+    "dist": "npm run build && electron-builder --publish never",
+    "dist:win": "npm run build && electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "cross-env": "^7.0.3",
+    "electron": "^39.0.0",
+    "electron-builder": "^26.15.3",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  },
+  "build": {
+    "appId": "com.pulse.desktop",
+    "productName": "Pulse",
+    "files": [
+      "dist/**",
+      "assets/**",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Network",
+      "maintainer": "Pulse"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Ibrahim-Ahidar",
+        "repo": "the-Ring"
+      }
+    ],
+    "electronVersion": "39.8.10"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  }
+}

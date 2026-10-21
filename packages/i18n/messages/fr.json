@@ -1,0 +1,469 @@
+{
+  "landing": {
+    "title": "the Ring",
+    "proposition": "Trouvez des personnes par nom d'utilisateur, démarrez une conversation et gardez vos échanges organisés.",
+    "login": "Connexion",
+    "signup": "Inscription",
+    "features": [
+      {
+        "title": "Trouvez par nom d'utilisateur",
+        "body": "Aucun numéro de téléphone requis. Partagez votre @nom et les autres vous trouvent."
+      },
+      {
+        "title": "Conversations organisées",
+        "body": "Messages privés et groupes, avec confirmations de lecture et présence que vous contrôlez."
+      },
+      {
+        "title": "Vous gardez le contrôle",
+        "body": "Choisissez qui peut vous écrire, bloquez qui vous voulez, et réglez langue et thème."
+      }
+    ],
+    "featuresTitle": "Pourquoi the Ring",
+    "headline": "Des conversations qui restent les vôtres.",
+    "demoLabel": "Aperçu d'une conversation dans the Ring",
+    "demo": {
+      "name": "Sara",
+      "status": "en ligne",
+      "messages": [
+        {
+          "side": "in",
+          "text": "Je t'ai trouvé grâce à ton @nom 👋",
+          "time": "9:41"
+        },
+        {
+          "side": "out",
+          "text": "Rapide ! Pas besoin d'échanger nos numéros.",
+          "time": "9:42"
+        },
+        {
+          "side": "in",
+          "text": "Je t'ajoute au groupe d'étude.",
+          "time": "9:42"
+        }
+      ]
+    }
+  },
+  "nav": {
+    "home": "Accueil",
+    "chats": "Discussions",
+    "groups": "Groupes",
+    "search": "Recherche",
+    "contacts": "Contacts",
+    "notifications": "Notifications",
+    "settings": "Paramètres",
+    "back": "Retour",
+    "backToChats": "Retour aux discussions",
+    "profileAndSettings": "Profil et paramètres",
+    "primary": "Navigation principale"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "more": "Plus",
+    "chooseSection": "Choisissez une rubrique pour modifier vos paramètres.",
+    "accountDesc": "Profil, nom d'utilisateur, photo, suppression du compte",
+    "privacyDesc": "Vu pour la dernière fois, confirmations de lecture, qui peut vous écrire, bloqués",
+    "securityDesc": "Sessions actives, déconnexion",
+    "notificationsDesc": "Dans l'app, push, mentions uniquement",
+    "appearanceDesc": "Thème clair, sombre ou système"
+  },
+  "skipLink": "Aller au contenu",
+  "loading": "Chargement",
+  "routes": {
+    "login": "Connexion",
+    "signup": "Inscription",
+    "home": "Accueil",
+    "chats": "Discussions",
+    "chatsNew": "Nouvelle discussion",
+    "chatsRequests": "Demandes de message",
+    "chat": "Discussion",
+    "groups": "Groupes",
+    "groupsNew": "Nouveau groupe",
+    "group": "Groupe",
+    "search": "Recherche",
+    "contacts": "Contacts",
+    "notifications": "Notifications",
+    "profile": "Profil",
+    "publicProfile": "Profil public",
+    "settingsAccount": "Compte",
+    "settingsSecurity": "Sécurité",
+    "settingsPrivacy": "Confidentialité",
+    "settingsNotifications": "Notifications",
+    "settingsAppearance": "Apparence",
+    "settingsLanguage": "Langue",
+    "media": "Médias",
+    "terms": "Conditions",
+    "privacy": "Confidentialité"
+  },
+  "legal": {
+    "terms": {
+      "intro": "Ces conditions régissent votre utilisation de the Ring. En créant un compte ou en utilisant le service, vous les acceptez.",
+      "sections": [
+        {
+          "title": "Votre compte",
+          "body": "Vous devez fournir des informations exactes et protéger vos identifiants. Vous êtes responsable de l'activité de votre compte. Vous devez avoir l'âge requis pour conclure un accord contraignant là où vous vivez."
+        },
+        {
+          "title": "Utilisation acceptable",
+          "body": "N'utilisez pas le service pour harceler, menacer ou usurper l'identité d'autrui, envoyer du spam ou des logiciels malveillants, enfreindre la loi, ou tenter de perturber le service ou d'accéder sans autorisation à d'autres comptes."
+        },
+        {
+          "title": "Votre contenu",
+          "body": "Vous restez propriétaire des messages et médias que vous envoyez. Vous nous accordez l'autorisation limitée nécessaire pour les stocker et les transmettre aux personnes que vous choisissez. Vous êtes responsable de ce que vous partagez."
+        },
+        {
+          "title": "Signalement et sanctions",
+          "body": "Vous pouvez bloquer et signaler d'autres utilisateurs. Nous pouvons supprimer du contenu, limiter des fonctions ou suspendre les comptes qui enfreignent ces conditions ou mettent d'autres personnes en danger."
+        },
+        {
+          "title": "Disponibilité",
+          "body": "Le service est fourni tel quel et peut évoluer, être interrompu ou arrêté. Nous ne garantissons pas qu'il sera ininterrompu ou sans erreur."
+        },
+        {
+          "title": "Fin d'utilisation",
+          "body": "Vous pouvez supprimer votre compte à tout moment depuis vos paramètres. Nous pouvons suspendre ou mettre fin à l'accès en cas de violation de ces conditions."
+        },
+        {
+          "title": "Modifications et contact",
+          "body": "Nous pouvons mettre à jour ces conditions et indiquerons la date de la dernière version sur cette page. Continuer à utiliser le service après une modification vaut acceptation. Vos questions peuvent être envoyées via le canal de contact fourni dans l'application."
+        }
+      ]
+    },
+    "privacy": {
+      "intro": "Cette page explique quelles informations the Ring traite et les choix dont vous disposez.",
+      "sections": [
+        {
+          "title": "Informations collectées",
+          "body": "Les informations de compte que vous fournissez (adresse e-mail, nom d'utilisateur, nom affiché, photo, bio), les messages et médias que vous envoyez, et des données techniques de base comme vos préférences de langue, de thème et de fuseau horaire."
+        },
+        {
+          "title": "Utilisation",
+          "body": "Pour faire fonctionner le service : vous connecter, acheminer vos messages, afficher votre profil aux personnes qui vous recherchent, envoyer les notifications activées, et protéger le service contre les abus."
+        },
+        {
+          "title": "Ce que les autres voient",
+          "body": "Votre nom d'utilisateur et votre profil public sont visibles par toute personne disposant du lien. La présence, la dernière connexion et les confirmations de lecture dépendent de vos paramètres de confidentialité."
+        },
+        {
+          "title": "Partage",
+          "body": "Nous ne vendons pas vos informations personnelles. Nous faisons appel à des prestataires d'infrastructure pour héberger et exploiter le service, et pouvons divulguer des informations lorsque la loi l'exige."
+        },
+        {
+          "title": "Conservation et suppression",
+          "body": "Nous conservons vos données tant que votre compte est actif. Vous pouvez supprimer votre compte dans les paramètres, ce qui supprime votre profil et les données associées, sous réserve des obligations légales et de sécurité."
+        },
+        {
+          "title": "Vos choix",
+          "body": "Depuis vos paramètres, vous pouvez modifier votre profil, choisir qui peut vous écrire, masquer la dernière connexion et les confirmations de lecture, gérer les notifications et bloquer des utilisateurs."
+        },
+        {
+          "title": "Cookies et stockage",
+          "body": "Nous utilisons des cookies essentiels et le stockage local pour vous garder connecté et mémoriser votre langue et votre thème."
+        },
+        {
+          "title": "Modifications et contact",
+          "body": "Nous pouvons mettre à jour cette politique et indiquerons la date de la dernière version sur cette page. Vos questions peuvent être envoyées via le canal de contact fourni dans l'application."
+        }
+      ]
+    }
+  },
+  "public": {
+    "back": "Retour à l'accueil",
+    "loginToMessage": "Connectez-vous pour écrire à @{username}",
+    "signupCta": "Créer un compte",
+    "profileTitle": "@{username}",
+    "profileDesc": "{name} est sur the Ring. Connectez-vous pour démarrer une conversation.",
+    "home": "Accueil",
+    "desc": "Messagerie instantanée par nom d'utilisateur. Trouvez des personnes, démarrez une conversation, gardez-la organisée."
+  },
+  "errors": {
+    "title": "Une erreur est survenue",
+    "body": "Impossible de charger cette page. Vos messages sont en sécurité.",
+    "retry": "Réessayer",
+    "reference": "Référence : {digest}",
+    "notFoundTitle": "Page introuvable",
+    "notFoundBody": "Cette page n'existe pas ou a été déplacée.",
+    "backToChats": "Retour aux discussions",
+    "conversationNotFound": "Cette conversation n'existe pas ou vous n'y avez plus accès.",
+    "loadFailed": "Impossible de charger cette liste. Il peut s'agir d'un problème temporaire, elle n'est donc pas forcément vide.",
+    "empty": "Rien ici pour l'instant."
+  },
+  "mobile": {
+    "login": {
+      "title": "Se connecter",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "errors": {
+        "required": "Saisissez votre e-mail et votre mot de passe.",
+        "invalidCredentials": "E-mail ou mot de passe incorrect.",
+        "emailNotConfirmed": "Confirmez votre e-mail avant de vous connecter.",
+        "rateLimited": "Trop de tentatives. Réessayez dans un instant.",
+        "network": "Impossible de joindre le serveur. Vérifiez votre connexion.",
+        "unexpected": "Une erreur est survenue. Réessayez."
+      }
+    },
+    "home": {
+      "title": "Accueil",
+      "signedInAs": "Connecté en tant que {email}"
+    },
+    "logout": {
+      "submit": "Se déconnecter",
+      "error": "Échec de la déconnexion. Réessayez."
+    },
+    "chats": {
+      "title": "Discussions",
+      "empty": "Aucune discussion pour l'instant.",
+      "untitled": "Discussion",
+      "noMessages": "Aucun message",
+      "deleted": "Message supprimé",
+      "unsupported": "Message non pris en charge",
+      "unread": "{count} non lus",
+      "loadError": "Impossible de charger les discussions. Touchez pour réessayer.",
+      "back": "Retour",
+      "unreadDivider": "Messages non lus",
+      "composerPlaceholder": "Message",
+      "send": "Envoyer",
+      "sendError": "Envoi impossible. Réessayez.",
+      "status": {
+        "pending": "Envoi",
+        "failed": "Échec",
+        "sent": "Envoyé",
+        "delivered": "Remis",
+        "read": "Lu"
+      }
+    },
+    "offline": {
+      "banner": "Vous êtes hors ligne. Les discussions enregistrées restent visibles; l'envoi est en pause."
+    },
+    "presence": {
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "typing": "écrit…",
+      "typingOne": "{name} est en train d'écrire",
+      "typingMany": "{count, plural, one {# personne écrit} other {# personnes écrivent}}",
+      "recording": "enregistre un audio…",
+      "recordingOne": "{name} enregistre un audio",
+      "recordingMany": "{count, plural, one {# personne enregistre un audio} other {# personnes enregistrent un audio}}",
+      "lastSeenJustNow": "vu à l'instant",
+      "lastSeenMinutes": "vu il y a {count, plural, one {# minute} other {# minutes}}",
+      "lastSeenHours": "vu il y a {count, plural, one {# heure} other {# heures}}",
+      "lastSeenDays": "vu il y a {count, plural, one {# jour} other {# jours}}",
+      "lastSeenDate": "vu le {date}",
+      "someone": "Quelqu'un"
+    },
+    "actions": {
+      "reply": "Répondre",
+      "copy": "Copier",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "menuTitle": "Message",
+      "replyingTo": "Réponse à {name}",
+      "you": "Vous",
+      "editing": "Modification du message",
+      "edited": "modifié",
+      "originalDeleted": "Message d'origine supprimé",
+      "deleteTitle": "Supprimer le message ?",
+      "deleteBody": "Il sera supprimé pour tout le monde.",
+      "actionError": "Échec. Réessayez.",
+      "reactionLabel": "Réagir {emoji}",
+      "copied": "Copié"
+    },
+    "media": {
+      "photo": "Photo",
+      "voiceNote": "Message vocal",
+      "attach": "Joindre une photo",
+      "record": "Enregistrer un message vocal",
+      "stop": "Arrêter et envoyer",
+      "recording": "Enregistrement…",
+      "play": "Lire",
+      "pause": "Pause",
+      "mediaError": "Impossible d'envoyer la pièce jointe.",
+      "mediaLoadError": "Impossible de charger la pièce jointe.",
+      "permission": "Autorisez l'accès dans les réglages pour continuer.",
+      "errors": {
+        "unsupported_type": "Ce type de fichier n'est pas pris en charge.",
+        "too_large": "Le fichier est trop volumineux.",
+        "too_long": "Le message vocal est trop long (3 minutes max).",
+        "rejected": "L'envoi a été rejeté.",
+        "storage_error": "Erreur de stockage. Réessayez."
+      }
+    },
+    "groups": {
+      "newTitle": "Nouveau groupe",
+      "newGroup": "Nouveau groupe",
+      "info": "Infos du groupe",
+      "name": "Nom du groupe",
+      "description": "Description (facultatif)",
+      "membersHint": "Membres : @pseudo, @pseudo",
+      "create": "Créer le groupe",
+      "save": "Enregistrer",
+      "addMember": "Ajouter un membre",
+      "add": "Ajouter",
+      "remove": "Retirer",
+      "leave": "Quitter le groupe",
+      "leaveConfirm": "Quitter ce groupe ?",
+      "cancel": "Annuler",
+      "openGroup": "Ouvrir le groupe",
+      "error": "Action impossible. Réessayez.",
+      "invitesFailed": "Groupe créé, mais ces invitations ont échoué : {names}",
+      "roles": {
+        "owner": "Propriétaire",
+        "admin": "Admin",
+        "member": "Membre"
+      },
+      "errors": {
+        "name_required": "Saisissez un nom de groupe.",
+        "name_too_long": "Ce nom est trop long.",
+        "description_too_long": "Cette description est trop longue.",
+        "forbidden": "Vous ne pouvez pas faire cela.",
+        "not_allowed": "Vous ne pouvez pas faire cela.",
+        "not_found": "Groupe introuvable.",
+        "not_member": "Vous n'êtes pas dans ce groupe.",
+        "user_not_found": "Utilisateur introuvable.",
+        "member_limit": "Le groupe est complet.",
+        "owner_must_transfer": "Transférez la propriété avant de partir.",
+        "cannot_target_owner": "Vous ne pouvez pas modifier le propriétaire."
+      }
+    },
+    "safety": {
+      "requests": "Demandes de message",
+      "blocked": "Utilisateurs bloqués",
+      "noRequests": "Aucune demande en attente.",
+      "noBlocked": "Vous n'avez bloqué personne.",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "unblock": "Débloquer",
+      "menu": "Plus",
+      "block": "Bloquer l'utilisateur",
+      "report": "Signaler l'utilisateur",
+      "reported": "Signalement envoyé.",
+      "error": "Action impossible. Réessayez.",
+      "categories": {
+        "spam": "Spam",
+        "harassment": "Harcèlement",
+        "impersonation": "Usurpation d'identité",
+        "other": "Autre"
+      }
+    },
+    "organization": {
+      "filters": {
+        "all": "Toutes",
+        "unread": "Non lues",
+        "groups": "Groupes",
+        "archived": "Archivées",
+        "archivedCount": "Archivées ({count})"
+      },
+      "folders": "Dossiers",
+      "manageFolders": "Modifier les dossiers",
+      "noFolders": "Aucun dossier pour le moment.",
+      "folderName": "Nom du dossier",
+      "create": "Créer",
+      "rename": "Renommer",
+      "save": "Enregistrer",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "deleteTitle": "Supprimer « {name} » ?",
+      "deleteBody": "Seul le dossier est supprimé. Ses discussions restent dans votre liste et ne sont ni archivées ni supprimées.",
+      "archive": "Archiver",
+      "unarchive": "Désarchiver",
+      "moveTo": "Déplacer vers {name}",
+      "removeFromFolder": "Retirer du dossier",
+      "longPressHint": "Appui long pour les options d'archivage et de dossier",
+      "error": "Une erreur s'est produite. Réessayez.",
+      "errors": {
+        "not_found": "Conversation introuvable.",
+        "invalid_name": "Le nom du dossier doit comporter 1 à 40 caractères.",
+        "invalid_order": "Impossible de réorganiser les dossiers."
+      }
+    },
+    "contacts": {
+      "title": "Contacts",
+      "placeholder": "Rechercher par nom d'utilisateur",
+      "search": "Rechercher",
+      "noResult": "Aucun utilisateur trouve",
+      "message": "Ecrire",
+      "add": "Ajouter",
+      "remove": "Retirer",
+      "saved": "Contacts enregistres",
+      "empty": "Aucun contact enregistre",
+      "error": "Une erreur est survenue. Reessayez.",
+      "link": "Contacts"
+    },
+    "profile": {
+      "title": "Profil",
+      "avatar": "Avatar",
+      "changeAvatar": "Changer la photo",
+      "removeAvatar": "Supprimer la photo",
+      "displayName": "Nom affiche",
+      "bio": "Bio",
+      "save": "Enregistrer",
+      "saved": "Enregistre",
+      "error": "Enregistrement impossible. Verifiez le type et la taille de l'image.",
+      "loadError": "Impossible de charger votre profil",
+      "link": "Profil"
+    },
+    "account": {
+      "forgot": "Mot de passe oublie ?",
+      "createAccount": "Creer un compte",
+      "signupTitle": "Creer un compte",
+      "signupSubmit": "Envoyer le code",
+      "username": "Nom d utilisateur",
+      "passwordHint": "Au moins 8 caracteres.",
+      "code": "Code a 6 chiffres",
+      "codeSentTo": "Nous avons envoye un code a 6 chiffres a {email}.",
+      "codeResent": "Un nouveau code a ete envoye.",
+      "resend": "Renvoyer le code",
+      "verify": "Verifier",
+      "haveAccount": "J ai deja un compte",
+      "resetTitle": "Reinitialiser le mot de passe",
+      "sendCode": "Envoyer le code",
+      "newPassword": "Nouveau mot de passe",
+      "resetSubmit": "Definir le mot de passe",
+      "backToLogin": "Retour a la connexion",
+      "errors": {
+        "unexpected": "Une erreur est survenue. Reessayez.",
+        "code_expired": "Ce code a expire. Demandez-en un nouveau.",
+        "code_invalid": "Ce code n est pas valide.",
+        "email_registered": "Un compte existe deja avec cet e-mail.",
+        "email_required": "Saisissez votre e-mail.",
+        "password_weak": "Le mot de passe doit contenir au moins 8 caracteres.",
+        "username_taken": "Ce nom d utilisateur est pris.",
+        "username_invalid": "3 a 20 lettres, chiffres ou tirets bas.",
+        "reset_session_expired": "Session expiree. Recommencez.",
+        "rate_limited": "Trop de tentatives. Patientez un instant."
+      }
+    },
+    "settings": {
+      "title": "Paramètres",
+      "theme": "Thème",
+      "accent": "Couleur d'accent",
+      "language": "Langue",
+      "themes": {
+        "system": "Système",
+        "light": "Clair",
+        "dark": "Sombre"
+      },
+      "accents": {
+        "indigo": "Indigo",
+        "green": "Vert"
+      },
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "ar": "العربية"
+      },
+      "restartRequired": "Fermez et rouvrez l'application pour appliquer le nouveau sens de lecture."
+    },
+    "update": {
+      "title": "Mise à jour requise",
+      "body": "Cette version ({current}) n'est plus prise en charge. La version {minimum} ou plus récente est requise.",
+      "download": "Télécharger la mise à jour",
+      "notice": "La version {latest} est disponible (vous avez {current}).",
+      "dismiss": "Plus tard"
+    }
+  }
+}

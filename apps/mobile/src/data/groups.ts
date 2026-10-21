@@ -1,0 +1,34 @@
+import {
+  createGroup,
+  getGroup,
+  inviteMember,
+  leaveGroup,
+  listMembers,
+  removeMember,
+  updateGroup,
+} from "@pulse/core/groups";
+import type { FailedInvite } from "@pulse/core/groups";
+import type { GroupMember, GroupSummary } from "@pulse/core/groups-types";
+import type { Result } from "@pulse/core";
+
+import { rpcClient } from "./rpc";
+
+export type { FailedInvite, GroupMember, GroupSummary };
+
+export function createChatGroup(input: {
+  name: string;
+  description?: string | null;
+  members?: string;
+}): Promise<Result<{ conversationId: string; failedInvites: FailedInvite[] }>> {
+  return createGroup(rpcClient, input);
+}
+
+export const getChatGroup = (conversationId: string) => getGroup(rpcClient, conversationId);
+export const listGroupMembers = (conversationId: string) => listMembers(rpcClient, conversationId);
+export const updateChatGroup = (input: { conversationId: string; name?: string | null; description?: string | null }) =>
+  updateGroup(rpcClient, input);
+export const inviteGroupMember = (conversationId: string, username: string) =>
+  inviteMember(rpcClient, { conversationId, username });
+export const removeGroupMember = (conversationId: string, userId: string) =>
+  removeMember(rpcClient, { conversationId, userId });
+export const leaveChatGroup = (conversationId: string) => leaveGroup(rpcClient, conversationId);
