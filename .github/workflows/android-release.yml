@@ -49,8 +49,7 @@ jobs:
             const cfg = JSON.parse(fs.readFileSync(file, "utf8"));
             cfg.expo.version = v;
             cfg.expo.android = { ...cfg.expo.android, versionCode: major * 10000 + minor * 100 + patch };
-            fs.writeFileSync(file, JSON.stringify(cfg, null, 2) + "
-");
+            fs.writeFileSync(file, JSON.stringify(cfg, null, 2) + "\n");
           '
 
       - name: Generate Android project
