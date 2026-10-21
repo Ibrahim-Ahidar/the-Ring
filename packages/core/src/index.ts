@@ -13,3 +13,5 @@ export * from "./messaging-types";
 export * from "./typing";
 export * from "./presence";
 export * from "./subtitle";
+export * from "./message-actions";
+export * from "./reactions";

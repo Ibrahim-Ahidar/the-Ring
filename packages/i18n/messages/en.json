@@ -250,6 +250,25 @@
       "lastSeenDays": "last seen {count, plural, one {# day} other {# days}} ago",
       "lastSeenDate": "last seen {date}",
       "someone": "Someone"
+    },
+    "actions": {
+      "reply": "Reply",
+      "copy": "Copy",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save",
+      "menuTitle": "Message",
+      "replyingTo": "Replying to {name}",
+      "you": "You",
+      "editing": "Editing message",
+      "edited": "edited",
+      "originalDeleted": "Original message deleted",
+      "deleteTitle": "Delete message?",
+      "deleteBody": "This removes it for everyone.",
+      "actionError": "That didn't work. Try again.",
+      "reactionLabel": "React {emoji}",
+      "copied": "Copied"
     }
   }
 }

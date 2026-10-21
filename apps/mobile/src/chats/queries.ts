@@ -2,7 +2,12 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { useEffect } from "react";
 
 import {
+  addChatReaction,
+  deleteChatMessageForEveryone,
+  editChatMessage,
   getChat,
+  listChatReactions,
+  removeChatReaction,
   listChatMessages,
   listChats,
   markChatDelivered,
@@ -16,6 +21,7 @@ import {
 const chatsKey = ["chats"] as const;
 const chatKey = (id: string) => ["chat", id] as const;
 const messagesKey = (id: string) => ["messages", id] as const;
+const reactionsKey = (id: string) => ["reactions", id] as const;
 
 function unwrap<T>(result: { ok: true; value: T } | { ok: false; error: { code: string } }): T {
   if (!result.ok) throw new Error(result.error.code);
@@ -51,6 +57,7 @@ export function useChatMessages(conversationId: string) {
     () =>
       subscribeChat(conversationId, () => {
         void queryClient.invalidateQueries({ queryKey: messagesKey(conversationId) });
+        void queryClient.invalidateQueries({ queryKey: reactionsKey(conversationId) });
         void queryClient.invalidateQueries({ queryKey: chatKey(conversationId) });
         void queryClient.invalidateQueries({ queryKey: chatsKey });
       }),
@@ -67,8 +74,15 @@ export function useChatMessages(conversationId: string) {
 export function useSendText(conversationId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (body: string) =>
-      unwrap(await sendChatText({ conversationId, clientId: newClientId(), body })),
+    mutationFn: async (input: { body: string; replyToId?: string | null }) =>
+      unwrap(
+        await sendChatText({
+          conversationId,
+          clientId: newClientId(),
+          body: input.body,
+          replyToId: input.replyToId ?? null,
+        }),
+      ),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: messagesKey(conversationId) });
       void queryClient.invalidateQueries({ queryKey: chatsKey });
@@ -93,4 +107,43 @@ export function useMarkRead(conversationId: string, newestIncomingId: string | n
       active = false;
     };
   }, [conversationId, newestIncomingId, queryClient]);
+}
+
+/** Reactions for the loaded messages, keyed by message id order. */
+export function useReactions(conversationId: string, messageIds: string[]) {
+  return useQuery({
+    queryKey: [...reactionsKey(conversationId), messageIds.join(",")],
+    queryFn: async () => unwrap(await listChatReactions(conversationId, messageIds)),
+    enabled: messageIds.length > 0,
+    placeholderData: (prev) => prev,
+  });
+}
+
+/** Edit, delete-for-everyone and reaction toggles; each refreshes messages and reactions. */
+export function useMessageActions(conversationId: string) {
+  const queryClient = useQueryClient();
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: messagesKey(conversationId) });
+    void queryClient.invalidateQueries({ queryKey: reactionsKey(conversationId) });
+    void queryClient.invalidateQueries({ queryKey: chatsKey });
+  };
+  const edit = useMutation({
+    mutationFn: async (v: { messageId: string; body: string }) =>
+      unwrap(await editChatMessage(v.messageId, v.body)),
+    onSuccess: refresh,
+  });
+  const remove = useMutation({
+    mutationFn: async (messageId: string) => unwrap(await deleteChatMessageForEveryone(messageId)),
+    onSuccess: refresh,
+  });
+  const react = useMutation({
+    mutationFn: async (v: { messageId: string; emoji: string; op: "add" | "remove" }) =>
+      unwrap(
+        v.op === "add"
+          ? await addChatReaction(v.messageId, v.emoji)
+          : await removeChatReaction(v.messageId, v.emoji),
+      ),
+    onSuccess: refresh,
+  });
+  return { edit, remove, react };
 }

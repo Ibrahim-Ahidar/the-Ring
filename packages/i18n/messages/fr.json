@@ -250,6 +250,25 @@
       "lastSeenDays": "vu il y a {count, plural, one {# jour} other {# jours}}",
       "lastSeenDate": "vu le {date}",
       "someone": "Quelqu'un"
+    },
+    "actions": {
+      "reply": "Répondre",
+      "copy": "Copier",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "menuTitle": "Message",
+      "replyingTo": "Réponse à {name}",
+      "you": "Vous",
+      "editing": "Modification du message",
+      "edited": "modifié",
+      "originalDeleted": "Message d'origine supprimé",
+      "deleteTitle": "Supprimer le message ?",
+      "deleteBody": "Il sera supprimé pour tout le monde.",
+      "actionError": "Échec. Réessayez.",
+      "reactionLabel": "Réagir {emoji}",
+      "copied": "Copié"
     }
   }
 }

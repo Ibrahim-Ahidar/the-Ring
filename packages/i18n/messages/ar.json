@@ -250,6 +250,25 @@
       "lastSeenDays": "آخر ظهور منذ {count, plural, one {يوم} two {يومين} few {# أيام} many {# يومًا} other {# يوم}}",
       "lastSeenDate": "آخر ظهور {date}",
       "someone": "شخص ما"
+    },
+    "actions": {
+      "reply": "رد",
+      "copy": "نسخ",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "menuTitle": "الرسالة",
+      "replyingTo": "الرد على {name}",
+      "you": "أنت",
+      "editing": "تعديل الرسالة",
+      "edited": "معدّلة",
+      "originalDeleted": "تم حذف الرسالة الأصلية",
+      "deleteTitle": "حذف الرسالة؟",
+      "deleteBody": "ستُحذف للجميع.",
+      "actionError": "لم تنجح العملية. حاول مرة أخرى.",
+      "reactionLabel": "تفاعل {emoji}",
+      "copied": "تم النسخ"
     }
   }
 }

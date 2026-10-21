@@ -42,3 +42,19 @@ export {
   type TypingState,
 } from "@pulse/core";
 export { registerDevice, unregisterDevice } from "./devices";
+export {
+  addChatReaction,
+  deleteChatMessageForEveryone,
+  editChatMessage,
+  listChatReactions,
+  removeChatReaction,
+} from "./message-actions";
+export {
+  ALLOWED_REACTION_EMOJI,
+  availableActions,
+  groupReactions,
+  reactionToggle,
+  type MessageAction,
+  type MessageReaction,
+  type ReactionGroup,
+} from "@pulse/core";
