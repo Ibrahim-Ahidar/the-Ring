@@ -15,7 +15,7 @@ describe("public page catalogs", () => {
       expect(catalog.legal[kind].intro.length).toBeGreaterThan(20);
     }
     expect(catalog.landing.features).toHaveLength(3);
-    expect(catalog.landing.title).toBe("the Ring");
+    expect(catalog.landing.title).toBe("Pulse");
     expect(JSON.stringify(catalog.legal)).not.toMatch(/placeholder|مؤقت|provisoire/i);
   });
 

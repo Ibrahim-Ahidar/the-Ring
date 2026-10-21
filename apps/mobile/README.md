@@ -1,6 +1,6 @@
 # @pulse/mobile
 
-Expo Router Android client for the Ring (spec section 6, ADR 0001). This ticket covers login, logout and a session kept in secure storage; the rest of the Mobile Client comes in later tickets.
+Expo Router Android client for Pulse (spec section 6, ADR 0001). This ticket covers login, logout and a session kept in secure storage; the rest of the Mobile Client comes in later tickets.
 
 ## Layout
 

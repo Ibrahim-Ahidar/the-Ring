@@ -78,7 +78,7 @@ jobs:
       - name: Name the APK
         id: apk
         run: |
-          name="the-ring-${GITHUB_REF_NAME//\//-}.apk"
+          name="pulse-${GITHUB_REF_NAME//\//-}.apk"
           cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk "$name"
           echo "name=$name" >> "$GITHUB_OUTPUT"
 

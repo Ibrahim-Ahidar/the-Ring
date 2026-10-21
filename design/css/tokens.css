@@ -1,5 +1,5 @@
 /*
- * The Ring design tokens.
+ * Pulse design tokens.
  * Names match src/shell/styles/tokens.css so values can be copied over 1:1.
  * Every color is a light-dark() pair; data-theme only switches color-scheme.
  */

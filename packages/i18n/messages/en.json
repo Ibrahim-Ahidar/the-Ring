@@ -1,6 +1,6 @@
 {
   "landing": {
-    "title": "the Ring",
+    "title": "Pulse",
     "proposition": "Find people by username, start a conversation, and keep communication organized.",
     "login": "Log in",
     "signup": "Sign up",
@@ -18,9 +18,9 @@
         "body": "Choose who can message you, block anyone, and set your own language and theme."
       }
     ],
-    "featuresTitle": "Why the Ring",
+    "featuresTitle": "Why Pulse",
     "headline": "Conversations that stay yours.",
-    "demoLabel": "Preview of a conversation in the Ring",
+    "demoLabel": "Preview of a conversation in Pulse",
     "demo": {
       "name": "Sara",
       "status": "online",
@@ -96,7 +96,7 @@
   },
   "legal": {
     "terms": {
-      "intro": "These terms govern your use of the Ring. By creating an account or using the service you agree to them.",
+      "intro": "These terms govern your use of Pulse. By creating an account or using the service you agree to them.",
       "sections": [
         {
           "title": "Your account",
@@ -129,7 +129,7 @@
       ]
     },
     "privacy": {
-      "intro": "This page explains what information the Ring handles and the choices you have.",
+      "intro": "This page explains what information Pulse handles and the choices you have.",
       "sections": [
         {
           "title": "Information we collect",
@@ -171,7 +171,7 @@
     "loginToMessage": "Log in to message @{username}",
     "signupCta": "Create an account",
     "profileTitle": "@{username}",
-    "profileDesc": "{name} is on the Ring. Log in to start a conversation.",
+    "profileDesc": "{name} is on Pulse. Log in to start a conversation.",
     "home": "Home",
     "desc": "Username-first realtime chat. Find people, start a conversation, keep it organized."
   },

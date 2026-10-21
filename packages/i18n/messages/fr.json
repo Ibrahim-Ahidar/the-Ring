@@ -1,6 +1,6 @@
 {
   "landing": {
-    "title": "the Ring",
+    "title": "Pulse",
     "proposition": "Trouvez des personnes par nom d'utilisateur, démarrez une conversation et gardez vos échanges organisés.",
     "login": "Connexion",
     "signup": "Inscription",
@@ -18,9 +18,9 @@
         "body": "Choisissez qui peut vous écrire, bloquez qui vous voulez, et réglez langue et thème."
       }
     ],
-    "featuresTitle": "Pourquoi the Ring",
+    "featuresTitle": "Pourquoi Pulse",
     "headline": "Des conversations qui restent les vôtres.",
-    "demoLabel": "Aperçu d'une conversation dans the Ring",
+    "demoLabel": "Aperçu d'une conversation dans Pulse",
     "demo": {
       "name": "Sara",
       "status": "en ligne",
@@ -96,7 +96,7 @@
   },
   "legal": {
     "terms": {
-      "intro": "Ces conditions régissent votre utilisation de the Ring. En créant un compte ou en utilisant le service, vous les acceptez.",
+      "intro": "Ces conditions régissent votre utilisation de Pulse. En créant un compte ou en utilisant le service, vous les acceptez.",
       "sections": [
         {
           "title": "Votre compte",
@@ -129,7 +129,7 @@
       ]
     },
     "privacy": {
-      "intro": "Cette page explique quelles informations the Ring traite et les choix dont vous disposez.",
+      "intro": "Cette page explique quelles informations Pulse traite et les choix dont vous disposez.",
       "sections": [
         {
           "title": "Informations collectées",
@@ -171,7 +171,7 @@
     "loginToMessage": "Connectez-vous pour écrire à @{username}",
     "signupCta": "Créer un compte",
     "profileTitle": "@{username}",
-    "profileDesc": "{name} est sur the Ring. Connectez-vous pour démarrer une conversation.",
+    "profileDesc": "{name} est sur Pulse. Connectez-vous pour démarrer une conversation.",
     "home": "Accueil",
     "desc": "Messagerie instantanée par nom d'utilisateur. Trouvez des personnes, démarrez une conversation, gardez-la organisée."
   },
