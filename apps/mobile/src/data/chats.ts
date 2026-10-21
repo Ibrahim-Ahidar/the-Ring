@@ -19,6 +19,7 @@ import {
   type TimelineMessage,
 } from "@pulse/core";
 
+import { acquireChatChannel } from "./chat-channel";
 import { supabase } from "./client";
 import { rpcClient } from "./rpc";
 
@@ -105,15 +106,7 @@ export function subscribeChatList(userId: string, onChange: () => void): Unsubsc
   );
 }
 
-/** Same topic and tables as the web conversation channel (messages, reactions, members). */
+/** Row changes on the shared conversation channel (messages, reactions, members). */
 export function subscribeChat(conversationId: string, onChange: () => void): Unsubscribe {
-  return watch(
-    `conversation:${conversationId}`,
-    [
-      { table: "messages", filter: `conversation_id=eq.${conversationId}` },
-      { table: "message_reactions" },
-      { table: "conversation_members", filter: `conversation_id=eq.${conversationId}` },
-    ],
-    onChange,
-  );
+  return acquireChatChannel(conversationId, { onChange }).release;
 }

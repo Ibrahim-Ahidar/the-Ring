@@ -6,7 +6,7 @@ import {
   TYPING_EXPIRE_MS,
   typerCount,
   visibleTypers,
-} from "@/features/typing-presence/typing-reducer";
+} from "./typing";
 
 describe("reduceTyping", () => {
   const viewerId = "viewer";

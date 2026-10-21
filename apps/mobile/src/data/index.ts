@@ -25,3 +25,19 @@ export {
   outboundDeliveryStatus,
   type InitialScroll,
 } from "@pulse/core";
+export {
+  openTypingChannel,
+  readPeerOnline,
+  readPeerPresence,
+  touchMyLastSeen,
+  type TypingBroadcast,
+} from "./presence";
+export {
+  deriveSubtitle,
+  initialTypingState,
+  lastSeenBucket,
+  reduceTyping,
+  visibleTypers,
+  type Subtitle,
+  type TypingState,
+} from "@pulse/core";

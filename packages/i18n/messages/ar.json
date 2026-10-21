@@ -234,6 +234,22 @@
     },
     "offline": {
       "banner": "أنت غير متصل. تظهر المحادثات المحفوظة والإرسال متوقف."
+    },
+    "presence": {
+      "online": "متصل",
+      "offline": "غير متصل",
+      "typing": "يكتب…",
+      "typingOne": "{name} يكتب",
+      "typingMany": "{count, plural, one {شخص واحد يكتب} two {شخصان يكتبان} few {# أشخاص يكتبون} many {# شخصًا يكتب} other {# شخص يكتب}}",
+      "recording": "يسجّل رسالة صوتية…",
+      "recordingOne": "{name} يسجّل رسالة صوتية",
+      "recordingMany": "{count, plural, one {شخص واحد يسجّل رسالة صوتية} two {شخصان يسجّلان رسالة صوتية} few {# أشخاص يسجّلون رسالة صوتية} many {# شخصًا يسجّل رسالة صوتية} other {# شخص يسجّل رسالة صوتية}}",
+      "lastSeenJustNow": "آخر ظهور الآن",
+      "lastSeenMinutes": "آخر ظهور منذ {count, plural, one {دقيقة} two {دقيقتين} few {# دقائق} many {# دقيقة} other {# دقيقة}}",
+      "lastSeenHours": "آخر ظهور منذ {count, plural, one {ساعة} two {ساعتين} few {# ساعات} many {# ساعة} other {# ساعة}}",
+      "lastSeenDays": "آخر ظهور منذ {count, plural, one {يوم} two {يومين} few {# أيام} many {# يومًا} other {# يوم}}",
+      "lastSeenDate": "آخر ظهور {date}",
+      "someone": "شخص ما"
     }
   }
 }

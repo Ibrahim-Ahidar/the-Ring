@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { deriveSubtitle, lastSeenBucket } from "@/features/typing-presence/subtitle";
-import type { SubjectPresenceRow } from "@/features/typing-presence/presence";
+import { deriveSubtitle, lastSeenBucket } from "./subtitle";
+import type { SubjectPresenceRow } from "./presence";
 
 const row = (over: Partial<SubjectPresenceRow> = {}): SubjectPresenceRow => ({
   display_name: "Ada",

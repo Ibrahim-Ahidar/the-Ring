@@ -234,6 +234,22 @@
     },
     "offline": {
       "banner": "Vous êtes hors ligne. Les discussions enregistrées restent visibles; l'envoi est en pause."
+    },
+    "presence": {
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "typing": "écrit…",
+      "typingOne": "{name} est en train d'écrire",
+      "typingMany": "{count, plural, one {# personne écrit} other {# personnes écrivent}}",
+      "recording": "enregistre un audio…",
+      "recordingOne": "{name} enregistre un audio",
+      "recordingMany": "{count, plural, one {# personne enregistre un audio} other {# personnes enregistrent un audio}}",
+      "lastSeenJustNow": "vu à l'instant",
+      "lastSeenMinutes": "vu il y a {count, plural, one {# minute} other {# minutes}}",
+      "lastSeenHours": "vu il y a {count, plural, one {# heure} other {# heures}}",
+      "lastSeenDays": "vu il y a {count, plural, one {# jour} other {# jours}}",
+      "lastSeenDate": "vu le {date}",
+      "someone": "Quelqu'un"
     }
   }
 }

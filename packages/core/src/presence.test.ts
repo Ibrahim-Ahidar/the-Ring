@@ -6,7 +6,7 @@ import {
   markLastSeenTouched,
   resetLastSeenTouchForTests,
   shouldTouchLastSeen,
-} from "@/features/typing-presence/presence";
+} from "./presence";
 
 describe("canShowPresence", () => {
   it("allows online when decision is allow", () => {

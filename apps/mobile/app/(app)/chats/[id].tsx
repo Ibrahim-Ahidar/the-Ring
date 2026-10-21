@@ -18,6 +18,8 @@ import { useSession } from "@/auth/session";
 import { canSend } from "@/chats/composer";
 import { useChatDetail, useChatMessages, useMarkRead, useSendText } from "@/chats/queries";
 import { flattenPages, shouldLoadMoreForLanding, tickFor } from "@/chats/timeline";
+import { formatLastSeen } from "@/chats/last-seen";
+import { useSubtitle, useTyping } from "@/chats/usePresence";
 import { OfflineBanner } from "@/net/OfflineBanner";
 import { useOnline } from "@/net/useOnline";
 import { initialScrollTarget, outboundDeliveryStatus, type InitialScroll, type RpcMessageRow } from "@/data";
@@ -87,11 +89,31 @@ export default function ChatScreen() {
       : (detail.data.other_display_name ?? detail.data.other_username ?? t("mobile.chats.untitled"))
     : "";
 
+  const { typers, sender } = useTyping(id, userId, (uid) => {
+    const other = detail.data?.other_user_id === uid ? detail.data.other_display_name : null;
+    return other ?? t("mobile.presence.someone");
+  });
+  const subtitle = useSubtitle(detail.data, userId, typers);
+  let subtitleText: string | null = null;
+  if (subtitle.kind === "typing") subtitleText = t(`mobile.presence.${subtitle.key}`, subtitle.values);
+  else if (subtitle.kind === "online") subtitleText = t("mobile.presence.online");
+  else if (subtitle.kind === "offline") subtitleText = t("mobile.presence.offline");
+  else if (subtitle.kind === "lastSeen") {
+    const ls = formatLastSeen(subtitle.at, new Date());
+    subtitleText =
+      ls.key === "lastSeenJustNow"
+        ? t("mobile.presence.lastSeenJustNow")
+        : ls.key === "lastSeenDate"
+          ? t("mobile.presence.lastSeenDate", { date: ls.date.toLocaleDateString() })
+          : t(`mobile.presence.${ls.key}`, { count: ls.count });
+  }
+
   const sendable = canSend({ online, draft, pending: send.isPending });
 
   function submit() {
     const body = draft.trim();
     if (!canSend({ online, draft, pending: send.isPending })) return;
+    sender.stop();
     send.mutate(body, { onSuccess: () => setDraft("") });
   }
 
@@ -101,9 +123,16 @@ export default function ChatScreen() {
         <Pressable onPress={() => router.back()} accessibilityRole="button">
           <Text style={styles.link}>{t("mobile.chats.back")}</Text>
         </Pressable>
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
-        </Text>
+        <View style={styles.flex}>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+          {subtitleText ? (
+            <Text style={styles.subtitle} numberOfLines={1}>
+              {subtitleText}
+            </Text>
+          ) : null}
+        </View>
       </View>
       <OfflineBanner />
       {messages.isPending || (ready && landing === null) ? <ActivityIndicator style={styles.center} /> : null}
@@ -164,7 +193,10 @@ export default function ChatScreen() {
           <TextInput
             style={styles.input}
             value={draft}
-            onChangeText={setDraft}
+            onChangeText={(text) => {
+              setDraft(text);
+              sender.input(text);
+            }}
             placeholder={t("mobile.chats.composerPlaceholder")}
             multiline
           />
@@ -186,7 +218,8 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   flex: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 16, padding: 16 },
-  title: { fontSize: 20, fontWeight: "600", flex: 1 },
+  title: { fontSize: 20, fontWeight: "600" },
+  subtitle: { fontSize: 12, color: "#666" },
   link: { color: "#4f46e5", fontSize: 16 },
   center: { marginTop: 24 },
   error: { color: "#b00020", paddingHorizontal: 16 },

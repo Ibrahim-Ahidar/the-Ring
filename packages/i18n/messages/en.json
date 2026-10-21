@@ -234,6 +234,22 @@
     },
     "offline": {
       "banner": "You're offline. Showing saved chats; sending is paused."
+    },
+    "presence": {
+      "online": "Online",
+      "offline": "Offline",
+      "typing": "typing…",
+      "typingOne": "{name} is typing",
+      "typingMany": "{count, plural, one {# person is typing} other {# people are typing}}",
+      "recording": "recording audio…",
+      "recordingOne": "{name} is recording audio",
+      "recordingMany": "{count, plural, one {# person is recording audio} other {# people are recording audio}}",
+      "lastSeenJustNow": "last seen just now",
+      "lastSeenMinutes": "last seen {count, plural, one {# minute} other {# minutes}} ago",
+      "lastSeenHours": "last seen {count, plural, one {# hour} other {# hours}} ago",
+      "lastSeenDays": "last seen {count, plural, one {# day} other {# days}} ago",
+      "lastSeenDate": "last seen {date}",
+      "someone": "Someone"
     }
   }
 }

@@ -9,3 +9,7 @@ export * from "./uuid";
 export * from "./delivery";
 export * from "./messaging";
 export * from "./messaging-types";
+
+export * from "./typing";
+export * from "./presence";
+export * from "./subtitle";
