@@ -33,3 +33,16 @@ Variables: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Never co
 ## React versions
 
 Expo SDK 58 uses React 19.3.0, the same as apps/web, so a single hoisted copy serves both and nothing needs `nohoist`. If the versions diverge later, install the mobile app's React in `apps/mobile/node_modules` and keep Metro's `nodeModulesPaths` order (app first).
+
+## Push notifications (manual setup)
+
+Pushes go: new message -> `notifications` insert -> DB trigger (pg_net) -> Edge Function `push-notify` -> Expo push -> FCM. Nothing below is committed.
+
+1. Firebase: create a project, add an Android app with package `com.pulse.mobile`, download `google-services.json` into `apps/mobile/` (keep it out of git; write it from a CI secret for builds).
+2. Upload the FCM v1 service-account key to Expo: `eas credentials`.
+3. Pick a random string and set it as the function secret: `supabase secrets set PUSH_WEBHOOK_SECRET=<value>`.
+4. Deploy: `supabase functions deploy push-notify --no-verify-jwt`.
+5. In the Supabase SQL editor, store the URL and secret in Vault (the migration `push_notify_webhook` reads them; without them it sends nothing):
+   `select vault.create_secret('https://<ref>.supabase.co/functions/v1/push-notify', 'push_notify_url');`
+   `select vault.create_secret('<the same value as step 3>', 'push_notify_secret');`
+6. Apply migrations (`supabase db push`) and use a dev or release build; push does not work in Expo Go on Android.
