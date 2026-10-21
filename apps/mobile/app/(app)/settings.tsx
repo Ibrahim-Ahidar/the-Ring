@@ -1,98 +1,91 @@
 import { ACCENTS, LANGUAGES, THEMES } from "@pulse/core";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { Check, FolderOpen, UserRound } from "lucide-react-native";
 import { useTranslations } from "use-intl";
 
 import { usePreferences } from "@/settings/PreferencesProvider";
+import { AppHeader, Banner, Divider, ListRow, Screen, SectionHeader, Surface, Icon, useTheme } from "@/ui";
 
-function Choice({
-  label,
-  selected,
-  accent,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  accent: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="radio"
-      accessibilityState={{ selected }}
-      style={[styles.chip, selected && { backgroundColor: accent, borderColor: accent }]}
-    >
-      <Text style={selected ? styles.chipTextOn : undefined}>{label}</Text>
-    </Pressable>
-  );
+function Tick({ on }: { on: boolean }) {
+  return on ? <Icon icon={Check} tone="accent" /> : null;
 }
 
 export default function SettingsScreen() {
   const t = useTranslations();
-  const { prefs, language, accentColor, restartRequired, update } = usePreferences();
+  const router = useRouter();
+  const { spacing } = useTheme();
+  const { prefs, language, restartRequired, update } = usePreferences();
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{t("mobile.settings.title")}</Text>
+    <Screen edges={["bottom", "start", "end"]} scroll contentStyle={{ paddingBottom: spacing.s24 }}>
+      <AppHeader title={t("mobile.settings.title")} onBack={() => router.back()} backLabel={t("mobile.chats.back")} />
+      {restartRequired ? <Banner kind="info" message={t("mobile.settings.restartRequired")} /> : null}
 
-        <Text style={styles.section}>{t("mobile.settings.theme")}</Text>
-        <View style={styles.row}>
-          {THEMES.map((v) => (
-            <Choice
-              key={v}
-              label={t(`mobile.settings.themes.${v}`)}
+      <SectionHeader title={t("mobile.profile.title")} />
+      <Surface style={{ marginHorizontal: spacing.s12 }}>
+        <ListRow icon={UserRound} title={t("mobile.profile.title")} chevron onPress={() => router.push("/profile")} />
+        <Divider inset={spacing.s12} />
+        <ListRow
+          icon={FolderOpen}
+          title={t("mobile.organization.folders")}
+          chevron
+          onPress={() => router.push("/folders")}
+        />
+      </Surface>
+
+      <SectionHeader title={t("mobile.settings.theme")} />
+      <Surface style={{ marginHorizontal: spacing.s12 }}>
+        {THEMES.map((v, i) => (
+          <Divided key={v} first={i === 0}>
+            <ListRow
+              title={t(`mobile.settings.themes.${v}`)}
               selected={prefs.theme === v}
-              accent={accentColor}
+              trailing={<Tick on={prefs.theme === v} />}
               onPress={() => update({ theme: v })}
+              accessibilityLabel={t(`mobile.settings.themes.${v}`)}
             />
-          ))}
-        </View>
+          </Divided>
+        ))}
+      </Surface>
 
-        <Text style={styles.section}>{t("mobile.settings.accent")}</Text>
-        <View style={styles.row}>
-          {ACCENTS.map((v) => (
-            <Choice
-              key={v}
-              label={t(`mobile.settings.accents.${v}`)}
+      <SectionHeader title={t("mobile.settings.accent")} />
+      <Surface style={{ marginHorizontal: spacing.s12 }}>
+        {ACCENTS.map((v, i) => (
+          <Divided key={v} first={i === 0}>
+            <ListRow
+              title={t(`mobile.settings.accents.${v}`)}
               selected={prefs.accent === v}
-              accent={accentColor}
+              trailing={<Tick on={prefs.accent === v} />}
               onPress={() => update({ accent: v })}
             />
-          ))}
-        </View>
+          </Divided>
+        ))}
+      </Surface>
 
-        <Text style={styles.section}>{t("mobile.settings.language")}</Text>
-        <View style={styles.row}>
-          {LANGUAGES.map((v) => (
-            <Choice
-              key={v}
-              label={t(`mobile.settings.languages.${v}`)}
+      <SectionHeader title={t("mobile.settings.language")} />
+      <Surface style={{ marginHorizontal: spacing.s12 }}>
+        {LANGUAGES.map((v, i) => (
+          <Divided key={v} first={i === 0}>
+            <ListRow
+              title={t(`mobile.settings.languages.${v}`)}
               selected={language === v}
-              accent={accentColor}
+              trailing={<Tick on={language === v} />}
               onPress={() => update({ language: v })}
             />
-          ))}
-        </View>
-
-        {restartRequired ? (
-          <Text style={styles.notice} accessibilityRole="alert">
-            {t("mobile.settings.restartRequired")}
-          </Text>
-        ) : null}
-      </ScrollView>
-    </SafeAreaView>
+          </Divided>
+        ))}
+      </Surface>
+    </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  content: { padding: 24, gap: 12 },
-  title: { fontSize: 28, fontWeight: "600" },
-  section: { fontSize: 16, fontWeight: "600", marginTop: 12 },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { borderWidth: 1, borderColor: "#999", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 8 },
-  chipTextOn: { color: "#fff" },
-  notice: { marginTop: 16, color: "#b45309" },
-});
+/** Divider above every row but the first. */
+function Divided({ first, children }: { first: boolean; children: React.ReactNode }) {
+  const { spacing } = useTheme();
+  return (
+    <>
+      {first ? null : <Divider inset={spacing.s12} />}
+      {children}
+    </>
+  );
+}

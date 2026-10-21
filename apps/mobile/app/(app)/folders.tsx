@@ -1,15 +1,30 @@
 import { useRouter } from "expo-router";
+import { ArrowDown, ArrowUp, FolderOpen, Pencil, Trash2 } from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert, FlatList, View } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { organizationErrorKey } from "@/organization/errors";
 import { useFolderActions, useFolders } from "@/organization/queries";
+import {
+  AppHeader,
+  Banner,
+  Button,
+  Divider,
+  EmptyState,
+  ErrorState,
+  IconButton,
+  ListRow,
+  LoadingState,
+  Screen,
+  TextField,
+  useTheme,
+} from "@/ui";
 
 export default function FoldersScreen() {
   const t = useTranslations();
   const router = useRouter();
+  const { spacing } = useTheme();
   const folders = useFolders();
   const actions = useFolderActions();
   const [newName, setNewName] = useState("");
@@ -34,119 +49,98 @@ export default function FoldersScreen() {
     ]);
   }
 
+  const createDisabled = actions.create.isPending || !newName.trim();
+
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.chats.back")}</Text>
-        </Pressable>
-        <Text style={styles.title}>{t("mobile.organization.folders")}</Text>
-      </View>
-      <View style={styles.row}>
-        <TextInput
-          style={[styles.input, styles.flex]}
-          value={newName}
-          onChangeText={setNewName}
-          placeholder={t("mobile.organization.folderName")}
-          accessibilityLabel={t("mobile.organization.folderName")}
-        />
-        <Pressable
-          style={[styles.button, (actions.create.isPending || !newName.trim()) && styles.disabled]}
-          disabled={actions.create.isPending || !newName.trim()}
+    <Screen edges={["bottom", "start", "end"]}>
+      <AppHeader title={t("mobile.organization.folders")} onBack={() => router.back()} backLabel={t("mobile.chats.back")} />
+      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: spacing.s8, padding: spacing.s12 }}>
+        <View style={{ flex: 1 }}>
+          <TextField
+            value={newName}
+            onChangeText={setNewName}
+            placeholder={t("mobile.organization.folderName")}
+            accessibilityLabel={t("mobile.organization.folderName")}
+          />
+        </View>
+        <Button
+          title={t("mobile.organization.create")}
+          disabled={createDisabled}
+          loading={actions.create.isPending}
           onPress={() => actions.create.mutate(newName.trim(), { onSuccess: () => setNewName("") })}
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonText}>{t("mobile.organization.create")}</Text>
-        </Pressable>
+        />
       </View>
-      {failure ? <Text style={styles.error}>{t(organizationErrorKey(failure.message, t.has))}</Text> : null}
-      {folders.isPending ? <ActivityIndicator /> : null}
-      {folders.isError ? <Text style={styles.error}>{t("mobile.organization.error")}</Text> : null}
-      <FlatList
-        data={list}
-        keyExtractor={(f) => f.id}
-        ListEmptyComponent={
-          folders.isPending ? undefined : <Text style={styles.empty}>{t("mobile.organization.noFolders")}</Text>
-        }
-        renderItem={({ item, index }) => (
-          <View style={styles.folder}>
-            {editingId === item.id ? (
-              <>
-                <TextInput
-                  style={[styles.input, styles.flex]}
-                  value={editName}
-                  onChangeText={setEditName}
-                  accessibilityLabel={t("mobile.organization.folderName")}
-                />
-                <Pressable
-                  disabled={!editName.trim() || actions.rename.isPending}
+      {failure ? <Banner kind="error" message={t(organizationErrorKey(failure.message, t.has))} /> : null}
+      {folders.isPending ? <LoadingState /> : null}
+      {folders.isError ? <ErrorState title={t("mobile.organization.error")} onRetry={() => void folders.refetch()} /> : null}
+      {folders.isPending || folders.isError ? null : (
+        <FlatList
+          data={list}
+          keyExtractor={(f) => f.id}
+          contentContainerStyle={list.length === 0 ? { flex: 1 } : { paddingHorizontal: spacing.s12 }}
+          ItemSeparatorComponent={() => <Divider inset={spacing.s12} />}
+          ListEmptyComponent={<EmptyState icon={FolderOpen} title={t("mobile.organization.noFolders")} />}
+          renderItem={({ item, index }) =>
+            editingId === item.id ? (
+              <View style={{ flexDirection: "row", alignItems: "flex-end", gap: spacing.s8, paddingVertical: spacing.s8 }}>
+                <View style={{ flex: 1 }}>
+                  <TextField
+                    value={editName}
+                    onChangeText={setEditName}
+                    accessibilityLabel={t("mobile.organization.folderName")}
+                    autoFocus
+                  />
+                </View>
+                <Button
+                  title={t("mobile.organization.save")}
+                  disabled={!editName.trim()}
+                  loading={actions.rename.isPending}
                   onPress={() =>
                     actions.rename.mutate(
                       { folderId: item.id, name: editName.trim() },
                       { onSuccess: () => setEditingId(null) },
                     )
                   }
-                  accessibilityRole="button"
-                >
-                  <Text style={styles.link}>{t("mobile.organization.save")}</Text>
-                </Pressable>
-              </>
+                />
+              </View>
             ) : (
-              <>
-                <Text style={[styles.flex, styles.folderName]} numberOfLines={1}>
-                  {item.name}
-                </Text>
-                <Pressable
-                  onPress={() => {
-                    setEditingId(item.id);
-                    setEditName(item.name);
-                  }}
-                  accessibilityRole="button"
-                >
-                  <Text style={styles.link}>{t("mobile.organization.rename")}</Text>
-                </Pressable>
-                <Pressable
-                  disabled={index === 0}
-                  onPress={() => move(index, -1)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("mobile.organization.moveUp")}
-                >
-                  <Text style={[styles.link, index === 0 && styles.disabled]}>{"↑"}</Text>
-                </Pressable>
-                <Pressable
-                  disabled={index === list.length - 1}
-                  onPress={() => move(index, 1)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("mobile.organization.moveDown")}
-                >
-                  <Text style={[styles.link, index === list.length - 1 && styles.disabled]}>{"↓"}</Text>
-                </Pressable>
-                <Pressable onPress={() => confirmDelete(item.id, item.name)} accessibilityRole="button">
-                  <Text style={styles.danger}>{t("mobile.organization.delete")}</Text>
-                </Pressable>
-              </>
-            )}
-          </View>
-        )}
-      />
-    </SafeAreaView>
+              <ListRow
+                icon={FolderOpen}
+                title={item.name}
+                trailing={
+                  <View style={{ flexDirection: "row" }}>
+                    <IconButton
+                      icon={Pencil}
+                      label={t("mobile.organization.rename")}
+                      onPress={() => {
+                        setEditingId(item.id);
+                        setEditName(item.name);
+                      }}
+                    />
+                    <IconButton
+                      icon={ArrowUp}
+                      label={t("mobile.organization.moveUp")}
+                      disabled={index === 0}
+                      onPress={() => move(index, -1)}
+                    />
+                    <IconButton
+                      icon={ArrowDown}
+                      label={t("mobile.organization.moveDown")}
+                      disabled={index === list.length - 1}
+                      onPress={() => move(index, 1)}
+                    />
+                    <IconButton
+                      icon={Trash2}
+                      label={t("mobile.organization.delete")}
+                      onPress={() => confirmDelete(item.id, item.name)}
+                    />
+                  </View>
+                }
+              />
+            )
+          }
+        />
+      )}
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  flex: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", gap: 16, padding: 16 },
-  title: { fontSize: 20, fontWeight: "600" },
-  link: { color: "#4f46e5", fontSize: 16 },
-  row: { flexDirection: "row", gap: 8, alignItems: "center", paddingHorizontal: 16 },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, fontSize: 16 },
-  button: { backgroundColor: "#4f46e5", paddingVertical: 12, paddingHorizontal: 16, borderRadius: 8 },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  disabled: { opacity: 0.4 },
-  error: { color: "#b00020", paddingHorizontal: 16, paddingTop: 8 },
-  empty: { textAlign: "center", marginTop: 32, color: "#666" },
-  folder: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 16, paddingVertical: 12 },
-  folderName: { fontSize: 16, fontWeight: "600" },
-  danger: { color: "#b00020", fontSize: 16 },
-});

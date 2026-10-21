@@ -1,16 +1,17 @@
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScrollView, View } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { useMyProfile, useProfileActions } from "@/contacts/queries";
 import { avatarUrl, BIO_MAX, DISPLAY_NAME_MAX } from "@/data";
+import { AppHeader, Avatar, Banner, Button, ErrorState, LoadingState, Screen, Text, TextField, useTheme } from "@/ui";
 
 export default function ProfileScreen() {
   const t = useTranslations();
   const router = useRouter();
+  const { spacing } = useTheme();
   const profile = useMyProfile();
   const actions = useProfileActions();
   const [edits, setEdits] = useState<{ displayName?: string; bio?: string }>({});
@@ -47,69 +48,52 @@ export default function ProfileScreen() {
   const failed = actions.save.isError || actions.upload.isError || actions.remove.isError;
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} accessibilityRole="button">
-          <Text style={styles.link}>{t("mobile.chats.back")}</Text>
-        </Pressable>
-        <Text style={styles.title}>{t("mobile.profile.title")}</Text>
-      </View>
-      {profile.isPending ? <ActivityIndicator /> : null}
-      {profile.isError ? <Text style={styles.error}>{t("mobile.profile.loadError")}</Text> : null}
+    <Screen edges={["bottom", "start", "end"]}>
+      <AppHeader title={t("mobile.profile.title")} onBack={() => router.back()} backLabel={t("mobile.chats.back")} />
+      {profile.isPending ? <LoadingState /> : null}
+      {profile.isError ? <ErrorState title={t("mobile.profile.loadError")} onRetry={() => void profile.refetch()} /> : null}
       {profile.data ? (
-        <ScrollView contentContainerStyle={styles.body}>
-          <View style={styles.avatarRow}>
-            {src ? (
-              <Image source={{ uri: src }} style={styles.avatar} accessibilityLabel={t("mobile.profile.avatar")} />
-            ) : (
-              <View style={[styles.avatar, styles.avatarEmpty]}>
-                <Text style={styles.initial}>{(profile.data.display_name ?? profile.data.username).slice(0, 1).toUpperCase()}</Text>
-              </View>
-            )}
-            <View style={styles.flex}>
-              <Text style={styles.name}>@{profile.data.username}</Text>
-              <Pressable onPress={() => void pickAvatar()} accessibilityRole="button" disabled={actions.upload.isPending}>
-                <Text style={styles.link}>{t("mobile.profile.changeAvatar")}</Text>
-              </Pressable>
+        <ScrollView contentContainerStyle={{ gap: spacing.s16, padding: spacing.s16 }} keyboardShouldPersistTaps="handled">
+          <View style={{ alignItems: "center", gap: spacing.s8 }}>
+            <Avatar
+              name={profile.data.display_name ?? profile.data.username}
+              seed={profile.data.id}
+              src={src ?? undefined}
+              size="lg"
+            />
+            <Text variant="heading">{profile.data.display_name ?? profile.data.username}</Text>
+            <Text variant="muted">@{profile.data.username}</Text>
+            <View style={{ flexDirection: "row", gap: spacing.s8 }}>
+              <Button
+                size="sm"
+                variant="secondary"
+                title={t("mobile.profile.changeAvatar")}
+                onPress={() => void pickAvatar()}
+                loading={actions.upload.isPending}
+              />
               {src ? (
-                <Pressable onPress={() => actions.remove.mutate()} accessibilityRole="button" disabled={actions.remove.isPending}>
-                  <Text style={styles.link}>{t("mobile.profile.removeAvatar")}</Text>
-                </Pressable>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  title={t("mobile.profile.removeAvatar")}
+                  onPress={() => actions.remove.mutate()}
+                  loading={actions.remove.isPending}
+                />
               ) : null}
             </View>
           </View>
-          <Text style={styles.label}>{t("mobile.profile.displayName")}</Text>
-          <TextInput style={styles.input} value={displayName} onChangeText={setDisplayName} maxLength={DISPLAY_NAME_MAX} />
-          <Text style={styles.label}>{t("mobile.profile.bio")}</Text>
-          <TextInput style={[styles.input, styles.bio]} value={bio} onChangeText={setBio} maxLength={BIO_MAX} multiline />
-          {failed ? <Text style={styles.error}>{t("mobile.profile.error")}</Text> : null}
-          {saved ? <Text style={styles.ok}>{t("mobile.profile.saved")}</Text> : null}
-          <Pressable style={styles.button} onPress={() => void save()} accessibilityRole="button" disabled={actions.save.isPending}>
-            <Text style={styles.buttonText}>{t("mobile.profile.save")}</Text>
-          </Pressable>
+          <TextField
+            label={t("mobile.profile.displayName")}
+            value={displayName}
+            onChangeText={setDisplayName}
+            maxLength={DISPLAY_NAME_MAX}
+          />
+          <TextField label={t("mobile.profile.bio")} value={bio} onChangeText={setBio} maxLength={BIO_MAX} multiline />
+          {failed ? <Banner kind="error" message={t("mobile.profile.error")} /> : null}
+          {saved ? <Banner kind="info" message={t("mobile.profile.saved")} /> : null}
+          <Button block title={t("mobile.profile.save")} onPress={() => void save()} loading={actions.save.isPending} />
         </ScrollView>
       ) : null}
-    </SafeAreaView>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  flex: { flex: 1, gap: 6 },
-  header: { flexDirection: "row", alignItems: "center", gap: 16, padding: 16 },
-  title: { fontSize: 20, fontWeight: "600" },
-  link: { color: "#4f46e5", fontSize: 16 },
-  error: { color: "#b00020" },
-  ok: { color: "#1b7a3d" },
-  body: { padding: 16, gap: 8 },
-  avatarRow: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 8 },
-  avatar: { width: 88, height: 88, borderRadius: 44 },
-  avatarEmpty: { backgroundColor: "#e0e0f0", alignItems: "center", justifyContent: "center" },
-  initial: { fontSize: 32, fontWeight: "600" },
-  name: { fontSize: 18, fontWeight: "600" },
-  label: { fontWeight: "600", marginTop: 8 },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
-  bio: { minHeight: 90, textAlignVertical: "top" },
-  button: { backgroundColor: "#4f46e5", borderRadius: 8, padding: 14, alignItems: "center", marginTop: 16 },
-  buttonText: { color: "#fff", fontWeight: "600" },
-});
