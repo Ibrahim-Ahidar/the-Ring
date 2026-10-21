@@ -1,5 +1,7 @@
 module.exports = {
   preset: "jest-expo",
-  testMatch: ["<rootDir>/src/**/*.test.ts", "<rootDir>/src/**/*.test.tsx"],
+  // testRegex, not testMatch: globs skip dot folders such as .worktrees.
+  roots: ["<rootDir>/src"],
+  testRegex: "\\.test\\.tsx?$",
   moduleNameMapper: { "^@/(.*)$": "<rootDir>/src/$1" },
 };

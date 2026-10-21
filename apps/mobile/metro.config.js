@@ -16,11 +16,19 @@ config.resolver.nodeModulesPaths = [
 
 // Skip git worktrees, agent folders and build output: each worktree carries its own
 // node_modules, which makes the file crawl take minutes and duplicates every package.
+// Anchored to this workspace root so the app still bundles when it runs from a worktree.
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const under = (dir) =>
+  new RegExp(
+    "^" + path.resolve(workspaceRoot, dir).split(/[\\/]/).map(escapeRe).join("[\\\\/]") + "[\\\\/].*",
+    "i",
+  );
 config.resolver.blockList = [
-  /[\\/]\.worktrees[\\/].*/,
-  /[\\/]\.claude[\\/].*/,
-  /[\\/]apps[\\/]desktop[\\/](dist|release)[\\/].*/,
-  /[\\/]apps[\\/]web[\\/]\.next[\\/].*/,
+  under(".worktrees"),
+  under(".claude"),
+  // Metro merges these into one RegExp, so every pattern needs the same flags.
+  /[\\/]apps[\\/]desktop[\\/](dist|release)[\\/].*/i,
+  /[\\/]apps[\\/]web[\\/]\.next[\\/].*/i,
 ];
 
 module.exports = config;
