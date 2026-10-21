@@ -346,6 +346,39 @@
         "impersonation": "Impersonation",
         "other": "Other"
       }
+    },
+    "organization": {
+      "filters": {
+        "all": "All",
+        "unread": "Unread",
+        "groups": "Groups",
+        "archived": "Archived",
+        "archivedCount": "Archived ({count})"
+      },
+      "folders": "Folders",
+      "manageFolders": "Edit folders",
+      "noFolders": "No folders yet.",
+      "folderName": "Folder name",
+      "create": "Create",
+      "rename": "Rename",
+      "save": "Save",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "deleteTitle": "Delete \"{name}\"?",
+      "deleteBody": "Only the folder is removed. Its chats stay in your list and are not archived or deleted.",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "moveTo": "Move to {name}",
+      "removeFromFolder": "Remove from folder",
+      "longPressHint": "Long press for archive and folder options",
+      "error": "Something went wrong. Try again.",
+      "errors": {
+        "not_found": "Conversation not found.",
+        "invalid_name": "Folder name must be 1-40 characters.",
+        "invalid_order": "Could not reorder folders."
+      }
     }
   }
 }

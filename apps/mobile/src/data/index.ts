@@ -11,6 +11,7 @@ export {
   sendChatText,
   subscribeChat,
   subscribeChatList,
+  type ChatListFilter,
   type ChatPage,
 } from "./chats";
 export type {
@@ -85,3 +86,16 @@ export {
   type MessageRequest,
   type ReportCategory,
 } from "./safety";
+export {
+  archiveChat,
+  createChatFolder,
+  deleteChatFolder,
+  getArchivedChatsSummary,
+  listChatFolders,
+  moveChatToFolder,
+  removeChatFromFolder,
+  renameChatFolder,
+  reorderChatFolders,
+  unarchiveChat,
+  type ChatFolder,
+} from "./organization";

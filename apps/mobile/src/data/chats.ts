@@ -26,8 +26,21 @@ import { rpcClient } from "./rpc";
 export type ChatPage<T> = { items: T[]; hasMore: boolean; nextCursor: string | null };
 
 /** One page of the chat list; pass the previous page's nextCursor to continue. */
-export async function listChats(cursor: string | null): Promise<Result<ChatPage<ConversationSummary>>> {
-  const result = await listConversations(rpcClient, { cursor });
+export type ChatListFilter =
+  | { kind: "all" | "unread" | "groups" | "archived" }
+  | { kind: "folder"; folderId: string };
+
+export async function listChats(
+  cursor: string | null,
+  filter: ChatListFilter = { kind: "all" },
+): Promise<Result<ChatPage<ConversationSummary>>> {
+  const result = await listConversations(rpcClient, {
+    cursor,
+    archivedOnly: filter.kind === "archived",
+    unreadOnly: filter.kind === "unread",
+    type: filter.kind === "groups" ? "group" : null,
+    folderId: filter.kind === "folder" ? filter.folderId : null,
+  });
   if (!result.ok) return result;
   const { items, hasMore } = result.value;
   return ok({ items, hasMore, nextCursor: hasMore ? conversationPageNextCursor(items) : null });

@@ -10,6 +10,7 @@ import {
   deleteChatMessageForEveryone,
   editChatMessage,
   getChat,
+  type ChatListFilter,
   listChatReactions,
   removeChatReaction,
   listChatMessages,
@@ -33,16 +34,16 @@ function unwrap<T>(result: { ok: true; value: T } | { ok: false; error: { code: 
 }
 
 /** Chat list pages; refreshes on inbox realtime changes. */
-export function useChatList(userId: string) {
+export function useChatList(userId: string, filter: ChatListFilter = { kind: "all" }) {
   const queryClient = useQueryClient();
   useEffect(
     () => subscribeChatList(userId, () => void queryClient.invalidateQueries({ queryKey: chatsKey })),
     [userId, queryClient],
   );
   return useInfiniteQuery({
-    queryKey: chatsKey,
+    queryKey: [...chatsKey, filter],
     initialPageParam: null as string | null,
-    queryFn: async ({ pageParam }) => unwrap(await listChats(pageParam)),
+    queryFn: async ({ pageParam }) => unwrap(await listChats(pageParam, filter)),
     getNextPageParam: (last) => last.nextCursor,
   });
 }

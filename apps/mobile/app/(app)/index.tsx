@@ -1,14 +1,16 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslations } from "use-intl";
 
 import { useSession } from "@/auth/session";
 import { useChatList } from "@/chats/queries";
 import { OfflineBanner } from "@/net/OfflineBanner";
-import { signOut, type ConversationSummary } from "@/data";
+import { ChatActionsSheet } from "@/organization/ChatActionsSheet";
+import { useArchivedSummary, useFolders } from "@/organization/queries";
+import { signOut, type ChatListFilter, type ConversationSummary } from "@/data";
 
 function chatTitle(chat: ConversationSummary, fallback: string): string {
   return chat.type === "group"
@@ -22,7 +24,33 @@ export default function ChatListScreen() {
   const queryClient = useQueryClient();
   const { session } = useSession();
   const [logoutFailed, setLogoutFailed] = useState(false);
-  const list = useChatList(session?.userId ?? "");
+  const [filter, setFilter] = useState<ChatListFilter>({ kind: "all" });
+  const [actionsFor, setActionsFor] = useState<ConversationSummary | null>(null);
+  const list = useChatList(session?.userId ?? "", filter);
+  const folders = useFolders();
+  const archived = useArchivedSummary();
+
+  function isActive(f: ChatListFilter): boolean {
+    return f.kind === filter.kind && (f.kind !== "folder" || (filter.kind === "folder" && filter.folderId === f.folderId));
+  }
+  const chips: { key: string; label: string; value: ChatListFilter }[] = [
+    { key: "all", label: t("mobile.organization.filters.all"), value: { kind: "all" } },
+    { key: "unread", label: t("mobile.organization.filters.unread"), value: { kind: "unread" } },
+    { key: "groups", label: t("mobile.organization.filters.groups"), value: { kind: "groups" } },
+    ...(folders.data ?? []).map((f) => ({
+      key: f.id,
+      label: f.name,
+      value: { kind: "folder", folderId: f.id } as ChatListFilter,
+    })),
+    {
+      key: "archived",
+      label:
+        archived.data && archived.data.count > 0
+          ? t("mobile.organization.filters.archivedCount", { count: archived.data.count })
+          : t("mobile.organization.filters.archived"),
+      value: { kind: "archived" },
+    },
+  ];
 
   async function logout() {
     setLogoutFailed(false);
@@ -53,6 +81,22 @@ export default function ChatListScreen() {
           <Text style={styles.link}>{t("mobile.safety.blocked")}</Text>
         </Pressable>
       </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
+        {chips.map((c) => (
+          <Pressable
+            key={c.key}
+            onPress={() => setFilter(c.value)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isActive(c.value) }}
+            style={[styles.chip, isActive(c.value) && styles.chipActive]}
+          >
+            <Text style={isActive(c.value) ? styles.chipTextActive : styles.chipText}>{c.label}</Text>
+          </Pressable>
+        ))}
+        <Pressable onPress={() => router.push("/folders")} accessibilityRole="button" style={styles.chip}>
+          <Text style={styles.link}>{t("mobile.organization.manageFolders")}</Text>
+        </Pressable>
+      </ScrollView>
       <OfflineBanner />
       {logoutFailed ? <Text style={styles.error}>{t("mobile.logout.error")}</Text> : null}
       {list.isPending ? <ActivityIndicator style={styles.center} /> : null}
@@ -75,6 +119,8 @@ export default function ChatListScreen() {
             style={styles.row}
             accessibilityRole="button"
             onPress={() => router.push({ pathname: "/chats/[id]", params: { id: item.id } })}
+            onLongPress={() => setActionsFor(item)}
+            accessibilityHint={t("mobile.organization.longPressHint")}
           >
             <View style={styles.rowText}>
               <Text style={styles.rowTitle} numberOfLines={1}>
@@ -94,11 +140,18 @@ export default function ChatListScreen() {
           </Pressable>
         )}
       />
+      <ChatActionsSheet chat={actionsFor} onClose={() => setActionsFor(null)} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  chipScroll: { flexGrow: 0 },
+  chips: { gap: 8, paddingHorizontal: 16, paddingBottom: 8, alignItems: "center" },
+  chip: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1, borderColor: "#ccc" },
+  chipActive: { backgroundColor: "#4f46e5", borderColor: "#4f46e5" },
+  chipText: { color: "#333" },
+  chipTextActive: { color: "#fff", fontWeight: "600" },
   links: { flexDirection: "row", gap: 16, paddingHorizontal: 16, paddingBottom: 8 },
   screen: { flex: 1 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16 },

@@ -346,6 +346,39 @@
         "impersonation": "Usurpation d'identité",
         "other": "Autre"
       }
+    },
+    "organization": {
+      "filters": {
+        "all": "Toutes",
+        "unread": "Non lues",
+        "groups": "Groupes",
+        "archived": "Archivées",
+        "archivedCount": "Archivées ({count})"
+      },
+      "folders": "Dossiers",
+      "manageFolders": "Modifier les dossiers",
+      "noFolders": "Aucun dossier pour le moment.",
+      "folderName": "Nom du dossier",
+      "create": "Créer",
+      "rename": "Renommer",
+      "save": "Enregistrer",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "deleteTitle": "Supprimer « {name} » ?",
+      "deleteBody": "Seul le dossier est supprimé. Ses discussions restent dans votre liste et ne sont ni archivées ni supprimées.",
+      "archive": "Archiver",
+      "unarchive": "Désarchiver",
+      "moveTo": "Déplacer vers {name}",
+      "removeFromFolder": "Retirer du dossier",
+      "longPressHint": "Appui long pour les options d'archivage et de dossier",
+      "error": "Une erreur s'est produite. Réessayez.",
+      "errors": {
+        "not_found": "Conversation introuvable.",
+        "invalid_name": "Le nom du dossier doit comporter 1 à 40 caractères.",
+        "invalid_order": "Impossible de réorganiser les dossiers."
+      }
     }
   }
 }

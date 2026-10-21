@@ -346,6 +346,39 @@
         "impersonation": "انتحال هوية",
         "other": "أخرى"
       }
+    },
+    "organization": {
+      "filters": {
+        "all": "الكل",
+        "unread": "غير المقروءة",
+        "groups": "المجموعات",
+        "archived": "المؤرشفة",
+        "archivedCount": "المؤرشفة ({count})"
+      },
+      "folders": "المجلدات",
+      "manageFolders": "تعديل المجلدات",
+      "noFolders": "لا توجد مجلدات بعد.",
+      "folderName": "اسم المجلد",
+      "create": "إنشاء",
+      "rename": "إعادة تسمية",
+      "save": "حفظ",
+      "delete": "حذف",
+      "cancel": "إلغاء",
+      "moveUp": "تحريك لأعلى",
+      "moveDown": "تحريك لأسفل",
+      "deleteTitle": "حذف «{name}»؟",
+      "deleteBody": "يُحذف المجلد فقط. تبقى محادثاته في قائمتك ولا تُؤرشف ولا تُحذف.",
+      "archive": "أرشفة",
+      "unarchive": "إلغاء الأرشفة",
+      "moveTo": "نقل إلى {name}",
+      "removeFromFolder": "إزالة من المجلد",
+      "longPressHint": "اضغط مطولاً لخيارات الأرشفة والمجلدات",
+      "error": "حدث خطأ ما. حاول مرة أخرى.",
+      "errors": {
+        "not_found": "المحادثة غير موجودة.",
+        "invalid_name": "يجب أن يتراوح اسم المجلد بين 1 و40 حرفاً.",
+        "invalid_order": "تعذّرت إعادة ترتيب المجلدات."
+      }
     }
   }
 }
