@@ -72,3 +72,16 @@ export {
   type GroupMember,
   type GroupSummary,
 } from "./groups";
+export {
+  REPORT_CATEGORIES,
+  acceptMessageRequest,
+  blockChatUser,
+  declineMessageRequest,
+  listBlockedUsers,
+  listMessageRequests,
+  reportChatUser,
+  unblockChatUser,
+  type BlockRow,
+  type MessageRequest,
+  type ReportCategory,
+} from "./safety";

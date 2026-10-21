@@ -45,6 +45,14 @@ export default function ChatListScreen() {
           <Text style={styles.link}>{t("mobile.logout.submit")}</Text>
         </Pressable>
       </View>
+      <View style={styles.links}>
+        <Pressable onPress={() => router.push("/requests")} accessibilityRole="button">
+          <Text style={styles.link}>{t("mobile.safety.requests")}</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/blocked")} accessibilityRole="button">
+          <Text style={styles.link}>{t("mobile.safety.blocked")}</Text>
+        </Pressable>
+      </View>
       <OfflineBanner />
       {logoutFailed ? <Text style={styles.error}>{t("mobile.logout.error")}</Text> : null}
       {list.isPending ? <ActivityIndicator style={styles.center} /> : null}
@@ -91,6 +99,7 @@ export default function ChatListScreen() {
 }
 
 const styles = StyleSheet.create({
+  links: { flexDirection: "row", gap: 16, paddingHorizontal: 16, paddingBottom: 8 },
   screen: { flex: 1 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16 },
   title: { fontSize: 24, fontWeight: "600" },

@@ -326,6 +326,26 @@
         "owner_must_transfer": "Transférez la propriété avant de partir.",
         "cannot_target_owner": "Vous ne pouvez pas modifier le propriétaire."
       }
+    },
+    "safety": {
+      "requests": "Demandes de message",
+      "blocked": "Utilisateurs bloqués",
+      "noRequests": "Aucune demande en attente.",
+      "noBlocked": "Vous n'avez bloqué personne.",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "unblock": "Débloquer",
+      "menu": "Plus",
+      "block": "Bloquer l'utilisateur",
+      "report": "Signaler l'utilisateur",
+      "reported": "Signalement envoyé.",
+      "error": "Action impossible. Réessayez.",
+      "categories": {
+        "spam": "Spam",
+        "harassment": "Harcèlement",
+        "impersonation": "Usurpation d'identité",
+        "other": "Autre"
+      }
     }
   }
 }

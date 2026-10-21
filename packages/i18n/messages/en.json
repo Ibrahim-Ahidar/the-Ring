@@ -326,6 +326,26 @@
         "owner_must_transfer": "Transfer ownership before leaving.",
         "cannot_target_owner": "You can't change the owner."
       }
+    },
+    "safety": {
+      "requests": "Message requests",
+      "blocked": "Blocked users",
+      "noRequests": "No pending requests.",
+      "noBlocked": "You haven't blocked anyone.",
+      "accept": "Accept",
+      "decline": "Decline",
+      "unblock": "Unblock",
+      "menu": "More",
+      "block": "Block user",
+      "report": "Report user",
+      "reported": "Report sent.",
+      "error": "That didn't work. Try again.",
+      "categories": {
+        "spam": "Spam",
+        "harassment": "Harassment",
+        "impersonation": "Impersonation",
+        "other": "Other"
+      }
     }
   }
 }

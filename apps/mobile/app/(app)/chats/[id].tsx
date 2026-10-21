@@ -34,6 +34,7 @@ import { snippet } from "@/chats/snippet";
 import { flattenPages, shouldLoadMoreForLanding, tickFor } from "@/chats/timeline";
 import { formatLastSeen } from "@/chats/last-seen";
 import { useSubtitle, useTyping } from "@/chats/usePresence";
+import { SafetyMenu } from "@/safety/SafetyMenu";
 import { OfflineBanner } from "@/net/OfflineBanner";
 import { useOnline } from "@/net/useOnline";
 import {
@@ -249,6 +250,9 @@ export default function ChatScreen() {
             </Text>
           ) : null}
         </View>
+        {detail.data?.type === "direct" && detail.data.other_user_id ? (
+          <SafetyMenu userId={detail.data.other_user_id} onBlocked={() => router.back()} />
+        ) : null}
         {detail.data?.type === "group" ? (
           <Pressable
             onPress={() => router.push({ pathname: "/groups/[id]", params: { id } })}
