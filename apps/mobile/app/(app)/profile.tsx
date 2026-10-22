@@ -9,6 +9,7 @@ import { useFormatter, useTranslations } from "use-intl";
 
 import { useMyProfile, useProfileActions } from "@/contacts/queries";
 import { avatarUrl, BIO_MAX, deleteMyAccount, DISPLAY_NAME_MAX, signOut } from "@/data";
+import { ChangeEmailCard } from "@/security/ChangeEmailCard";
 import { AppHeader, Avatar, Banner, Button, ErrorState, Icon, LoadingState, Screen, Text, TextField, useTheme } from "@/ui";
 
 const COOLDOWN_DAYS = 14;
@@ -317,6 +318,8 @@ export default function ProfileScreen() {
             onPress={saveProfile}
           />
         </View>
+
+        <ChangeEmailCard />
 
         <View style={card}>
           <Text variant="bodyStrong">{t("changeUsername")}</Text>

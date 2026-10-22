@@ -21,3 +21,8 @@ export const supabase = createClient(url, anonKey, {
     detectSessionInUrl: false,
   },
 });
+
+/** Cookie-less twin used only to check a password without replacing the signed-in session. */
+export const statelessSupabase = createClient(url, anonKey, {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+});

@@ -147,3 +147,4 @@ export { loadPreferences, savePreferences } from "./preferences";
 export { getMobileCompat } from "./compat";
 export { unwrap } from "./unwrap";
 export { listSharedItems, sharedNextCursor, type SharedItem, type SharedTab } from "./media";
+export * from "./security";
