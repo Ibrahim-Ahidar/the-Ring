@@ -1,6 +1,6 @@
 import { setStringAsync } from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check, Send, UsersRound, X } from "lucide-react-native";
+import { Check, Images, Send, UsersRound, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, FlatList, KeyboardAvoidingView, TextInput, View } from "react-native";
 import { useTranslations } from "use-intl";
@@ -246,6 +246,11 @@ export default function ChatScreen() {
             {detail.data?.type === "direct" && detail.data.other_user_id ? (
               <SafetyMenu userId={detail.data.other_user_id} onBlocked={() => router.back()} />
             ) : null}
+            <IconButton
+              icon={Images}
+              label={t("mobile.sharedMedia.sharedMedia")}
+              onPress={() => router.push({ pathname: "/media/[conversationId]", params: { conversationId: id } })}
+            />
             {detail.data?.type === "group" ? (
               <IconButton
                 icon={UsersRound}

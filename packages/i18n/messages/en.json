@@ -581,6 +581,24 @@
           "conflict": "That conflicts with the current state. Refresh and try again."
         }
       }
+    },
+    "sharedMedia": {
+      "sharedMedia": "Shared media",
+      "sharedTabs": "Shared media tabs",
+      "download": "Download",
+      "loading": "Loading…",
+      "loadMore": "Load more",
+      "openImage": "Open image",
+      "tabs": {
+        "media": "Images",
+        "files": "Files",
+        "links": "Links"
+      },
+      "empty": {
+        "media": "No images shared yet",
+        "files": "No files shared yet",
+        "links": "No links in this chat yet"
+      }
     }
   }
 }

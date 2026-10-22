@@ -135,3 +135,4 @@ export { meetsPasswordPolicy, isOtpCode, validateUsername, MIN_PASSWORD_LENGTH }
 export { loadPreferences, savePreferences } from "./preferences";
 export { getMobileCompat } from "./compat";
 export { unwrap } from "./unwrap";
+export { listSharedItems, sharedNextCursor, type SharedItem, type SharedTab } from "./media";

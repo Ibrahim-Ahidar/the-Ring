@@ -100,3 +100,38 @@ export function listMessageAttachments(messageId: string): Promise<Result<Messag
 export function getAttachmentUrl(attachmentId: string): Promise<Result<{ url: string; fileName: string }>> {
   return invokeMedia({ action: "download", attachmentId });
 }
+
+export type SharedTab = "media" | "files" | "links";
+export type SharedItem = {
+  item_type: SharedTab;
+  message_id: string;
+  attachment_id: string | null;
+  mime_type: string | null;
+  file_name: string | null;
+  size_bytes: number | null;
+  url: string | null;
+  created_at: string;
+  has_more: boolean;
+};
+
+/** One page of a conversation's shared media, files or links (same RPC and cursor as the web). */
+export async function listSharedItems(input: {
+  conversationId: string;
+  tab: SharedTab;
+  cursor?: string | null;
+}): Promise<Result<{ items: SharedItem[]; hasMore: boolean }>> {
+  const result = await rpc<SharedItem[]>("list_shared", {
+    p_conversation_id: input.conversationId,
+    p_tab: input.tab,
+    p_cursor: input.cursor ?? null,
+  });
+  if (!result.ok) return result;
+  const rows = result.value ?? [];
+  return ok({ items: rows, hasMore: Boolean(rows[0]?.has_more) });
+}
+
+export function sharedNextCursor(items: SharedItem[]): string | null {
+  const last = items[items.length - 1];
+  if (!last) return null;
+  return btoa(`${last.created_at}|${last.message_id}`).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}

@@ -581,6 +581,24 @@
           "conflict": "Cela entre en conflit avec l'état actuel. Actualisez et réessayez."
         }
       }
+    },
+    "sharedMedia": {
+      "sharedMedia": "Médias partagés",
+      "sharedTabs": "Onglets des médias partagés",
+      "download": "Télécharger",
+      "loading": "Chargement…",
+      "loadMore": "Charger plus",
+      "openImage": "Ouvrir l’image",
+      "tabs": {
+        "media": "Images",
+        "files": "Fichiers",
+        "links": "Liens"
+      },
+      "empty": {
+        "media": "Aucune image partagée pour l’instant",
+        "files": "Aucun fichier partagé pour l’instant",
+        "links": "Aucun lien dans cette conversation"
+      }
     }
   }
 }
