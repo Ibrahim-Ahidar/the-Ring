@@ -3,8 +3,9 @@ import { useState } from "react";
 import { View } from "react-native";
 import { useTranslations } from "use-intl";
 
+import { accountErrorKey } from "@/account/errors";
 import { AuthLink, AuthShell } from "@/auth/AuthShell";
-import { signInWithPassword } from "@/data";
+import { resendSignupCode, signInWithPassword, verifySignupCode } from "@/data";
 import { Button, Text, TextField, useTheme } from "@/ui";
 
 export default function LoginScreen() {
@@ -16,6 +17,16 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [code, setCode] = useState("");
+  const [info, setInfo] = useState<string | null>(null);
+
+  const errorText = (key: string) =>
+    key.startsWith("mobile.")
+      ? t(key)
+      : t.has(`mobile.identity.errors.${key}`)
+        ? t(`mobile.identity.errors.${key}`)
+        : t(accountErrorKey(key, t.has));
 
   async function submit() {
     if (!email.trim() || !password) {
@@ -27,14 +38,73 @@ export default function LoginScreen() {
     const result = await signInWithPassword(email.trim(), password);
     setBusy(false);
     // On success the auth gate redirects to the (app) group.
+    if (!result.ok) {
+      // Like the web LoginForm, an unconfirmed account goes to the code step, which sends a fresh code.
+      if (result.error.code === "mobile.login.errors.emailNotConfirmed") {
+        setConfirming(true);
+        void resend();
+        return;
+      }
+      setErrorKey(result.error.code);
+    }
+  }
+
+  async function resend() {
+    setErrorKey(null);
+    const result = await resendSignupCode(email.trim());
+    if (result.ok) setInfo(t("mobile.account.codeResent"));
+    else setErrorKey(result.error.code);
+  }
+
+  async function verify() {
+    setBusy(true);
+    setErrorKey(null);
+    setInfo(null);
+    const result = await verifySignupCode(email.trim(), code);
+    setBusy(false);
+    // After the code is accepted the auth gate opens the app.
     if (!result.ok) setErrorKey(result.error.code);
+  }
+
+  if (confirming) {
+    return (
+      <AuthShell
+        title={id("loginTitle")}
+        subtitle={`${t("mobile.login.errors.emailNotConfirmed")} ${t("mobile.account.codeSentTo", { email: email.trim() })}`}
+        error={errorKey ? errorText(errorKey) : null}
+        info={info}
+        footer={
+          <AuthLink
+            label={t("mobile.chats.back")}
+            onPress={() => {
+              setConfirming(false);
+              setErrorKey(null);
+              setInfo(null);
+              setCode("");
+            }}
+          />
+        }
+      >
+        <TextField
+          label={t("mobile.account.code")}
+          value={code}
+          onChangeText={setCode}
+          keyboardType="number-pad"
+          maxLength={6}
+          autoComplete="one-time-code"
+          textContentType="oneTimeCode"
+        />
+        <Button title={t("mobile.account.verify")} onPress={() => void verify()} loading={busy} block />
+        <Button title={t("mobile.account.resend")} variant="ghost" onPress={() => void resend()} block />
+      </AuthShell>
+    );
   }
 
   return (
     <AuthShell
       title={id("loginTitle")}
       subtitle={id("loginSubtitle")}
-      error={errorKey ? t(errorKey) : null}
+      error={errorKey ? errorText(errorKey) : null}
       footer={
         <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.s4 }}>
           <Text tone="textMuted">{id("noAccount")}</Text>
