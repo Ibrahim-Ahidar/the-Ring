@@ -520,7 +520,14 @@
       "restartRequired": "Fermez et rouvrez l'application pour appliquer le nouveau sens de lecture.",
       "account": "Compte",
       "logoutConfirm": "Vous déconnecter de Pulse ?",
-      "cancel": "Annuler"
+      "cancel": "Annuler",
+      "appearanceHint": "Choisissez clair, sombre ou celui du système.",
+      "languageHint": "L’interface, les dates et le sens de lecture suivent votre langue.",
+      "languageNames": {
+        "en": "Anglais",
+        "fr": "Français",
+        "ar": "Arabe"
+      }
     },
     "update": {
       "title": "Mise à jour requise",

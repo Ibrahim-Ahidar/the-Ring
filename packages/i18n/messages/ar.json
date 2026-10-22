@@ -520,7 +520,14 @@
       "restartRequired": "أغلق التطبيق وأعد فتحه لتطبيق اتجاه النص الجديد.",
       "account": "الحساب",
       "logoutConfirm": "هل تريد تسجيل الخروج من Pulse؟",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "appearanceHint": "اختر فاتحًا أو داكنًا أو مطابقًا لنظامك.",
+      "languageHint": "واجهة التطبيق والتواريخ والاتجاه تتبع لغتك.",
+      "languageNames": {
+        "en": "English",
+        "fr": "Français",
+        "ar": "العربية"
+      }
     },
     "update": {
       "title": "يرجى التحديث",

@@ -520,7 +520,14 @@
       "restartRequired": "Close and reopen the app to apply the new text direction.",
       "account": "Account",
       "logoutConfirm": "Log out of Pulse?",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "appearanceHint": "Choose light, dark, or match your system.",
+      "languageHint": "Product chrome, dates, and direction follow your language.",
+      "languageNames": {
+        "en": "English",
+        "fr": "French",
+        "ar": "Arabic"
+      }
     },
     "update": {
       "title": "Please update",
