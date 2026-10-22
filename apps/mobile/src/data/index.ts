@@ -102,8 +102,12 @@ export {
 export {
   addContact,
   avatarUrl,
+  clearAllRecents,
+  clearRecent,
   getMyProfile,
+  getUserProfile,
   listContacts,
+  listRecents,
   removeContact,
   removeMyAvatar,
   saveMyProfile,

@@ -394,7 +394,47 @@
       "saved": "Saved contacts",
       "empty": "No saved contacts yet",
       "error": "Something went wrong. Try again.",
-      "link": "Contacts"
+      "link": "Contacts",
+      "searchForm": {
+        "title": "Find by username",
+        "label": "Username",
+        "placeholder": "Exact username",
+        "submit": "Search",
+        "loading": "Searching…",
+        "noResult": "No one matched that username.",
+        "resultsLabel": "Search result"
+      },
+      "recents": {
+        "title": "Recent searches",
+        "clearAll": "Clear all recent searches",
+        "removeOne": "Remove {username} from recent searches"
+      },
+      "favorites": {
+        "title": "Contacts",
+        "empty": "You have no contacts yet. Search by username above to add people.",
+        "loading": "Loading contacts…"
+      },
+      "view": {
+        "online": "Online",
+        "offline": "Offline",
+        "lastSeen": "Last seen {time}",
+        "startConversation": "Start conversation",
+        "favorite": "Add {username} to contacts",
+        "unfavorite": "Remove {username} from contacts",
+        "favoriteShort": "Add to contacts",
+        "unfavoriteShort": "In contacts",
+        "sharedGroups": "Shared groups",
+        "noSharedGroups": "No shared groups",
+        "untitledGroup": "Untitled group",
+        "title": "Profile"
+      },
+      "errors": {
+        "generic": "Something went wrong. Try again.",
+        "platform": {
+          "rate_limited": "Too many searches. Wait a moment and try again.",
+          "unauthenticated": "Sign in to search."
+        }
+      }
     },
     "profile": {
       "title": "Profile",

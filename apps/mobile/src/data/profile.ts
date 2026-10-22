@@ -1,11 +1,15 @@
 import {
   AVATARS_BUCKET,
   avatarExtension,
+  clearAllRecentSearches,
   clearAvatar,
+  clearRecentSearch,
   err,
   favorite,
   getOwnProfile,
+  getProfile,
   listFavorites,
+  listRecentSearches,
   openDirect,
   resolveAvatarUrl,
   searchByUsername,
@@ -24,6 +28,10 @@ export const searchUser = (raw: string) => searchByUsername(rpcClient, raw);
 export const listContacts = () => listFavorites(rpcClient);
 export const addContact = (username: string) => favorite(rpcClient, username);
 export const removeContact = (username: string) => unfavorite(rpcClient, username);
+export const getUserProfile = (username: string) => getProfile(rpcClient, username);
+export const listRecents = () => listRecentSearches(rpcClient);
+export const clearRecent = (recentId: string) => clearRecentSearch(rpcClient, recentId);
+export const clearAllRecents = () => clearAllRecentSearches(rpcClient);
 export const startDirectChat = (username: string) => openDirect(rpcClient, { username });
 
 export const getMyProfile = () => getOwnProfile(rpcClient);

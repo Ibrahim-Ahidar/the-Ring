@@ -394,7 +394,47 @@
       "saved": "Contacts enregistres",
       "empty": "Aucun contact enregistre",
       "error": "Une erreur est survenue. Reessayez.",
-      "link": "Contacts"
+      "link": "Contacts",
+      "searchForm": {
+        "title": "Rechercher par nom d'utilisateur",
+        "label": "Nom d'utilisateur",
+        "placeholder": "Nom d'utilisateur exact",
+        "submit": "Rechercher",
+        "loading": "Recherche…",
+        "noResult": "Personne ne correspond à ce nom d'utilisateur.",
+        "resultsLabel": "Résultat de recherche"
+      },
+      "recents": {
+        "title": "Recherches récentes",
+        "clearAll": "Effacer toutes les recherches récentes",
+        "removeOne": "Retirer {username} des recherches récentes"
+      },
+      "favorites": {
+        "title": "Contacts",
+        "empty": "Vous n'avez pas encore de contacts. Recherchez un nom d'utilisateur ci-dessus.",
+        "loading": "Chargement des contacts…"
+      },
+      "view": {
+        "online": "En ligne",
+        "offline": "Hors ligne",
+        "lastSeen": "Vu pour la dernière fois {time}",
+        "startConversation": "Démarrer une conversation",
+        "favorite": "Ajouter {username} aux contacts",
+        "unfavorite": "Retirer {username} des contacts",
+        "favoriteShort": "Ajouter aux contacts",
+        "unfavoriteShort": "Dans les contacts",
+        "sharedGroups": "Groupes en commun",
+        "noSharedGroups": "Aucun groupe en commun",
+        "untitledGroup": "Groupe sans titre",
+        "title": "Profil"
+      },
+      "errors": {
+        "generic": "Une erreur s'est produite. Réessayez.",
+        "platform": {
+          "rate_limited": "Trop de recherches. Patientez un instant.",
+          "unauthenticated": "Connectez-vous pour rechercher."
+        }
+      }
     },
     "profile": {
       "title": "Profil",

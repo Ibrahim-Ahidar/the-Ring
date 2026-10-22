@@ -1,135 +1,139 @@
 import { useRouter } from "expo-router";
-import { Users } from "lucide-react-native";
+import { AtSign, Search, Star, X } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, FlatList, View } from "react-native";
+import { Pressable, ScrollView, TextInput, View } from "react-native";
 import { useTranslations } from "use-intl";
 
-import { useContactActions, useContacts, useUserSearch } from "@/contacts/queries";
-import {
-  AppHeader,
-  Avatar,
-  Banner,
-  Button,
-  Divider,
-  EmptyState,
-  ErrorState,
-  ListRow,
-  LoadingState,
-  Screen,
-  SearchField,
-  SectionHeader,
-  Spinner,
-  useTheme,
-} from "@/ui";
+import { useContacts, useRecentActions, useRecentSearches, useUserSearch } from "@/contacts/queries";
+import { avatarUrl } from "@/data";
+import { AppHeader, Avatar, Icon, IconButton, ListRow, Screen, SectionHeader, Text, useTheme } from "@/ui";
 
+/** Mirrors the web ContactsPageView: username search, contacts (favorites), recent searches. */
 export default function ContactsScreen() {
-  const t = useTranslations();
+  const t = useTranslations("mobile.contacts");
   const router = useRouter();
-  const { spacing } = useTheme();
+  const { colors, spacing, radii, fontSizes } = useTheme();
   const [input, setInput] = useState("");
   const [query, setQuery] = useState("");
   const contacts = useContacts();
   const search = useUserSearch(query);
-  const actions = useContactActions();
+  const recents = useRecentSearches();
+  const recentActions = useRecentActions();
 
-  async function startChat(username: string) {
-    try {
-      const { conversationId } = await actions.startChat.mutateAsync(username);
-      router.replace({ pathname: "/chats/[id]", params: { id: conversationId } });
-    } catch {
-      // surfaced through actions.startChat.isError
-    }
-  }
-
-  function confirmRemove(username: string) {
-    Alert.alert(t("mobile.contacts.remove"), `@${username}`, [
-      { text: t("mobile.groups.cancel"), style: "cancel" },
-      { text: t("mobile.contacts.remove"), style: "destructive", onPress: () => actions.remove.mutate(username) },
-    ]);
-  }
+  const openProfile = (username: string) =>
+    router.push({ pathname: "/profile/[username]", params: { username } });
+  const submit = () => setQuery(input.trim().replace(/^@/, ""));
 
   const hit = search.data;
-  const isContact = hit ? (contacts.data ?? []).some((c) => c.favoriteUserId === hit.id) : false;
-  const actionError = search.isError || actions.startChat.isError || actions.add.isError;
-
-  const header = (
-    <View>
-      <View style={{ padding: spacing.s12, gap: spacing.s8 }}>
-        <SearchField
-          value={input}
-          onChangeText={setInput}
-          placeholder={t("mobile.contacts.placeholder")}
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="search"
-          onSubmitEditing={() => setQuery(input.trim())}
-        />
-        <Button title={t("mobile.contacts.search")} variant="secondary" size="sm" onPress={() => setQuery(input.trim())} />
-      </View>
-      {search.isFetching ? <Spinner /> : null}
-      {actionError ? <Banner kind="error" message={t("mobile.contacts.error")} /> : null}
-      {query && search.isSuccess && !hit ? <Banner kind="info" message={t("mobile.contacts.noResult")} /> : null}
-      {hit ? (
-        <>
-          <ListRow
-            title={hit.displayName ?? hit.username}
-            subtitle={hit.bio ? `@${hit.username} · ${hit.bio}` : `@${hit.username}`}
-            subtitleLines={2}
-            leading={<Avatar name={hit.displayName ?? hit.username} seed={hit.id} />}
-            onPress={() => void startChat(hit.username)}
-            trailing={
-              !isContact ? (
-                <Button
-                  title={t("mobile.contacts.add")}
-                  size="sm"
-                  variant="secondary"
-                  onPress={() => actions.add.mutate(hit.username)}
-                />
-              ) : undefined
-            }
-          />
-          <Divider />
-        </>
-      ) : null}
-      <SectionHeader title={t("mobile.contacts.saved")} />
-    </View>
+  const searchError = search.isError
+    ? search.error.message.endsWith("rate_limited")
+      ? t("errors.platform.rate_limited")
+      : t("errors.generic")
+    : null;
+  const note = (message: string, danger = false) => (
+    <Text variant="caption" style={{ color: danger ? colors.danger : colors.textMuted, paddingHorizontal: spacing.s16, paddingVertical: spacing.s8 }}>
+      {message}
+    </Text>
   );
 
   return (
     <Screen edges={["start", "end"]} background="panel">
-      <AppHeader title={t("mobile.contacts.title")} />
-      {contacts.isError ? (
-        <ErrorState message={t("mobile.contacts.error")} onRetry={() => void contacts.refetch()} />
-      ) : (
-        <FlatList
-          data={contacts.data ?? []}
-          keyExtractor={(c) => c.favoriteUserId}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ flexGrow: 1 }}
-          ListHeaderComponent={header}
-          ListEmptyComponent={
-            contacts.isPending ? <LoadingState /> : <EmptyState icon={Users} title={t("mobile.contacts.empty")} />
-          }
-          renderItem={({ item }) => (
-            <ListRow
-              title={item.displayName ?? item.username}
-              subtitle={`@${item.username}`}
-              leading={<Avatar name={item.displayName ?? item.username} seed={item.favoriteUserId} />}
-              onPress={() => void startChat(item.username)}
-              onLongPress={() => confirmRemove(item.username)}
-              accessibilityHint={t("mobile.contacts.message")}
-              trailing={
-                <Button
-                  title={t("mobile.contacts.remove")}
-                  variant="ghost"
-                  size="sm"
-                  onPress={() => confirmRemove(item.username)}
-                />
-              }
-            />
-          )}
-        />
-      )}
+      <AppHeader title={t("title")} />
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: spacing.s24 }}>
+        <SectionHeader title={t("searchForm.title")} />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing.s8,
+            marginHorizontal: spacing.s16,
+            paddingStart: spacing.s12,
+            paddingEnd: spacing.s4,
+            minHeight: 44,
+            borderRadius: radii.pill,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.input,
+          }}
+        >
+          <Icon icon={AtSign} size={16} tone="textMuted" />
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder={t("searchForm.placeholder")}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t("searchForm.label")}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="search"
+            onSubmitEditing={submit}
+            style={{ flex: 1, color: colors.text, fontSize: fontSizes.sm, paddingVertical: spacing.s8 }}
+          />
+          <IconButton icon={Search} label={t("searchForm.submit")} size="sm" onPress={submit} />
+        </View>
+        {searchError ? note(searchError, true) : null}
+        {search.isFetching ? note(t("searchForm.loading")) : null}
+        {query && search.isSuccess && !hit ? note(t("searchForm.noResult")) : null}
+        {hit ? (
+          <ListRow
+            title={hit.displayName ?? hit.username}
+            subtitle={hit.bio ? `@${hit.username} · ${hit.bio}` : `@${hit.username}`}
+            leading={<Avatar name={hit.displayName ?? hit.username} seed={hit.id} src={avatarUrl(hit.avatarUrl)} />}
+            accessibilityLabel={t("searchForm.resultsLabel")}
+            onPress={() => openProfile(hit.username)}
+          />
+        ) : null}
+
+        <SectionHeader title={t("favorites.title")} />
+        {contacts.isPending ? note(t("favorites.loading")) : null}
+        {contacts.isError ? note(t("errors.generic"), true) : null}
+        {contacts.isSuccess && contacts.data.length === 0 ? note(t("favorites.empty")) : null}
+        {(contacts.data ?? []).map((c) => (
+          <ListRow
+            key={c.favoriteUserId}
+            title={c.displayName ?? c.username}
+            subtitle={`@${c.username}`}
+            leading={<Avatar name={c.displayName ?? c.username} seed={c.favoriteUserId} src={avatarUrl(c.avatarUrl)} />}
+            trailing={<Star size={16} color={colors.accent} fill={colors.accent} />}
+            onPress={() => openProfile(c.username)}
+          />
+        ))}
+
+        {recents.data && recents.data.length > 0 ? (
+          <>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingEnd: spacing.s16 }}>
+              <SectionHeader title={t("recents.title")} />
+              <Pressable
+                accessibilityRole="button"
+                disabled={recentActions.clearAll.isPending}
+                onPress={() => recentActions.clearAll.mutate()}
+                hitSlop={8}
+              >
+                <Text variant="caption" style={{ color: colors.accent }}>
+                  {t("recents.clearAll")}
+                </Text>
+              </Pressable>
+            </View>
+            {recents.data.map((r) => (
+              <ListRow
+                key={r.id}
+                title={r.displayName ?? r.username}
+                subtitle={`@${r.username}`}
+                leading={<Avatar name={r.displayName ?? r.username} seed={r.username} src={avatarUrl(r.avatarUrl)} />}
+                onPress={() => openProfile(r.username)}
+                trailing={
+                  <IconButton
+                    icon={X}
+                    size="sm"
+                    label={t("recents.removeOne", { username: r.username })}
+                    onPress={() => recentActions.clear.mutate(r.id)}
+                  />
+                }
+              />
+            ))}
+          </>
+        ) : null}
+      </ScrollView>
     </Screen>
   );
 }
