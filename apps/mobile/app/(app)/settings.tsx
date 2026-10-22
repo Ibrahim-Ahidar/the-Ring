@@ -1,24 +1,22 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { ACCENTS, LANGUAGES, THEMES } from "@pulse/core";
 import { useRouter } from "expo-router";
-import { Check, FolderOpen, LogOut, UserRound } from "lucide-react-native";
+import { Globe, KeyRound, Lock, LogOut, Palette, UserRound } from "lucide-react-native";
 import { useState } from "react";
-import { Alert } from "react-native";
+import { Alert, Pressable, View } from "react-native";
 import { useTranslations } from "use-intl";
 
-import { signOut } from "@/data";
+import { useMyProfile } from "@/contacts/queries";
+import { avatarUrl, signOut } from "@/data";
 import { usePreferences } from "@/settings/PreferencesProvider";
-import { AppHeader, Banner, Divider, ListRow, Screen, SectionHeader, Surface, Icon, useTheme } from "@/ui";
+import { AppHeader, Avatar, Banner, ListRow, Screen, Text, useTheme } from "@/ui";
 
-function Tick({ on }: { on: boolean }) {
-  return on ? <Icon icon={Check} tone="accent" /> : null;
-}
-
+/** Mirrors the web SettingsSidebar: profile card, one row per settings page, then sign out. */
 export default function SettingsScreen() {
   const t = useTranslations();
   const router = useRouter();
-  const { spacing } = useTheme();
-  const { prefs, language, restartRequired, update } = usePreferences();
+  const { colors, spacing, radii, fontSizes } = useTheme();
+  const { language, restartRequired } = usePreferences();
+  const profile = useMyProfile();
   const queryClient = useQueryClient();
   const [logoutFailed, setLogoutFailed] = useState(false);
 
@@ -37,82 +35,78 @@ export default function SettingsScreen() {
     ]);
   }
 
+  const me = profile.data;
+  const name = me ? (me.display_name ?? me.username) : null;
+
   return (
     <Screen edges={["start", "end"]} background="panel" scroll contentStyle={{ paddingBottom: spacing.s24 }}>
       <AppHeader title={t("mobile.settings.title")} />
       {restartRequired ? <Banner kind="info" message={t("mobile.settings.restartRequired")} /> : null}
-
-      <SectionHeader title={t("mobile.profile.title")} />
-      <Surface style={{ marginHorizontal: spacing.s12 }}>
-        <ListRow icon={UserRound} title={t("mobile.profile.title")} chevron onPress={() => router.push("/profile")} />
-        <Divider inset={spacing.s12} />
+      <View style={{ paddingHorizontal: spacing.s8 }}>
+        {me && name ? (
+          <Pressable
+            onPress={() => router.push("/profile")}
+            accessibilityRole="button"
+            accessibilityLabel={name}
+            style={({ pressed }) => ({
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing.s16,
+              padding: spacing.s12,
+              borderRadius: radii.card,
+              backgroundColor: pressed ? colors.hover : "transparent",
+            })}
+          >
+            <Avatar name={name} seed={me.id} src={avatarUrl(me.avatar_url)} size="lg" />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text numberOfLines={1} style={{ fontSize: fontSizes.xl, color: colors.text, writingDirection: "auto" }}>
+                {name}
+              </Text>
+              <Text variant="muted" numberOfLines={1} style={{ fontSize: fontSizes.sm }}>
+                @{me.username}
+                {me.bio ? ` · ${me.bio}` : ""}
+              </Text>
+            </View>
+          </Pressable>
+        ) : null}
         <ListRow
-          icon={FolderOpen}
-          title={t("mobile.organization.folders")}
+          icon={UserRound}
+          title={t("routes.settingsAccount")}
+          subtitle={t("settings.accountDesc")}
           chevron
-          onPress={() => router.push("/folders")}
+          onPress={() => router.push("/profile")}
         />
-      </Surface>
-
-      <SectionHeader title={t("mobile.settings.theme")} />
-      <Surface style={{ marginHorizontal: spacing.s12 }}>
-        {THEMES.map((v, i) => (
-          <Divided key={v} first={i === 0}>
-            <ListRow
-              title={t(`mobile.settings.themes.${v}`)}
-              selected={prefs.theme === v}
-              trailing={<Tick on={prefs.theme === v} />}
-              onPress={() => update({ theme: v })}
-              accessibilityLabel={t(`mobile.settings.themes.${v}`)}
-            />
-          </Divided>
-        ))}
-      </Surface>
-
-      <SectionHeader title={t("mobile.settings.accent")} />
-      <Surface style={{ marginHorizontal: spacing.s12 }}>
-        {ACCENTS.map((v, i) => (
-          <Divided key={v} first={i === 0}>
-            <ListRow
-              title={t(`mobile.settings.accents.${v}`)}
-              selected={prefs.accent === v}
-              trailing={<Tick on={prefs.accent === v} />}
-              onPress={() => update({ accent: v })}
-            />
-          </Divided>
-        ))}
-      </Surface>
-
-      <SectionHeader title={t("mobile.settings.language")} />
-      <Surface style={{ marginHorizontal: spacing.s12 }}>
-        {LANGUAGES.map((v, i) => (
-          <Divided key={v} first={i === 0}>
-            <ListRow
-              title={t(`mobile.settings.languages.${v}`)}
-              selected={language === v}
-              trailing={<Tick on={language === v} />}
-              onPress={() => update({ language: v })}
-            />
-          </Divided>
-        ))}
-      </Surface>
-
-      <SectionHeader title={t("mobile.settings.account")} />
-      {logoutFailed ? <Banner kind="error" message={t("mobile.logout.error")} /> : null}
-      <Surface style={{ marginHorizontal: spacing.s12 }}>
+        <ListRow
+          icon={Lock}
+          title={t("routes.settingsPrivacy")}
+          subtitle={t("settings.privacyDesc")}
+          chevron
+          onPress={() => router.push("/blocked")}
+        />
+        <ListRow
+          icon={KeyRound}
+          title={t("routes.settingsSecurity")}
+          subtitle={t("settings.securityDesc")}
+          chevron
+          onPress={() => router.push("/settings-security")}
+        />
+        <ListRow
+          icon={Palette}
+          title={t("routes.settingsAppearance")}
+          subtitle={t("settings.appearanceDesc")}
+          chevron
+          onPress={() => router.push("/settings-appearance")}
+        />
+        <ListRow
+          icon={Globe}
+          title={t("routes.settingsLanguage")}
+          subtitle={t(`mobile.settings.languages.${language}`)}
+          chevron
+          onPress={() => router.push("/settings-language")}
+        />
+        {logoutFailed ? <Banner kind="error" message={t("mobile.logout.error")} /> : null}
         <ListRow icon={LogOut} title={t("mobile.logout.submit")} destructive onPress={confirmLogout} />
-      </Surface>
+      </View>
     </Screen>
-  );
-}
-
-/** Divider above every row but the first. */
-function Divided({ first, children }: { first: boolean; children: React.ReactNode }) {
-  const { spacing } = useTheme();
-  return (
-    <>
-      {first ? null : <Divider inset={spacing.s12} />}
-      {children}
-    </>
   );
 }

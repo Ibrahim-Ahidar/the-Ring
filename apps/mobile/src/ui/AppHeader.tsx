@@ -21,6 +21,8 @@ export interface AppHeaderProps {
   safeTop?: boolean;
   /** Bottom hairline border. Defaults to the web: sub-pages have one, top-level pages don't. */
   border?: boolean;
+  /** Force the large top-level title even with a leading node (web chats header with the viewer avatar). */
+  large?: boolean;
 }
 
 /**
@@ -37,9 +39,10 @@ export function AppHeader({
   actions,
   safeTop = true,
   border,
+  large,
 }: AppHeaderProps) {
   const { colors, spacing, controlHeights, fontSizes, fontWeights } = useTheme();
-  const topLevel = !onBack && !leading;
+  const topLevel = large ?? (!onBack && !leading);
   const showBorder = border ?? !topLevel;
   const insets = useSafeAreaInsets();
   return (

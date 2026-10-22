@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react-native";
-import { Pressable, useWindowDimensions, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon } from "./Icon";
@@ -22,8 +22,7 @@ export interface BottomNavItem {
 export function BottomNav({ items }: { items: BottomNavItem[] }) {
   const { colors, spacing, fontSizes } = useTheme();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const showLabels = width >= 420;
+  const showLabels = true;
   return (
     <View
       accessibilityRole="tablist"

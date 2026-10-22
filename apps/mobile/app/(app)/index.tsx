@@ -1,6 +1,5 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { MessageSquare, UsersRound } from "lucide-react-native";
+import { Archive, FolderPlus, Inbox, MessageSquare, MessageSquarePlus, MoreVertical, UsersRound } from "lucide-react-native";
 import { memo, useCallback, useState } from "react";
 import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import { useTranslations } from "use-intl";
@@ -9,16 +8,18 @@ import { useSession } from "@/auth/session";
 import { Chip } from "@/chats/Chip";
 import { listTime } from "@/chats/format";
 import { useChatList } from "@/chats/queries";
+import { useMyProfile } from "@/contacts/queries";
 import { useOnline } from "@/net/useOnline";
 import { ChatActionsSheet } from "@/organization/ChatActionsSheet";
 import { useArchivedSummary, useFolders } from "@/organization/queries";
-import { signOut, type ChatListFilter, type ConversationSummary } from "@/data";
+import { avatarUrl, type ChatListFilter, type ConversationSummary } from "@/data";
 import {
   AppHeader,
   Avatar,
   Banner,
   EmptyState,
   ErrorState,
+  Icon,
   IconButton,
   LoadingState,
   Screen,
@@ -39,12 +40,13 @@ type RowProps = {
   deleted: string;
   noMessages: string;
   hint: string;
+  optionsLabel: string;
   onOpen: (id: string) => void;
   onActions: (chat: ConversationSummary) => void;
 };
 
-/** Mirrors the web `.chatRow`: 12 gap, 8/12 padding, name + time on top, preview + badges below. */
-const ChatRow = memo(function ChatRow({ chat, untitled, deleted, noMessages, hint, onOpen, onActions }: RowProps) {
+/** Mirrors the web `.chatRow`: 12 gap, 8/12 padding, name + time on top, preview + badges below, kebab at the end. */
+const ChatRow = memo(function ChatRow({ chat, untitled, deleted, noMessages, hint, optionsLabel, onOpen, onActions }: RowProps) {
   const { colors, spacing, radii, fontSizes, fontWeights, controlHeights } = useTheme();
   const title = chatTitle(chat, untitled);
   const [nowMs] = useState(() => Date.now());
@@ -64,7 +66,8 @@ const ChatRow = memo(function ChatRow({ chat, untitled, deleted, noMessages, hin
         gap: spacing.s12,
         minHeight: controlHeights.row,
         paddingVertical: spacing.s8,
-        paddingHorizontal: spacing.s12,
+        paddingStart: spacing.s12,
+        paddingEnd: spacing.s4,
         borderRadius: radii.card,
         backgroundColor: pressed ? colors.hover : "transparent",
       })}
@@ -97,23 +100,62 @@ const ChatRow = memo(function ChatRow({ chat, untitled, deleted, noMessages, hin
           <UnreadCount count={chat.unread_count} muted={muted} />
         </View>
       </View>
+      <IconButton icon={MoreVertical} label={optionsLabel} size="sm" onPress={() => onActions(chat)} />
     </Pressable>
   );
 });
 
+/** Web ArchivedRow: shown above the list on the "all" filter when something is archived. */
+function ArchivedRow({ label, unread, onPress }: { label: string; unread: number; onPress: () => void }) {
+  const { colors, spacing, radii, fontSizes, fontWeights, controlHeights } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.s12,
+        minHeight: controlHeights.row,
+        paddingVertical: spacing.s8,
+        paddingHorizontal: spacing.s12,
+        borderRadius: radii.card,
+        backgroundColor: pressed ? colors.hover : "transparent",
+      })}
+    >
+      <View
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: radii.pill,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.hover,
+        }}
+      >
+        <Icon icon={Archive} size={20} tone="textMuted" />
+      </View>
+      <Text numberOfLines={1} style={{ flex: 1, fontSize: fontSizes.lg, fontWeight: fontWeights.medium, color: colors.text }}>
+        {label}
+      </Text>
+      <UnreadCount count={unread} />
+    </Pressable>
+  );
+}
+
 export default function ChatListScreen() {
   const t = useTranslations();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { spacing } = useTheme();
   const { session } = useSession();
   const online = useOnline();
-  const [logoutFailed, setLogoutFailed] = useState(false);
   const [filter, setFilter] = useState<ChatListFilter>({ kind: "all" });
   const [actionsFor, setActionsFor] = useState<ConversationSummary | null>(null);
   const list = useChatList(session?.userId ?? "", filter);
   const folders = useFolders();
   const archived = useArchivedSummary();
+  const me = useMyProfile().data;
 
   function isActive(f: ChatListFilter): boolean {
     return f.kind === filter.kind && (f.kind !== "folder" || (filter.kind === "folder" && filter.folderId === f.folderId));
@@ -127,23 +169,7 @@ export default function ChatListScreen() {
       label: f.name,
       value: { kind: "folder", folderId: f.id } as ChatListFilter,
     })),
-    {
-      key: "archived",
-      label:
-        archived.data && archived.data.count > 0
-          ? t("mobile.organization.filters.archivedCount", { count: archived.data.count })
-          : t("mobile.organization.filters.archived"),
-      value: { kind: "archived" },
-    },
   ];
-
-  async function logout() {
-    setLogoutFailed(false);
-    const result = await signOut();
-    // Drop cached server state so the next account never sees this one's data.
-    queryClient.clear();
-    if (!result.ok) setLogoutFailed(true);
-  }
 
   const chats = list.data?.pages.flatMap((p) => p.items) ?? [];
   const open = useCallback((id: string) => router.push({ pathname: "/chats/[id]", params: { id } }), [router]);
@@ -151,38 +177,70 @@ export default function ChatListScreen() {
   const deleted = t("mobile.chats.deleted");
   const noMessages = t("mobile.chats.noMessages");
   const hint = t("mobile.organization.longPressHint");
-
-  const rowStyle = {
-    gap: spacing.s8,
-    paddingHorizontal: spacing.s16,
-    paddingVertical: spacing.s8,
-    alignItems: "center",
-  } as const;
+  const optionsLabel = t("mobile.organization.chatOptions");
+  const inArchive = filter.kind === "archived";
+  const archivedCount = archived.data?.count ?? 0;
+  const myName = me ? (me.display_name ?? me.username) : "";
 
   return (
     <Screen edges={["start", "end"]} background="panel">
-      <AppHeader
-        title={t("mobile.chats.title")}
-        actions={
-          <>
-            <IconButton icon={UsersRound} label={t("mobile.groups.newGroup")} onPress={() => router.push("/groups/new")} />
-          </>
-        }
-      />
+      {inArchive ? (
+        <AppHeader
+          title={t("mobile.organization.filters.archived")}
+          onBack={() => setFilter({ kind: "all" })}
+          backLabel={t("mobile.chats.back")}
+        />
+      ) : (
+        <AppHeader
+          large
+          title={t("mobile.chats.title")}
+          leading={
+            me ? (
+              <Pressable
+                onPress={() => router.push("/settings")}
+                accessibilityRole="button"
+                accessibilityLabel={t("mobile.settings.title")}
+                hitSlop={spacing.s8}
+              >
+                <Avatar name={myName} seed={me.id} src={avatarUrl(me.avatar_url)} size="sm" />
+              </Pressable>
+            ) : undefined
+          }
+          actions={
+            <>
+              {filter.kind === "groups" ? (
+                <IconButton icon={UsersRound} label={t("mobile.groups.newGroup")} onPress={() => router.push("/groups/new")} />
+              ) : null}
+              <IconButton icon={Inbox} label={t("mobile.safety.requests")} onPress={() => router.push("/requests")} />
+              <IconButton
+                icon={MessageSquarePlus}
+                label={t("mobile.organization.newChat")}
+                onPress={() => router.push("/contacts")}
+              />
+            </>
+          }
+        />
+      )}
       {!online ? <Banner kind="offline" message={t("mobile.offline.banner")} /> : null}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={rowStyle} style={{ flexGrow: 0 }}>
-        {chips.map((c) => (
-          <Chip key={c.key} label={c.label} active={isActive(c.value)} onPress={() => setFilter(c.value)} />
-        ))}
-        <Chip label={t("mobile.organization.manageFolders")} onPress={() => router.push("/folders")} />
-      </ScrollView>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={rowStyle} style={{ flexGrow: 0 }}>
-        <Chip label={t("mobile.safety.requests")} onPress={() => router.push("/requests")} />
-        <Chip label={t("mobile.safety.blocked")} onPress={() => router.push("/blocked")} />
-        <Chip label={t("mobile.profile.link")} onPress={() => router.push("/profile")} />
-        <Chip label={t("mobile.logout.submit")} onPress={logout} />
-      </ScrollView>
-      {logoutFailed ? <Banner kind="error" message={t("mobile.logout.error")} /> : null}
+      {inArchive ? null : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }}
+          contentContainerStyle={{
+            gap: spacing.s8,
+            paddingHorizontal: spacing.s16,
+            paddingTop: spacing.s4,
+            paddingBottom: spacing.s8,
+            alignItems: "center",
+          }}
+        >
+          {chips.map((c) => (
+            <Chip key={c.key} label={c.label} active={isActive(c.value)} onPress={() => setFilter(c.value)} />
+          ))}
+          <Chip icon={FolderPlus} label={t("mobile.organization.manageFolders")} onPress={() => router.push("/folders")} />
+        </ScrollView>
+      )}
       {list.isPending ? <LoadingState /> : null}
       {list.isError ? <ErrorState title={t("mobile.chats.loadError")} onRetry={() => list.refetch()} /> : null}
       <FlatList
@@ -193,6 +251,15 @@ export default function ChatListScreen() {
         onEndReached={() => {
           if (list.hasNextPage && !list.isFetchingNextPage) void list.fetchNextPage();
         }}
+        ListHeaderComponent={
+          filter.kind === "all" && archivedCount > 0 ? (
+            <ArchivedRow
+              label={t("mobile.organization.archivedRow", { count: archivedCount })}
+              unread={archived.data?.unread ?? 0}
+              onPress={() => setFilter({ kind: "archived" })}
+            />
+          ) : undefined
+        }
         ListFooterComponent={list.isFetchingNextPage ? <Spinner /> : undefined}
         ListEmptyComponent={
           list.isPending || list.isError ? undefined : <EmptyState icon={MessageSquare} title={t("mobile.chats.empty")} />
@@ -204,6 +271,7 @@ export default function ChatListScreen() {
             deleted={deleted}
             noMessages={noMessages}
             hint={hint}
+            optionsLabel={optionsLabel}
             onOpen={open}
             onActions={setActionsFor}
           />

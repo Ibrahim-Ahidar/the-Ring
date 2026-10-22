@@ -79,7 +79,7 @@ export function ListRow({
           {trailing}
         </View>
       ) : null}
-      {chevron ? <Icon icon={ChevronRight} size={20} tone="textMuted" flipRtl /> : null}
+      {chevron ? <Icon icon={ChevronRight} size={16} tone="textMuted" flipRtl /> : null}
     </View>
   );
 

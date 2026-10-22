@@ -378,7 +378,10 @@
         "not_found": "Conversation not found.",
         "invalid_name": "Folder name must be 1-40 characters.",
         "invalid_order": "Could not reorder folders."
-      }
+      },
+      "archivedRow": "Archived · {count}",
+      "chatOptions": "Chat options",
+      "newChat": "New chat"
     },
     "contacts": {
       "title": "Contacts",
