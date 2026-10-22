@@ -1,5 +1,5 @@
 import { Check, CheckCheck, CircleAlert, Clock, Forward, type LucideIcon } from "lucide-react-native";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { Pressable, View, useWindowDimensions } from "react-native";
 import { useTranslations } from "use-intl";
 
@@ -56,7 +56,9 @@ export const MessageBubble = memo(function MessageBubble({
   onToggleReaction,
 }: MessageBubbleProps) {
   const t = useTranslations();
-  const { colors, spacing, radii, shadows, fontWeights } = useTheme();
+  const { colors, spacing, radii, shadows, fontWeights, fontSizes } = useTheme();
+  // Measured width of the inline meta, reserved at the end of the text so the last line leaves room for it.
+  const [metaWidth, setMetaWidth] = useState(64);
   const deleted = item.deletion_scope === "everyone";
   const delivery = mine ? outboundDeliveryStatus(item, detail) : null;
   const tick = delivery ? tickFor(delivery) : null;
@@ -77,6 +79,7 @@ export const MessageBubble = memo(function MessageBubble({
           paddingVertical: 5,
           borderRadius: radii.control,
           backgroundColor: colors.system,
+          ...shadows.bubble,
         }}
       >
         <Text style={{ fontSize: 12.5, color: colors.textMuted, textAlign: "center" }}>{item.body ?? ""}</Text>
@@ -102,7 +105,7 @@ export const MessageBubble = memo(function MessageBubble({
         </View>
       ) : null}
       {unreadDivider ? (
-        <View style={{ alignSelf: "stretch", marginVertical: spacing.s12, padding: 5, backgroundColor: colors.panel }}>
+        <View style={{ alignSelf: "stretch", marginVertical: spacing.s12, padding: 5, backgroundColor: `${colors.panel}b3` }}>
           <Text style={{ fontSize: 12.5, color: colors.textMuted, textAlign: "center" }}>
             {t("mobile.chats.unreadDivider")}
           </Text>
@@ -181,27 +184,42 @@ export const MessageBubble = memo(function MessageBubble({
         {isMedia ? (
           <MediaBubble messageId={item.id} type={item.type as "image" | "audio"} />
         ) : (
-          <Text variant="body" style={deleted ? { fontStyle: "italic", color: colors.textMuted } : undefined}>
+          <Text
+            style={{
+              fontSize: fontSizes.md,
+              lineHeight: Math.round(fontSizes.md * 1.38),
+              ...(deleted ? { fontStyle: "italic", color: colors.textMuted } : null),
+            }}
+          >
             {deleted ? t("mobile.chats.deleted") : item.type === "text" ? item.body : t("mobile.chats.unsupported")}
+            {/* Reserves the meta's footprint so it sits on the last line when it fits (web float: inline-end). */}
+            {isMedia ? null : <View style={{ width: metaWidth, height: 1 }} />}
           </Text>
         )}
         <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            alignSelf: "flex-end",
-            gap: spacing.s4,
-            marginTop: spacing.s2,
+          onLayout={(e) => {
+            const w = Math.ceil(e.nativeEvent.layout.width) + 8;
+            if (!isMedia && Math.abs(w - metaWidth) > 1) setMetaWidth(w);
           }}
+          style={
+            isMedia
+              ? { flexDirection: "row", alignItems: "center", alignSelf: "flex-end", gap: 3, marginTop: spacing.s2 }
+              : {
+                  position: "absolute",
+                  end: 6,
+                  bottom: 6,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 3,
+                }
+          }
         >
           {item.edited_at && !deleted ? (
-            <Text variant="micro" style={{ color: metaColor }}>
+            <Text style={{ fontSize: fontSizes.xs, lineHeight: 15, color: metaColor }}>
               {t("mobile.actions.edited")} ·
             </Text>
           ) : null}
-          <Text variant="micro" style={{ color: metaColor }}>
-            {clockTime(item.created_at)}
-          </Text>
+          <Text style={{ fontSize: fontSizes.xs, lineHeight: 15, color: metaColor }}>{clockTime(item.created_at)}</Text>
           {tick && delivery ? (
             <View accessible accessibilityLabel={t(tick.labelKey)}>
               <Icon

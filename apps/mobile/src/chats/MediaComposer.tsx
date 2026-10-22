@@ -1,7 +1,7 @@
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder } from "expo-audio";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
-import { Image as ImageIcon, Mic, Square } from "lucide-react-native";
+import { Mic, Paperclip, Square } from "lucide-react-native";
 import { Alert } from "react-native";
 import { useTranslations } from "use-intl";
 
@@ -72,7 +72,7 @@ export function MediaComposer({ disabled, onUpload }: { disabled: boolean; onUpl
     <>
       {!recording ? (
         <IconButton
-          icon={ImageIcon}
+          icon={Paperclip}
           label={t("mobile.media.attach")}
           onPress={() => void pickImage()}
           disabled={disabled}

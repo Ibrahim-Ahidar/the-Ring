@@ -6,6 +6,7 @@ import { Alert, FlatList, KeyboardAvoidingView, TextInput, View } from "react-na
 import { useTranslations } from "use-intl";
 
 import { useSession } from "@/auth/session";
+import { ChatPattern } from "@/chats/ChatPattern";
 import { canSend } from "@/chats/composer";
 import { dayKey, dayLabel } from "@/chats/format";
 import { MediaComposer } from "@/chats/MediaComposer";
@@ -38,7 +39,7 @@ import { AppHeader, Avatar, Banner, ErrorState, Icon, IconButton, Screen, Spinne
 
 export default function ChatScreen() {
   const t = useTranslations();
-  const { colors, spacing, radii, shadows } = useTheme();
+  const { colors, spacing, radii, shadows, fontWeights, fontSizes } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useSession();
@@ -246,7 +247,7 @@ export default function ChatScreen() {
         subtitle={subtitleText ?? undefined}
         onBack={() => router.back()}
         backLabel={t("mobile.chats.back")}
-        leading={<Avatar name={title || "?"} seed={id} src={detail.data?.other_avatar_url} size="sm" />}
+        leading={<Avatar name={title || "?"} seed={id} src={detail.data?.other_avatar_url} size="md" />}
         actions={
           <>
             {detail.data?.type === "direct" && detail.data.other_user_id ? (
@@ -284,22 +285,24 @@ export default function ChatScreen() {
             borderBottomColor: colors.border,
           }}
         >
-          <Icon icon={Pin} size={16} tone="accent" />
+          <Icon icon={Pin} size={16} tone="icon" />
           <View style={{ flex: 1, borderStartWidth: 3, borderStartColor: colors.accent, paddingStart: spacing.s8 }}>
-            <Text variant="caption" tone="accentStrong" numberOfLines={1}>
+            <Text variant="caption" tone="accent" numberOfLines={1} style={{ fontWeight: fontWeights.medium }}>
               {t("mobile.chats.pinnedMessage")}
             </Text>
-            <Text variant="caption" numberOfLines={1}>
+            <Text variant="caption" tone="text" numberOfLines={1}>
               {snippet(pinnedPreview)}
             </Text>
           </View>
         </View>
       ) : null}
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+        <ChatPattern />
         <FlatList
           ref={listRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingVertical: spacing.s8 }}
+          // Web .messages: 16 top, 8 bottom (the list is inverted, so the sides swap).
+          contentContainerStyle={{ paddingTop: spacing.s8, paddingBottom: spacing.s16 }}
           inverted
           data={landing ? rows : []}
           keyExtractor={(m) => m.id}
@@ -410,15 +413,19 @@ export default function ChatScreen() {
             }}
           >
             {!editing ? (
-              <MediaComposer disabled={!online || sendMedia.isPending} onUpload={(u) => sendMedia.mutate(u)} />
+              <View style={{ flexDirection: "row", alignItems: "flex-end", gap: spacing.s4, marginBottom: 2 }}>
+                <MediaComposer disabled={!online || sendMedia.isPending} onUpload={(u) => sendMedia.mutate(u)} />
+              </View>
             ) : null}
             <TextInput
               style={{
                 flex: 1,
                 minHeight: 44,
                 maxHeight: 140,
-                paddingHorizontal: spacing.s8,
-                paddingVertical: spacing.s12,
+                paddingHorizontal: spacing.s4,
+                paddingVertical: 11,
+                fontSize: fontSizes.md,
+                lineHeight: 20,
                 backgroundColor: "transparent",
                 color: colors.text,
                 textAlign: "auto",
@@ -439,6 +446,7 @@ export default function ChatScreen() {
               accent
               flipRtl={!editing}
               disabled={!sendable}
+              style={{ marginBottom: 2 }}
               onPress={submit}
             />
           </View>
