@@ -2,6 +2,7 @@ import {
   acceptRequest,
   declineRequest,
   listIncoming,
+  listOutgoing,
 } from "@pulse/core/message-requests";
 import { blockUser, listBlocks, reportUser, unblockUser } from "@pulse/core/safety";
 import type { ReportCategory } from "@pulse/core/safety-types";
@@ -14,6 +15,7 @@ export type { BlockRow, ReportCategory } from "@pulse/core/safety-types";
 export const REPORT_CATEGORIES: readonly ReportCategory[] = ["spam", "harassment", "impersonation", "other"];
 
 export const listMessageRequests = () => listIncoming(rpcClient);
+export const listSentMessageRequests = () => listOutgoing(rpcClient);
 export const acceptMessageRequest = (id: string) => acceptRequest(rpcClient, id);
 export const declineMessageRequest = (id: string) => declineRequest(rpcClient, id);
 export const blockChatUser = (userId: string) => blockUser(rpcClient, userId);

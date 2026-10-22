@@ -6,6 +6,7 @@ import {
   declineMessageRequest,
   listBlockedUsers,
   listMessageRequests,
+  listSentMessageRequests,
   reportChatUser,
   unblockChatUser,
   type ReportCategory,
@@ -14,6 +15,10 @@ import {
 
 export function useMessageRequests() {
   return useQuery({ queryKey: ["message-requests"], queryFn: async () => unwrap(await listMessageRequests()) });
+}
+
+export function useSentMessageRequests() {
+  return useQuery({ queryKey: ["message-requests", "sent"], queryFn: async () => unwrap(await listSentMessageRequests()) });
 }
 
 export function useRequestActions() {

@@ -510,6 +510,38 @@
       "download": "Télécharger la mise à jour",
       "notice": "La version {latest} est disponible (vous avez {current}).",
       "dismiss": "Plus tard"
+    },
+    "requests": {
+      "title": "Demandes de message",
+      "incomingTitle": "Demandes reçues",
+      "outgoingTitle": "Demandes envoyées",
+      "emptyIncoming": "Personne n'attend votre réponse.",
+      "emptyOutgoing": "Vous n'avez envoyé aucune demande.",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "declineConfirm": "Refuser la demande de {name} ?",
+      "declineConfirmAction": "Oui, refuser",
+      "cancel": "Annuler",
+      "requestRequired": "@{username} n'accepte que les demandes de message. Envoyez-en une pour vous présenter.",
+      "noteLabel": "Note (facultatif)",
+      "send": "Envoyer la demande",
+      "sent": "Demande envoyée à @{username}.",
+      "viewRequests": "Voir les demandes",
+      "openRequests": "Demandes de message",
+      "status": {
+        "pending": "En attente",
+        "accepted": "Acceptée",
+        "declined": "Refusée"
+      },
+      "errors": {
+        "generic": "Une erreur est survenue. Réessayez.",
+        "message_requests": {
+          "not_allowed": "Vous ne pouvez pas envoyer de demande à cette personne.",
+          "not_required": "Vous pouvez écrire directement à cette personne.",
+          "note_too_long": "La note est trop longue.",
+          "not_found": "Cette demande n'existe plus."
+        }
+      }
     }
   }
 }
