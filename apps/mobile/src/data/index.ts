@@ -126,6 +126,8 @@ export {
   listRecents,
   removeContact,
   removeMyAvatar,
+  changeMyUsername,
+  deleteMyAccount,
   saveMyProfile,
   searchUser,
   startDirectChat,

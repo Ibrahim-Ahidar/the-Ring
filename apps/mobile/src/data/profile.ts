@@ -1,6 +1,9 @@
 import {
   AVATARS_BUCKET,
   avatarExtension,
+  callRpc,
+  changeUsername,
+  ok,
   clearAllRecentSearches,
   clearAvatar,
   clearRecentSearch,
@@ -35,7 +38,15 @@ export const clearAllRecents = () => clearAllRecentSearches(rpcClient);
 export const startDirectChat = (username: string) => openDirect(rpcClient, { username });
 
 export const getMyProfile = () => getOwnProfile(rpcClient);
-export const saveMyProfile = (input: { displayName: string; bio: string }) => updateProfile(rpcClient, input);
+export const saveMyProfile = (input: { displayName: string; bio: string; timezone?: string }) =>
+  updateProfile(rpcClient, input);
+export const changeMyUsername = (username: string) => changeUsername(rpcClient, username);
+
+/** Same RPC as the web identity deleteAccount: anonymizes the account once the typed username matches. */
+export async function deleteMyAccount(usernameConfirm: string): Promise<Result<void>> {
+  const result = await callRpc<null>(rpcClient, "identity_delete_account", { p_username_confirm: usernameConfirm });
+  return result.ok ? ok(undefined) : result;
+}
 
 /** Public URL for a stored avatar value, or null (show initials). */
 export function avatarUrl(value: string | null | undefined): string | null {

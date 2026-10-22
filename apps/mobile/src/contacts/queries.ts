@@ -9,6 +9,7 @@ import {
   listContacts,
   listRecents,
   removeContact,
+  changeMyUsername,
   removeMyAvatar,
   saveMyProfile,
   searchUser,
@@ -84,7 +85,8 @@ export function useProfileActions() {
   };
   return {
     save: useMutation({
-      mutationFn: async (input: { displayName: string; bio: string }) => unwrap(await saveMyProfile(input)),
+      mutationFn: async (input: { displayName: string; bio: string; timezone?: string }) =>
+        unwrap(await saveMyProfile(input)),
       onSuccess: refresh,
     }),
     upload: useMutation({
@@ -93,5 +95,9 @@ export function useProfileActions() {
       onSuccess: refresh,
     }),
     remove: useMutation({ mutationFn: async () => unwrap(await removeMyAvatar()), onSuccess: refresh }),
+    changeUsername: useMutation({
+      mutationFn: async (username: string) => unwrap(await changeMyUsername(username)),
+      onSuccess: refresh,
+    }),
   };
 }
