@@ -11,6 +11,10 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@formatjs/intl-getcanonicallocales": "^3.2.12",
+    "@formatjs/intl-locale": "^5.3.12",
+    "@formatjs/intl-pluralrules": "^6.3.16",
+    "@formatjs/intl-relativetimeformat": "^12.3.16",
     "@pulse/core": "*",
     "@pulse/i18n": "*",
     "@react-native-community/netinfo": "12.0.1",

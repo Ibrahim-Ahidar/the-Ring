@@ -1,3 +1,5 @@
+import "@/i18n/polyfills";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Slot, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
