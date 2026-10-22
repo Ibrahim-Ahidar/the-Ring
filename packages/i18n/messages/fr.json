@@ -325,6 +325,13 @@
         "member_limit": "Le groupe est complet.",
         "owner_must_transfer": "Transférez la propriété avant de partir.",
         "cannot_target_owner": "Vous ne pouvez pas modifier le propriétaire."
+      },
+      "form": {
+        "nameLabel": "Nom du groupe",
+        "descriptionLabel": "Description (facultatif)",
+        "membersLabel": "Ajouter des membres (facultatif)",
+        "membersPlaceholder": "@nom_utilisateur, @nom_utilisateur",
+        "membersHint": "Noms d’utilisateur séparés par des virgules ou des espaces. Vous pourrez inviter d’autres personnes plus tard depuis les paramètres du groupe."
       }
     },
     "safety": {

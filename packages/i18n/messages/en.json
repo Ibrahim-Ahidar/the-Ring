@@ -325,6 +325,13 @@
         "member_limit": "The group is full.",
         "owner_must_transfer": "Transfer ownership before leaving.",
         "cannot_target_owner": "You can't change the owner."
+      },
+      "form": {
+        "nameLabel": "Group name",
+        "descriptionLabel": "Description (optional)",
+        "membersLabel": "Add members (optional)",
+        "membersPlaceholder": "@username, @username",
+        "membersHint": "Usernames separated by commas or spaces. You can invite more people later from group settings."
       }
     },
     "safety": {
