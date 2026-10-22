@@ -4,6 +4,7 @@ export { Icon, type IconProps } from "./Icon";
 export { Text, type TextProps, type TextVariant, type TextTone } from "./Text";
 export { Screen, type ScreenProps } from "./Screen";
 export { AppHeader, type AppHeaderProps } from "./AppHeader";
+export { BottomNav, type BottomNavItem } from "./BottomNav";
 export { Button, type ButtonProps, type ButtonVariant } from "./Button";
 export { IconButton, type IconButtonProps } from "./IconButton";
 export { TextField, SearchField, type TextFieldProps, type SearchFieldProps } from "./TextField";

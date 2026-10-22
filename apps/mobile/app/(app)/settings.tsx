@@ -38,8 +38,8 @@ export default function SettingsScreen() {
   }
 
   return (
-    <Screen edges={["bottom", "start", "end"]} scroll contentStyle={{ paddingBottom: spacing.s24 }}>
-      <AppHeader title={t("mobile.settings.title")} onBack={() => router.back()} backLabel={t("mobile.chats.back")} />
+    <Screen edges={["start", "end"]} background="panel" scroll contentStyle={{ paddingBottom: spacing.s24 }}>
+      <AppHeader title={t("mobile.settings.title")} />
       {restartRequired ? <Banner kind="info" message={t("mobile.settings.restartRequired")} /> : null}
 
       <SectionHeader title={t("mobile.profile.title")} />

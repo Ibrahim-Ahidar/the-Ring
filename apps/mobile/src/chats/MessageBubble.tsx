@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, useWindowDimensions } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { MediaBubble } from "@/chats/MediaBubble";
@@ -48,9 +48,11 @@ export const MessageBubble = memo(function MessageBubble({
   const groups = useMemo(() => (reactions?.length ? groupReactions(reactions, userId) : []), [reactions, userId]);
   const isMedia = !deleted && (item.type === "image" || item.type === "audio");
   const metaColor = colors.bubbleMeta;
+  const bubbleColor = mine ? colors.bubbleOut : colors.bubbleIn;
+  const { width } = useWindowDimensions();
 
   return (
-    <View style={{ marginTop: grouped ? spacing.s2 : spacing.s8, paddingHorizontal: spacing.s12 }}>
+    <View style={{ marginTop: grouped ? spacing.s2 : spacing.s8, paddingHorizontal: Math.min(72, Math.max(spacing.s16, width * 0.06)) }}>
       {dayLabel ? (
         <View
           style={{
@@ -75,17 +77,37 @@ export const MessageBubble = memo(function MessageBubble({
         accessibilityHint={t("mobile.actions.menuTitle")}
         style={[
           {
-            maxWidth: "82%",
+            // Web phone bubble: max 85%, padding 6/8/8/9, squared corner + tail on a group's first message.
+            maxWidth: "85%",
             alignSelf: mine ? "flex-end" : "flex-start",
-            paddingHorizontal: spacing.s12,
-            paddingTop: spacing.s8,
-            paddingBottom: spacing.s4,
+            paddingTop: 6,
+            paddingBottom: spacing.s8,
+            paddingStart: 9,
+            paddingEnd: spacing.s8,
             borderRadius: radii.bubble,
-            backgroundColor: mine ? colors.bubbleOut : colors.bubbleIn,
+            ...(grouped ? null : mine ? { borderTopEndRadius: 0 } : { borderTopStartRadius: 0 }),
+            backgroundColor: bubbleColor,
           },
           shadows.bubble,
         ]}
       >
+        {grouped ? null : (
+          <View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              top: 0,
+              ...(mine ? { end: -8 } : { start: -8 }),
+              width: 0,
+              height: 0,
+              borderTopWidth: 13,
+              borderTopColor: bubbleColor,
+              ...(mine
+                ? { borderEndWidth: 8, borderEndColor: "transparent" }
+                : { borderStartWidth: 8, borderStartColor: "transparent" }),
+            }}
+          />
+        )}
         {item.reply_to_id ? (
           <View
             style={{

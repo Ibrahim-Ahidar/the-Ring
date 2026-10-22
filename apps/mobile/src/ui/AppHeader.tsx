@@ -19,11 +19,15 @@ export interface AppHeaderProps {
   actions?: ReactNode;
   /** Pad the status bar inset. Default true; set false when a Screen already pads the top. */
   safeTop?: boolean;
-  /** Bottom hairline border (web header border). Default true. */
+  /** Bottom hairline border. Defaults to the web: sub-pages have one, top-level pages don't. */
   border?: boolean;
 }
 
-/** Top bar: 60px (web --header-height), panel background, back + title + actions. */
+/**
+ * Web `.pane-header` at phone width: min 60px, padding 16/16/8, gap 8.
+ * Top-level pages (no back button, no leading node) get the sidebar title: 22px/600,
+ * no border. Sub-pages get the main-pane title: 16px/500, panel background + border.
+ */
 export function AppHeader({
   title,
   subtitle,
@@ -32,16 +36,18 @@ export function AppHeader({
   leading,
   actions,
   safeTop = true,
-  border = true,
+  border,
 }: AppHeaderProps) {
-  const { colors, spacing, controlHeights } = useTheme();
+  const { colors, spacing, controlHeights, fontSizes, fontWeights } = useTheme();
+  const topLevel = !onBack && !leading;
+  const showBorder = border ?? !topLevel;
   const insets = useSafeAreaInsets();
   return (
     <View
       style={{
         backgroundColor: colors.panel,
         paddingTop: safeTop ? insets.top : 0,
-        borderBottomWidth: border ? 1 : 0,
+        borderBottomWidth: showBorder ? 1 : 0,
         borderBottomColor: colors.border,
       }}
     >
@@ -49,15 +55,30 @@ export function AppHeader({
         style={{
           flexDirection: "row",
           alignItems: "center",
-          height: controlHeights.header,
-          paddingHorizontal: spacing.s8,
-          gap: spacing.s8,
+          minHeight: controlHeights.header,
+          // `.convHeader` (with an avatar) is 8/16 with a 12 gap; `.pane-header` is 16/16/8 with 8.
+          paddingTop: leading ? spacing.s8 : spacing.s16,
+          paddingBottom: spacing.s8,
+          paddingHorizontal: spacing.s16,
+          gap: leading ? spacing.s12 : spacing.s8,
         }}
       >
-        {onBack ? <IconButton icon={ArrowLeft} label={backLabel} onPress={onBack} flipRtl /> : null}
+        {onBack ? (
+          <View style={{ marginStart: -spacing.s8 }}>
+            <IconButton icon={ArrowLeft} label={backLabel} onPress={onBack} flipRtl />
+          </View>
+        ) : null}
         {leading}
-        <View style={{ flex: 1, minWidth: 0, paddingStart: onBack || leading ? 0 : spacing.s8 }}>
-          <Text variant="heading" numberOfLines={1} style={{ fontSize: 19 }}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text
+            variant="heading"
+            numberOfLines={1}
+            style={
+              topLevel
+                ? { fontSize: fontSizes.xxl, fontWeight: fontWeights.bold, letterSpacing: -0.22 }
+                : { fontSize: fontSizes.lg, fontWeight: fontWeights.medium }
+            }
+          >
             {title}
           </Text>
           {subtitle ? (

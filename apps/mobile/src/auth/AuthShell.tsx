@@ -21,10 +21,10 @@ export function AuthShell({ title, subtitle, error, info, children, footer }: Au
   return (
     <Screen background="bg">
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <Screen scroll padded edges={[]} contentStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: spacing.s24 }}>
+        <Screen scroll padded edges={[]} contentStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: spacing.s16, paddingVertical: spacing.s24 }}>
           <View style={{ gap: spacing.s24, width: "100%", maxWidth: 420, alignSelf: "center" }}>
             <View style={{ gap: spacing.s8 }}>
-              <Text variant="title" accessibilityRole="header">
+              <Text variant="title" accessibilityRole="header" style={{ fontSize: 28, letterSpacing: -0.28 }}>
                 {title}
               </Text>
               {subtitle ? <Text variant="muted">{subtitle}</Text> : null}

@@ -1,8 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { MessageSquare, Settings, UsersRound } from "lucide-react-native";
+import { MessageSquare, UsersRound } from "lucide-react-native";
 import { memo, useCallback, useState } from "react";
-import { FlatList, ScrollView, View } from "react-native";
+import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { useSession } from "@/auth/session";
@@ -20,7 +20,6 @@ import {
   EmptyState,
   ErrorState,
   IconButton,
-  ListRow,
   LoadingState,
   Screen,
   Spinner,
@@ -44,24 +43,61 @@ type RowProps = {
   onActions: (chat: ConversationSummary) => void;
 };
 
+/** Mirrors the web `.chatRow`: 12 gap, 8/12 padding, name + time on top, preview + badges below. */
 const ChatRow = memo(function ChatRow({ chat, untitled, deleted, noMessages, hint, onOpen, onActions }: RowProps) {
-  const { controlHeights } = useTheme();
+  const { colors, spacing, radii, fontSizes, fontWeights, controlHeights } = useTheme();
   const title = chatTitle(chat, untitled);
   const [nowMs] = useState(() => Date.now());
   const muted = chat.muted_until !== null && new Date(chat.muted_until).getTime() > nowMs;
+  const unread = chat.unread_count > 0;
+  const isDeleted = chat.last_message_deletion_scope === "everyone";
   return (
-    <View style={{ minHeight: controlHeights.row, justifyContent: "center" }}>
-      <ListRow
-        title={title}
-        subtitle={chat.last_message_deletion_scope === "everyone" ? deleted : (chat.last_message_preview ?? noMessages)}
-        leading={<Avatar name={title} seed={chat.id} src={chat.other_avatar_url} />}
-        meta={chat.last_message_at ? listTime(chat.last_message_at, new Date()) : undefined}
-        trailing={<UnreadCount count={chat.unread_count} muted={muted} />}
-        onPress={() => onOpen(chat.id)}
-        onLongPress={() => onActions(chat)}
-        accessibilityHint={hint}
-      />
-    </View>
+    <Pressable
+      onPress={() => onOpen(chat.id)}
+      onLongPress={() => onActions(chat)}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityHint={hint}
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.s12,
+        minHeight: controlHeights.row,
+        paddingVertical: spacing.s8,
+        paddingHorizontal: spacing.s12,
+        borderRadius: radii.card,
+        backgroundColor: pressed ? colors.hover : "transparent",
+      })}
+    >
+      <Avatar name={title} seed={chat.other_user_id ?? chat.id} src={chat.other_avatar_url} />
+      <View style={{ flex: 1, minWidth: 0, gap: spacing.s2 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.s8 }}>
+          <Text numberOfLines={1} style={{ flex: 1, fontSize: fontSizes.lg, color: colors.text, writingDirection: "auto" }}>
+            {title}
+          </Text>
+          {chat.last_message_at ? (
+            <Text
+              style={{
+                fontSize: 12,
+                color: unread ? colors.accent : colors.textMuted,
+                fontWeight: unread ? fontWeights.medium : fontWeights.regular,
+              }}
+            >
+              {listTime(chat.last_message_at, new Date())}
+            </Text>
+          ) : null}
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.s8 }}>
+          <Text
+            numberOfLines={1}
+            style={{ flex: 1, fontSize: 14, color: colors.textMuted, fontStyle: isDeleted ? "italic" : "normal" }}
+          >
+            {isDeleted ? deleted : (chat.last_message_preview ?? noMessages)}
+          </Text>
+          <UnreadCount count={chat.unread_count} muted={muted} />
+        </View>
+      </View>
+    </Pressable>
   );
 });
 
@@ -124,13 +160,12 @@ export default function ChatListScreen() {
   } as const;
 
   return (
-    <Screen edges={["bottom", "start", "end"]}>
+    <Screen edges={["start", "end"]} background="panel">
       <AppHeader
         title={t("mobile.chats.title")}
         actions={
           <>
             <IconButton icon={UsersRound} label={t("mobile.groups.newGroup")} onPress={() => router.push("/groups/new")} />
-            <IconButton icon={Settings} label={t("mobile.settings.title")} onPress={() => router.push("/settings")} />
           </>
         }
       />
@@ -144,7 +179,6 @@ export default function ChatListScreen() {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={rowStyle} style={{ flexGrow: 0 }}>
         <Chip label={t("mobile.safety.requests")} onPress={() => router.push("/requests")} />
         <Chip label={t("mobile.safety.blocked")} onPress={() => router.push("/blocked")} />
-        <Chip label={t("mobile.contacts.link")} onPress={() => router.push("/contacts")} />
         <Chip label={t("mobile.profile.link")} onPress={() => router.push("/profile")} />
         <Chip label={t("mobile.logout.submit")} onPress={logout} />
       </ScrollView>

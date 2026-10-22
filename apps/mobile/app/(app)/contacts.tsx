@@ -96,8 +96,8 @@ export default function ContactsScreen() {
   );
 
   return (
-    <Screen edges={["bottom", "start", "end"]}>
-      <AppHeader title={t("mobile.contacts.title")} onBack={() => router.back()} backLabel={t("mobile.chats.back")} />
+    <Screen edges={["start", "end"]} background="panel">
+      <AppHeader title={t("mobile.contacts.title")} />
       {contacts.isError ? (
         <ErrorState message={t("mobile.contacts.error")} onRetry={() => void contacts.refetch()} />
       ) : (
