@@ -18,15 +18,18 @@ function AuthGate() {
   const segments = useSegments();
   const router = useRouter();
   const group = segments[0] as string | undefined;
+  const screen = (segments as string[])[1];
 
   useEffect(() => {
     const target = decideRedirect({
       loading,
       signedIn: session !== null,
+      mfaPending: session?.mfaPending ?? false,
       group,
+      screen,
     });
     if (target) router.replace(target);
-  }, [loading, session, group, router]);
+  }, [loading, session, group, screen, router]);
 
   const { colors } = useTheme();
   return (

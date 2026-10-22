@@ -19,4 +19,13 @@ describe("decideRedirect", () => {
     expect(decideRedirect({ loading: false, signedIn: false, group: undefined })).toBe("/login");
     expect(decideRedirect({ loading: false, signedIn: true, group: undefined })).toBeNull();
   });
+  it("holds a signed-in user owing a second factor on verify", () => {
+    expect(decideRedirect({ loading: false, signedIn: true, mfaPending: true, group: "(app)" })).toBe("/verify");
+    expect(decideRedirect({ loading: false, signedIn: true, mfaPending: true, group: "(auth)", screen: "login" })).toBe("/verify");
+    expect(decideRedirect({ loading: false, signedIn: true, mfaPending: true, group: "(auth)", screen: "verify" })).toBeNull();
+  });
+  it("moves on from verify once the factor is done or the user signs out", () => {
+    expect(decideRedirect({ loading: false, signedIn: true, group: "(auth)", screen: "verify" })).toBe("/");
+    expect(decideRedirect({ loading: false, signedIn: false, group: "(auth)", screen: "verify" })).toBe("/login");
+  });
 });

@@ -26,10 +26,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Register on restore and on token change; stops on sign-out.
-  const userId = state.session?.userId ?? null;
+  // Waits for the second factor, as the web registers the device only after it.
+  const userId = state.session?.mfaPending ? null : (state.session?.userId ?? null);
   useEffect(() => {
     if (!userId) return;
-    return startDeviceSync({ userId, email: null });
+    return startDeviceSync({ userId, email: null, mfaPending: false });
   }, [userId]);
 
   const value = useMemo(() => state, [state]);

@@ -8,12 +8,22 @@ import { withDeviceLifecycle } from "./devices-core";
 export interface AppSession {
   userId: string;
   email: string | null;
+  /** AAL1 with a verified factor: the sign-in still owes a TOTP code. */
+  mfaPending: boolean;
 }
 
 type RawSession = { user: { id: string; email?: string | null } } | null;
 
-function toAppSession(session: RawSession): AppSession | null {
-  return session ? { userId: session.user.id, email: session.user.email ?? null } : null;
+/** Same rule as the web needsSecondFactor; read from the stored session, no request. */
+async function mfaPending(): Promise<boolean> {
+  const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (error || !data) return false;
+  return data.nextLevel === "aal2" && data.currentLevel !== "aal2";
+}
+
+async function toAppSession(session: RawSession): Promise<AppSession | null> {
+  if (!session) return null;
+  return { userId: session.user.id, email: session.user.email ?? null, mfaPending: await mfaPending() };
 }
 
 export async function getSession(): Promise<AppSession | null> {
@@ -21,10 +31,15 @@ export async function getSession(): Promise<AppSession | null> {
   return toAppSession(data.session);
 }
 
-/** Calls `handler` on every sign-in, sign-out and refresh. Returns an unsubscribe. */
+/** Calls `handler` on every sign-in, sign-out, refresh and MFA step-up. Returns an unsubscribe. */
 export function onSessionChange(handler: (session: AppSession | null) => void): () => void {
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-    handler(toAppSession(session));
+    // Deferred: awaiting auth calls inside this callback deadlocks supabase-js.
+    setTimeout(() => {
+      void toAppSession(session)
+        .then(handler)
+        .catch(() => handler(null));
+    }, 0);
   });
   return () => data.subscription.unsubscribe();
 }
@@ -33,7 +48,7 @@ async function rawSignInWithPassword(email: string, password: string): Promise<R
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return err(mapAuthError(error));
-    const session = toAppSession(data.session);
+    const session = await toAppSession(data.session);
     return session ? ok(session) : err("mobile.login.errors.unexpected");
   } catch (e) {
     return err(mapAuthError(e instanceof Error ? e : { message: String(e) }));

@@ -63,6 +63,20 @@ async function challengeAndVerify(factorId: string, code: string): Promise<Resul
   return error ? err(mapMfaError(error)) : ok(undefined);
 }
 
+/** Second sign-in step: tries each verified factor, like the web verifySignInMfa. */
+export async function verifySignInMfa(code: string): Promise<Result<void>> {
+  if (!TOTP_CODE.test(code.trim())) return err("identity.mfa_code_invalid");
+  const factors = await listMfaFactors();
+  if (!factors.ok) return factors;
+  if (factors.value.length === 0) return err("platform.unauthenticated");
+  let last: Result<void> = err("identity.mfa_code_wrong");
+  for (const factor of factors.value) {
+    last = await challengeAndVerify(factor.id, code);
+    if (last.ok || last.error.code !== "identity.mfa_code_wrong") return last;
+  }
+  return last;
+}
+
 /** Mirrors the web enrollTotp: enforces the factor limit and drops stale unverified enrollments first. */
 export async function enrollTotp(friendlyName: string): Promise<Result<MfaEnrollment>> {
   const verified = await listMfaFactors();
