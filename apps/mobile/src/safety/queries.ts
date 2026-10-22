@@ -3,6 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   acceptMessageRequest,
   blockChatUser,
+  getPrivacySettings,
+  listMyReportRows,
+  updatePrivacySettings,
+  type PrivacyPatch,
+  type PrivacySettings,
   declineMessageRequest,
   listBlockedUsers,
   listMessageRequests,
@@ -63,4 +68,30 @@ export function useSafetyActions() {
         unwrap(await reportChatUser(input.userId, input.category)),
     }),
   };
+}
+
+export function usePrivacy() {
+  return useQuery({ queryKey: ["privacy"], queryFn: async () => unwrap(await getPrivacySettings()) });
+}
+
+export function useMyReports() {
+  return useQuery({ queryKey: ["myReports"], queryFn: async () => unwrap(await listMyReportRows()) });
+}
+
+/** Saves one privacy field optimistically, like the web SafetyProvider, rolling back on error. */
+export function useUpdatePrivacy() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (patch: PrivacyPatch) => unwrap(await updatePrivacySettings(patch)),
+    onMutate: async (patch) => {
+      await queryClient.cancelQueries({ queryKey: ["privacy"] });
+      const previous = queryClient.getQueryData<PrivacySettings>(["privacy"]);
+      if (previous) queryClient.setQueryData(["privacy"], { ...previous, ...patch });
+      return { previous };
+    },
+    onError: (_e, _patch, context) => {
+      if (context?.previous) queryClient.setQueryData(["privacy"], context.previous);
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: ["privacy"] }),
+  });
 }

@@ -599,6 +599,91 @@
         "files": "لا توجد ملفات مشتركة بعد",
         "links": "لا توجد روابط في هذه المحادثة بعد"
       }
+    },
+    "privacySettings": {
+      "pageTitle": "الخصوصية والأمان",
+      "sections": {
+        "discovery": "من يمكنه العثور عليك",
+        "presence": "الحضور وإيصالات القراءة",
+        "messaging": "من يمكنه مراسلتك",
+        "groups": "دعوات المجموعات"
+      },
+      "settings": {
+        "discoverable": "يمكن للآخرين العثور عليّ عبر البحث باسم المستخدم بالضبط.",
+        "profileVisibility": "من يمكنه فتح ملفي عندما يسمح البحث بذلك.",
+        "showOnline": "يمكن للآخرين رؤية أنني متصل.",
+        "showLastSeen": "يمكن للآخرين رؤية آخر نشاط لي.",
+        "sendReadReceipts": "يمكن للآخرين رؤية أنني قرأت رسائلهم.",
+        "whoCanMessage": "من يمكنه بدء محادثة مباشرة معي.",
+        "whoCanAddToGroups": "من يمكنه إضافتي إلى مجموعات."
+      },
+      "options": {
+        "profileVisibility": {
+          "public": "كل من يمكنه اكتشافي",
+          "contacts": "الأشخاص في قائمة المفضلة لديّ أو من أضافوني",
+          "private": "أنا فقط"
+        },
+        "whoCanMessage": {
+          "everyone": "الجميع وفق إعداداتي الأخرى",
+          "requests": "بعد قبول طلب مراسلة فقط",
+          "nobody": "لا أحد يمكنه بدء محادثة جديدة"
+        },
+        "whoCanAddToGroups": {
+          "everyone": "أي عضو يمكنه مراسلتي",
+          "contacts": "الأشخاص في قائمة المفضلة لديّ أو من أضافوني",
+          "nobody": "لا أحد يمكنه إضافتي إلى مجموعات"
+        }
+      },
+      "block": {
+        "action": "حظر العضو",
+        "listTitle": "الأعضاء المحظورون",
+        "empty": "لم تحظر أي شخص بعد.",
+        "unblock": "إلغاء الحظر",
+        "confirmTitle": "حظر {name}؟",
+        "confirmBody": "لن يتمكن من اكتشافك أو مراسلتك أو دعوتك، ولن تتمكن أنت أيضاً من بدء هذه التفاعلات معه.",
+        "confirmAction": "حظر",
+        "unblockTitle": "إلغاء حظر {name}؟",
+        "unblockBody": "ستعود التفاعلات وفق إعدادات خصوصيتك.",
+        "unblockConfirm": "إلغاء الحظر"
+      },
+      "report": {
+        "action": "إبلاغ",
+        "reportMessage": "الإبلاغ عن رسالة",
+        "dialogTitle": "إرسال بلاغ",
+        "subject": "بخصوص: {subject}",
+        "categoryLabel": "اختر السبب الأقرب لهذا البلاغ.",
+        "detailsLabel": "تفاصيل اختيارية (حتى 1000 حرف).",
+        "submit": "إرسال البلاغ",
+        "listTitle": "بلاغاتك",
+        "empty": "لم ترسل أي بلاغات بعد.",
+        "categories": {
+          "spam": "رسائل مزعجة",
+          "harassment": "تحرش أو إساءة",
+          "impersonation": "انتحال شخصية",
+          "other": "سبب آخر"
+        },
+        "status": {
+          "open": "تم الاستلام",
+          "reviewed": "تمت المراجعة",
+          "dismissed": "مغلق"
+        }
+      },
+      "actions": {
+        "cancel": "إلغاء",
+        "retry": "إعادة المحاولة"
+      },
+      "states": {
+        "loading": "جارٍ التحميل…"
+      },
+      "errors": {
+        "generic": "حدث خطأ. حاول مرة أخرى.",
+        "detailsTooLong": "يجب ألا تتجاوز التفاصيل 1000 حرف.",
+        "invalidSetting": "هذه القيمة غير مسموحة.",
+        "notFound": "تعذر العثور على ما أبلغت عنه.",
+        "cannotBlockSelf": "لا يمكنك حظر نفسك.",
+        "rateLimited": "أرسلت بلاغات كثيرة. حاول لاحقاً.",
+        "unauthenticated": "سجّل الدخول للمتابعة."
+      }
     }
   }
 }

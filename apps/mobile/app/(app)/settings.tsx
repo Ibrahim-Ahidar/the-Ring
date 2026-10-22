@@ -81,7 +81,7 @@ export default function SettingsScreen() {
           title={t("routes.settingsPrivacy")}
           subtitle={t("settings.privacyDesc")}
           chevron
-          onPress={() => router.push("/blocked")}
+          onPress={() => router.push("/settings-privacy")}
         />
         <ListRow
           icon={KeyRound}
