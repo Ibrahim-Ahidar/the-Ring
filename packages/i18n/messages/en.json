@@ -332,6 +332,17 @@
         "membersLabel": "Add members (optional)",
         "membersPlaceholder": "@username, @username",
         "membersHint": "Usernames separated by commas or spaces. You can invite more people later from group settings."
+      },
+      "admin": {
+        "promoteAdmin": "Make admin",
+        "demoteMember": "Remove admin role",
+        "transferOwnership": "Transfer ownership",
+        "restrictMessaging": "Restrict messaging",
+        "allowMessaging": "Allow messaging",
+        "createLinkSubmit": "Create invite link",
+        "linkCreated": "Invite link created",
+        "joinCodeLabel": "Join with invite code",
+        "joinSubmit": "Join group"
       }
     },
     "safety": {

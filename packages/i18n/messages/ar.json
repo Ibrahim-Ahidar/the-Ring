@@ -332,6 +332,17 @@
         "membersLabel": "إضافة أعضاء (اختياري)",
         "membersPlaceholder": "@اسم_المستخدم، @اسم_المستخدم",
         "membersHint": "أسماء المستخدمين مفصولة بفواصل أو مسافات. يمكنك دعوة المزيد لاحقًا من إعدادات المجموعة."
+      },
+      "admin": {
+        "promoteAdmin": "تعيين مشرف",
+        "demoteMember": "إزالة دور المشرف",
+        "transferOwnership": "نقل الملكية",
+        "restrictMessaging": "تقييد المراسلة",
+        "allowMessaging": "السماح بالمراسلة",
+        "createLinkSubmit": "إنشاء رابط دعوة",
+        "linkCreated": "تم إنشاء رابط الدعوة",
+        "joinCodeLabel": "الانضمام برمز دعوة",
+        "joinSubmit": "انضم إلى المجموعة"
       }
     },
     "safety": {

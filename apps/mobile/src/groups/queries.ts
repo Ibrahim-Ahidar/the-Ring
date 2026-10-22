@@ -8,6 +8,11 @@ import {
   listGroupMembers,
   removeGroupMember,
   updateChatGroup,
+  createGroupInviteLink,
+  joinGroupByCode,
+  setGroupMessagingRestricted,
+  setGroupRole,
+  transferGroupOwnership,
   unwrap,
 } from "@/data";
 
@@ -56,6 +61,23 @@ export function useGroupActions(id: string) {
     leave: useMutation({
       mutationFn: async () => unwrap(await leaveChatGroup(id)),
       onSuccess: refresh,
+    }),
+    setRole: useMutation({
+      mutationFn: async (input: { userId: string; role: "member" | "admin" }) =>
+        unwrap(await setGroupRole({ conversationId: id, ...input })),
+      onSuccess: refresh,
+    }),
+    transfer: useMutation({
+      mutationFn: async (userId: string) => unwrap(await transferGroupOwnership({ conversationId: id, userId })),
+      onSuccess: refresh,
+    }),
+    restrict: useMutation({
+      mutationFn: async (input: { userId: string; restricted: boolean }) =>
+        unwrap(await setGroupMessagingRestricted({ conversationId: id, ...input })),
+      onSuccess: refresh,
+    }),
+    inviteLink: useMutation({
+      mutationFn: async () => unwrap(await createGroupInviteLink(id)),
     }),
   };
 }

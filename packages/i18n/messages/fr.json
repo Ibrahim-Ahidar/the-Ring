@@ -332,6 +332,17 @@
         "membersLabel": "Ajouter des membres (facultatif)",
         "membersPlaceholder": "@nom_utilisateur, @nom_utilisateur",
         "membersHint": "Noms d’utilisateur séparés par des virgules ou des espaces. Vous pourrez inviter d’autres personnes plus tard depuis les paramètres du groupe."
+      },
+      "admin": {
+        "promoteAdmin": "Nommer admin",
+        "demoteMember": "Retirer le rôle admin",
+        "transferOwnership": "Transférer la propriété",
+        "restrictMessaging": "Restreindre la messagerie",
+        "allowMessaging": "Autoriser la messagerie",
+        "createLinkSubmit": "Créer un lien d'invitation",
+        "linkCreated": "Lien d'invitation créé",
+        "joinCodeLabel": "Rejoindre avec un code",
+        "joinSubmit": "Rejoindre le groupe"
       }
     },
     "safety": {

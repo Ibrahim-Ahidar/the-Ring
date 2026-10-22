@@ -1,10 +1,15 @@
 import {
   createGroup,
+  createInviteLink,
   getGroup,
   inviteMember,
+  joinByCode,
   leaveGroup,
   listMembers,
   removeMember,
+  setMessagingRestricted,
+  setRole,
+  transferOwnership,
   updateGroup,
 } from "@pulse/core/groups";
 import type { FailedInvite } from "@pulse/core/groups";
@@ -32,3 +37,11 @@ export const inviteGroupMember = (conversationId: string, username: string) =>
 export const removeGroupMember = (conversationId: string, userId: string) =>
   removeMember(rpcClient, { conversationId, userId });
 export const leaveChatGroup = (conversationId: string) => leaveGroup(rpcClient, conversationId);
+export const setGroupRole = (input: { conversationId: string; userId: string; role: "member" | "admin" }) =>
+  setRole(rpcClient, input);
+export const transferGroupOwnership = (input: { conversationId: string; userId: string }) =>
+  transferOwnership(rpcClient, input);
+export const setGroupMessagingRestricted = (input: { conversationId: string; userId: string; restricted: boolean }) =>
+  setMessagingRestricted(rpcClient, input);
+export const createGroupInviteLink = (conversationId: string) => createInviteLink(rpcClient, { conversationId });
+export const joinGroupByCode = (code: string) => joinByCode(rpcClient, code);
