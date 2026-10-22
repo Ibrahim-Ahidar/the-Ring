@@ -28,4 +28,8 @@ describe("decideRedirect", () => {
     expect(decideRedirect({ loading: false, signedIn: true, group: "(auth)", screen: "verify" })).toBe("/");
     expect(decideRedirect({ loading: false, signedIn: false, group: "(auth)", screen: "verify" })).toBe("/login");
   });
+  it("lets anyone read the legal pages", () => {
+    expect(decideRedirect({ loading: false, signedIn: false, group: "legal" })).toBeNull();
+    expect(decideRedirect({ loading: false, signedIn: true, group: "legal" })).toBeNull();
+  });
 });

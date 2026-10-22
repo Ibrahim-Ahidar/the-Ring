@@ -1,5 +1,7 @@
+import { useRouter } from "expo-router";
 import type { ReactNode } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
+import { useTranslations } from "use-intl";
 
 import { Banner, Screen, Text, useTheme } from "@/ui";
 
@@ -33,10 +35,27 @@ export function AuthShell({ title, subtitle, error, info, children, footer }: Au
             {info ? <Banner kind="info" message={info} /> : null}
             <View style={{ gap: spacing.s16 }}>{children}</View>
             {footer ? <View style={{ alignItems: "center", gap: spacing.s4 }}>{footer}</View> : null}
+            <LegalNotice />
           </View>
         </Screen>
       </KeyboardAvoidingView>
     </Screen>
+  );
+}
+
+/** The web AuthFrame footer: agreement line linking the terms and privacy pages. */
+function LegalNotice() {
+  const t = useTranslations("mobile.identity");
+  const router = useRouter();
+  const link = (kind: "terms" | "privacy") => (chunks: ReactNode) => (
+    <Text variant="caption" tone="link" accessibilityRole="link" onPress={() => router.push(`/legal/${kind}`)}>
+      {chunks}
+    </Text>
+  );
+  return (
+    <Text variant="caption" tone="textMuted" style={{ textAlign: "center" }}>
+      {t.rich("legalNotice", { terms: link("terms"), privacy: link("privacy") })}
+    </Text>
   );
 }
 
