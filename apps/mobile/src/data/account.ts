@@ -26,6 +26,7 @@ export async function signUpWithPassword(input: {
   email: string;
   password: string;
   username: string;
+  displayName?: string;
 }): Promise<Result<null>> {
   const valid = validateUsername(input.username);
   if (!valid.ok) return valid;
@@ -40,7 +41,7 @@ export async function signUpWithPassword(input: {
   const { data, error } = await supabase.auth.signUp({
     email,
     password: input.password,
-    options: { data: { username: valid.value.display, display_name: valid.value.display } },
+    options: { data: { username: valid.value.display, display_name: input.displayName?.trim() || valid.value.display } },
   });
   if (error) return err(error.message.includes("identity.") ? error.message : mapSignUpAuthError(error));
   // An already-confirmed email returns an obfuscated user with no identities.

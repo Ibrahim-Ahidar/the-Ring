@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslations } from "use-intl";
 
@@ -10,7 +10,8 @@ import { Button, TextField } from "@/ui";
 export default function ForgotPasswordScreen() {
   const t = useTranslations();
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const params = useLocalSearchParams<{ email?: string }>();
+  const [email, setEmail] = useState(params.email ?? "");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [codeSent, setCodeSent] = useState(false);

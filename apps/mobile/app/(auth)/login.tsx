@@ -1,14 +1,17 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { View } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { AuthLink, AuthShell } from "@/auth/AuthShell";
 import { signInWithPassword } from "@/data";
-import { Button, TextField } from "@/ui";
+import { Button, Text, TextField, useTheme } from "@/ui";
 
 export default function LoginScreen() {
   const t = useTranslations();
+  const id = useTranslations("mobile.identity");
   const router = useRouter();
+  const { spacing } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -29,17 +32,18 @@ export default function LoginScreen() {
 
   return (
     <AuthShell
-      title={t("mobile.login.title")}
+      title={id("loginTitle")}
+      subtitle={id("loginSubtitle")}
       error={errorKey ? t(errorKey) : null}
       footer={
-        <>
-          <AuthLink label={t("mobile.account.forgot")} onPress={() => router.push("/forgot-password")} />
-          <AuthLink label={t("mobile.account.createAccount")} onPress={() => router.push("/signup")} />
-        </>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.s4 }}>
+          <Text tone="textMuted">{id("noAccount")}</Text>
+          <AuthLink label={id("signupLink")} onPress={() => router.push("/signup")} />
+        </View>
       }
     >
       <TextField
-        label={t("mobile.login.email")}
+        label={id("emailLabel")}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -49,7 +53,7 @@ export default function LoginScreen() {
         returnKeyType="next"
       />
       <TextField
-        label={t("mobile.login.password")}
+        label={id("passwordLabel")}
         value={password}
         onChangeText={setPassword}
         autoCapitalize="none"
@@ -59,7 +63,20 @@ export default function LoginScreen() {
         returnKeyType="go"
         onSubmitEditing={() => void submit()}
       />
-      <Button title={t("mobile.login.submit")} onPress={() => void submit()} loading={busy} block />
+      <View style={{ alignItems: "flex-end" }}>
+        <AuthLink
+          label={id("forgotPasswordLink")}
+          onPress={() =>
+            router.push(email.trim() ? { pathname: "/forgot-password", params: { email: email.trim() } } : "/forgot-password")
+          }
+        />
+      </View>
+      <Button
+        title={busy ? id("submittingLogin") : id("submitLogin")}
+        onPress={() => void submit()}
+        loading={busy}
+        block
+      />
     </AuthShell>
   );
 }
