@@ -1,3 +1,4 @@
+import { Check, CheckCheck, CircleAlert, Clock, Forward, type LucideIcon } from "lucide-react-native";
 import { memo, useMemo } from "react";
 import { Pressable, View, useWindowDimensions } from "react-native";
 import { useTranslations } from "use-intl";
@@ -5,10 +6,18 @@ import { useTranslations } from "use-intl";
 import { MediaBubble } from "@/chats/MediaBubble";
 import { clockTime } from "@/chats/format";
 import { tickFor } from "@/chats/timeline";
-import { groupReactions, outboundDeliveryStatus, type MessageReaction, type RpcMessageRow } from "@/data";
-import { Text, useTheme } from "@/ui";
+import { groupReactions, outboundDeliveryStatus, type MessageReaction, type OutboundDelivery, type RpcMessageRow } from "@/data";
+import { Icon, Text, useTheme } from "@/ui";
 
 type DeliveryContext = Parameters<typeof outboundDeliveryStatus>[1];
+
+const DELIVERY_ICON: Record<OutboundDelivery, LucideIcon> = {
+  pending: Clock,
+  failed: CircleAlert,
+  sent: Check,
+  delivered: CheckCheck,
+  read: CheckCheck,
+};
 
 export type MessageBubbleProps = {
   item: RpcMessageRow;
@@ -18,6 +27,9 @@ export type MessageBubbleProps = {
   detail: DeliveryContext;
   reactions: MessageReaction[] | undefined;
   quote: string | null;
+  /** Quote author line (web `.quoteAuthor`). */
+  quoteAuthor?: string | null;
+  quoteSelf?: boolean;
   /** Same sender and day as the older neighbour: tighten spacing. */
   grouped: boolean;
   /** Day separator drawn above this message. */
@@ -35,6 +47,8 @@ export const MessageBubble = memo(function MessageBubble({
   detail,
   reactions,
   quote,
+  quoteAuthor,
+  quoteSelf,
   grouped,
   dayLabel,
   unreadDivider,
@@ -42,14 +56,33 @@ export const MessageBubble = memo(function MessageBubble({
   onToggleReaction,
 }: MessageBubbleProps) {
   const t = useTranslations();
-  const { colors, spacing, radii, shadows, fontSizes } = useTheme();
+  const { colors, spacing, radii, shadows, fontWeights } = useTheme();
   const deleted = item.deletion_scope === "everyone";
-  const tick = mine ? tickFor(outboundDeliveryStatus(item, detail)) : null;
+  const delivery = mine ? outboundDeliveryStatus(item, detail) : null;
+  const tick = delivery ? tickFor(delivery) : null;
   const groups = useMemo(() => (reactions?.length ? groupReactions(reactions, userId) : []), [reactions, userId]);
   const isMedia = !deleted && (item.type === "image" || item.type === "audio");
   const metaColor = colors.bubbleMeta;
   const bubbleColor = mine ? colors.bubbleOut : colors.bubbleIn;
   const { width } = useWindowDimensions();
+  const quoteColor = quoteSelf ? colors.accent : colors.sender3;
+
+  if (item.type === "system") {
+    return (
+      <View
+        style={{
+          alignSelf: "center",
+          marginVertical: spacing.s12,
+          paddingHorizontal: spacing.s12,
+          paddingVertical: 5,
+          borderRadius: radii.control,
+          backgroundColor: colors.system,
+        }}
+      >
+        <Text style={{ fontSize: 12.5, color: colors.textMuted, textAlign: "center" }}>{item.body ?? ""}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={{ marginTop: grouped ? spacing.s2 : spacing.s8, paddingHorizontal: Math.min(72, Math.max(spacing.s16, width * 0.06)) }}>
@@ -57,20 +90,23 @@ export const MessageBubble = memo(function MessageBubble({
         <View
           style={{
             alignSelf: "center",
-            marginVertical: spacing.s8,
+            marginVertical: spacing.s12,
             paddingHorizontal: spacing.s12,
-            paddingVertical: spacing.s4,
-            borderRadius: radii.pill,
+            paddingVertical: 5,
+            borderRadius: radii.control,
             backgroundColor: colors.system,
+            ...shadows.bubble,
           }}
         >
-          <Text variant="micro">{dayLabel}</Text>
+          <Text style={{ fontSize: 12.5, color: colors.textMuted }}>{dayLabel}</Text>
         </View>
       ) : null}
       {unreadDivider ? (
-        <Text variant="micro" tone="accentStrong" style={{ alignSelf: "center", marginVertical: spacing.s8 }}>
-          {t("mobile.chats.unreadDivider")}
-        </Text>
+        <View style={{ alignSelf: "stretch", marginVertical: spacing.s12, padding: 5, backgroundColor: colors.panel }}>
+          <Text style={{ fontSize: 12.5, color: colors.textMuted, textAlign: "center" }}>
+            {t("mobile.chats.unreadDivider")}
+          </Text>
+        </View>
       ) : null}
       <Pressable
         onLongPress={() => onLongPress(item)}
@@ -108,20 +144,36 @@ export const MessageBubble = memo(function MessageBubble({
             }}
           />
         )}
-        {item.reply_to_id ? (
+        {item.forwarded && !deleted ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.s4, marginBottom: spacing.s2 }}>
+            <Icon icon={Forward} size={14} tone="textMuted" flipRtl />
+            <Text style={{ fontSize: 12.5, fontStyle: "italic", color: colors.textMuted }}>
+              {t("mobile.chats.forwarded")}
+            </Text>
+          </View>
+        ) : null}
+        {item.reply_to_id && !deleted ? (
           <View
             style={{
-              borderStartWidth: 3,
-              borderStartColor: colors.accent,
+              borderStartWidth: 4,
+              borderStartColor: quoteColor,
               backgroundColor: colors.quote,
-              borderRadius: radii.control / 2,
+              borderRadius: 6,
+              marginTop: -2,
+              marginStart: -5,
+              marginEnd: -4,
               paddingStart: spacing.s8,
-              paddingEnd: spacing.s8,
-              paddingVertical: spacing.s4,
+              paddingEnd: spacing.s12,
+              paddingVertical: 6,
               marginBottom: spacing.s4,
             }}
           >
-            <Text variant="caption" numberOfLines={2}>
+            {quoteAuthor ? (
+              <Text variant="caption" style={{ color: quoteColor, fontWeight: fontWeights.medium }}>
+                {quoteAuthor}
+              </Text>
+            ) : null}
+            <Text variant="caption" numberOfLines={2} style={{ color: colors.textMuted }}>
               {quote ?? "…"}
             </Text>
           </View>
@@ -144,23 +196,20 @@ export const MessageBubble = memo(function MessageBubble({
         >
           {item.edited_at && !deleted ? (
             <Text variant="micro" style={{ color: metaColor }}>
-              {t("mobile.actions.edited")}
+              {t("mobile.actions.edited")} ·
             </Text>
           ) : null}
           <Text variant="micro" style={{ color: metaColor }}>
             {clockTime(item.created_at)}
           </Text>
-          {tick ? (
-            <Text
-              variant="micro"
-              accessibilityLabel={t(tick.labelKey)}
-              style={{
-                fontSize: fontSizes.xs,
-                color: tick.read ? colors.read : tick.glyph === "!" ? colors.danger : metaColor,
-              }}
-            >
-              {tick.glyph}
-            </Text>
+          {tick && delivery ? (
+            <View accessible accessibilityLabel={t(tick.labelKey)}>
+              <Icon
+                icon={DELIVERY_ICON[delivery]}
+                size={delivery === "pending" ? 14 : 16}
+                color={tick.read ? colors.read : delivery === "failed" ? colors.danger : metaColor}
+              />
+            </View>
           ) : null}
         </View>
       </Pressable>

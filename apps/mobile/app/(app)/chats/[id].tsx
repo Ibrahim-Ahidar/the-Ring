@@ -1,6 +1,6 @@
 import { setStringAsync } from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check, Images, Send, UsersRound, X } from "lucide-react-native";
+import { Check, Images, Pin, SendHorizontal, UsersRound, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, FlatList, KeyboardAvoidingView, TextInput, View } from "react-native";
 import { useTranslations } from "use-intl";
@@ -34,11 +34,11 @@ import {
   type MessageReaction,
   type RpcMessageRow,
 } from "@/data";
-import { AppHeader, Avatar, Banner, ErrorState, IconButton, Screen, Spinner, Text, useTheme } from "@/ui";
+import { AppHeader, Avatar, Banner, ErrorState, Icon, IconButton, Screen, Spinner, Text, useTheme } from "@/ui";
 
 export default function ChatScreen() {
   const t = useTranslations();
-  const { colors, spacing, radii, controlHeights } = useTheme();
+  const { colors, spacing, radii, shadows } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useSession();
@@ -180,6 +180,12 @@ export default function ChatScreen() {
       : snippet(original.body);
   }
 
+  const pinned = rows.find((m) => m.pinned_at && m.deletion_scope !== "everyone") ?? null;
+  const pinnedPreview = pinned
+    ? pinned.body ||
+      (pinned.type === "image" ? t("mobile.media.photo") : pinned.type === "audio" ? t("mobile.media.voiceNote") : "")
+    : "";
+
   function senderName(m: RpcMessageRow): string {
     if (m.sender_id === userId) return t("mobile.actions.you");
     return detail.data?.other_user_id === m.sender_id
@@ -264,6 +270,31 @@ export default function ChatScreen() {
       {!online ? <Banner kind="offline" message={t("mobile.offline.banner")} /> : null}
       {messages.isPending || (ready && landing === null) ? <Spinner /> : null}
       {messages.isError ? <ErrorState title={t("mobile.chats.loadError")} onRetry={() => messages.refetch()} /> : null}
+      {pinned ? (
+        <View
+          accessibilityRole="summary"
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing.s12,
+            paddingHorizontal: spacing.s16,
+            paddingVertical: spacing.s8,
+            backgroundColor: colors.panel,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}
+        >
+          <Icon icon={Pin} size={16} tone="accent" />
+          <View style={{ flex: 1, borderStartWidth: 3, borderStartColor: colors.accent, paddingStart: spacing.s8 }}>
+            <Text variant="caption" tone="accentStrong" numberOfLines={1}>
+              {t("mobile.chats.pinnedMessage")}
+            </Text>
+            <Text variant="caption" numberOfLines={1}>
+              {snippet(pinnedPreview)}
+            </Text>
+          </View>
+        </View>
+      ) : null}
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <FlatList
           ref={listRef}
@@ -298,6 +329,8 @@ export default function ChatScreen() {
                 detail={detail.data}
                 reactions={reactionsByMessage.get(item.id)}
                 quote={item.reply_to_id ? quoteText(item.reply_to_id) : null}
+                quoteAuthor={item.reply_to_id && rowsById.get(item.reply_to_id) ? senderName(rowsById.get(item.reply_to_id) as RpcMessageRow) : null}
+                quoteSelf={item.reply_to_id ? rowsById.get(item.reply_to_id)?.sender_id === userId : false}
                 grouped={grouped}
                 dayLabel={showDay ? dayLabel(item.created_at, now) : null}
                 unreadDivider={item.id === unreadId}
@@ -316,92 +349,99 @@ export default function ChatScreen() {
         ) : null}
         {actionFailed ? <Banner kind="error" message={t("mobile.actions.actionError")} /> : null}
         {replyTo || editing ? (
+          <View style={{ backgroundColor: colors.chatBg, paddingHorizontal: spacing.s16, paddingTop: spacing.s8 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: spacing.s8,
+                paddingStart: spacing.s12,
+                paddingEnd: spacing.s4,
+                paddingVertical: spacing.s8,
+                borderRadius: radii.card,
+                backgroundColor: colors.elevated,
+                ...shadows.bubble,
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  borderStartWidth: 4,
+                  borderStartColor: colors.accent,
+                  borderRadius: 6,
+                  backgroundColor: colors.quote,
+                  paddingStart: spacing.s8,
+                  paddingVertical: 6,
+                }}
+              >
+                <Text variant="caption" tone="accentStrong" numberOfLines={1}>
+                  {editing
+                    ? t("mobile.actions.editing")
+                    : t("mobile.actions.replyingTo", { name: senderName(replyTo as RpcMessageRow) })}
+                </Text>
+                <Text variant="caption" numberOfLines={1}>
+                  {snippet((editing ?? replyTo)?.body)}
+                </Text>
+              </View>
+              <IconButton
+                icon={X}
+                label={t("mobile.actions.cancel")}
+                onPress={() => {
+                  if (editing) setDraft("");
+                  setEditing(null);
+                  setReplyTo(null);
+                }}
+              />
+            </View>
+          </View>
+        ) : null}
+        <View style={{ backgroundColor: colors.chatBg, paddingHorizontal: spacing.s16, paddingTop: spacing.s8, paddingBottom: spacing.s12 }}>
           <View
             style={{
               flexDirection: "row",
-              alignItems: "center",
-              gap: spacing.s8,
-              paddingStart: spacing.s12,
-              paddingEnd: spacing.s4,
+              alignItems: "flex-end",
+              gap: spacing.s4,
+              minHeight: 52,
+              paddingHorizontal: spacing.s8,
               paddingVertical: spacing.s4,
-              backgroundColor: colors.panel,
-              borderTopWidth: 1,
-              borderTopColor: colors.border,
+              borderRadius: 26,
+              backgroundColor: colors.elevated,
+              ...shadows.bubble,
             }}
           >
-            <View
+            {!editing ? (
+              <MediaComposer disabled={!online || sendMedia.isPending} onUpload={(u) => sendMedia.mutate(u)} />
+            ) : null}
+            <TextInput
               style={{
                 flex: 1,
-                borderStartWidth: 3,
-                borderStartColor: colors.accent,
-                paddingStart: spacing.s8,
+                minHeight: 44,
+                maxHeight: 140,
+                paddingHorizontal: spacing.s8,
+                paddingVertical: spacing.s12,
+                backgroundColor: "transparent",
+                color: colors.text,
+                textAlign: "auto",
+                writingDirection: "auto",
               }}
-            >
-              <Text variant="caption" tone="accentStrong" numberOfLines={1}>
-                {editing
-                  ? t("mobile.actions.editing")
-                  : t("mobile.actions.replyingTo", { name: senderName(replyTo as RpcMessageRow) })}
-              </Text>
-              <Text variant="caption" numberOfLines={1}>
-                {snippet((editing ?? replyTo)?.body)}
-              </Text>
-            </View>
+              placeholderTextColor={colors.textMuted}
+              value={draft}
+              onChangeText={(text) => {
+                setDraft(text);
+                sender.input(text);
+              }}
+              placeholder={t("mobile.chats.composerPlaceholder")}
+              multiline
+            />
             <IconButton
-              icon={X}
-              label={t("mobile.actions.cancel")}
-              onPress={() => {
-                if (editing) setDraft("");
-                setEditing(null);
-                setReplyTo(null);
-              }}
+              icon={editing ? Check : SendHorizontal}
+              label={editing ? t("mobile.actions.save") : t("mobile.chats.send")}
+              accent
+              flipRtl={!editing}
+              disabled={!sendable}
+              onPress={submit}
             />
           </View>
-        ) : null}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "flex-end",
-            gap: spacing.s4,
-            paddingHorizontal: spacing.s8,
-            paddingVertical: spacing.s8,
-            backgroundColor: colors.panel,
-            borderTopWidth: 1,
-            borderTopColor: colors.border,
-          }}
-        >
-          {!editing ? (
-            <MediaComposer disabled={!online || sendMedia.isPending} onUpload={(u) => sendMedia.mutate(u)} />
-          ) : null}
-          <TextInput
-            style={{
-              flex: 1,
-              minHeight: controlHeights.hit,
-              maxHeight: 120,
-              paddingHorizontal: spacing.s12,
-              paddingVertical: spacing.s12,
-              borderRadius: radii.pill,
-              backgroundColor: colors.input,
-              color: colors.text,
-              textAlign: "auto",
-              writingDirection: "auto",
-            }}
-            placeholderTextColor={colors.textMuted}
-            value={draft}
-            onChangeText={(text) => {
-              setDraft(text);
-              sender.input(text);
-            }}
-            placeholder={t("mobile.chats.composerPlaceholder")}
-            multiline
-          />
-          <IconButton
-            icon={editing ? Check : Send}
-            label={editing ? t("mobile.actions.save") : t("mobile.chats.send")}
-            accent
-            flipRtl={!editing}
-            disabled={!sendable}
-            onPress={submit}
-          />
         </View>
       </KeyboardAvoidingView>
       <MessageMenu

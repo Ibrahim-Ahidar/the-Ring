@@ -1,8 +1,17 @@
+import { Copy, CornerUpLeft, Pencil, Trash2, type LucideIcon } from "lucide-react-native";
 import { Pressable, View } from "react-native";
 import { useTranslations } from "use-intl";
 
 import { ALLOWED_REACTION_EMOJI, type MessageAction } from "@/data";
-import { Sheet, Text, useTheme } from "@/ui";
+import { Icon, Sheet, Text, useTheme } from "@/ui";
+
+const ACTION_ICON: Record<Exclude<MessageAction, "react">, LucideIcon> = {
+  reply: CornerUpLeft,
+  copy: Copy,
+  edit: Pencil,
+  delete: Trash2,
+};
+const ACTION_ORDER = ["reply", "copy", "edit", "delete"] as const;
 
 type Props = {
   visible: boolean;
@@ -17,7 +26,7 @@ type Props = {
 export function MessageMenu({ visible, actions, mineEmoji, onReact, onAction, onClose }: Props) {
   const t = useTranslations();
   const { colors, spacing, radii, controlHeights, fontSizes } = useTheme();
-  const rest = actions.filter((a): a is Exclude<MessageAction, "react"> => a !== "react");
+  const rest = ACTION_ORDER.filter((a) => actions.includes(a));
   return (
     <Sheet visible={visible} onClose={onClose} closeLabel={t("mobile.actions.cancel")}>
       {actions.includes("react") ? (
@@ -49,12 +58,15 @@ export function MessageMenu({ visible, actions, mineEmoji, onReact, onAction, on
           accessibilityRole="button"
           style={({ pressed }) => ({
             minHeight: controlHeights.hit,
-            justifyContent: "center",
-            paddingHorizontal: spacing.s8,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing.s12,
+            paddingHorizontal: spacing.s12,
             borderRadius: radii.card,
             backgroundColor: pressed ? colors.hover : "transparent",
           })}
         >
+          <Icon icon={ACTION_ICON[action]} size={18} tone={action === "delete" ? "danger" : "icon"} />
           <Text tone={action === "delete" ? "danger" : "text"}>{t(`mobile.actions.${action}`)}</Text>
         </Pressable>
       ))}
