@@ -1,5 +1,6 @@
 import {
   acceptRequest,
+  createRequest,
   declineRequest,
   listIncoming,
   listOutgoing,
@@ -16,6 +17,8 @@ export const REPORT_CATEGORIES: readonly ReportCategory[] = ["spam", "harassment
 
 export const listMessageRequests = () => listIncoming(rpcClient);
 export const listSentMessageRequests = () => listOutgoing(rpcClient);
+export const sendMessageRequest = (username: string, note: string) =>
+  createRequest(rpcClient, { username, note });
 export const acceptMessageRequest = (id: string) => acceptRequest(rpcClient, id);
 export const declineMessageRequest = (id: string) => declineRequest(rpcClient, id);
 export const blockChatUser = (userId: string) => blockUser(rpcClient, userId);

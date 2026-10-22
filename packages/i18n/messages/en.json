@@ -542,6 +542,27 @@
           "not_found": "This request no longer exists."
         }
       }
+    },
+    "newChat": {
+      "title": "Start a chat",
+      "usernameLabel": "Username",
+      "opening": "Opening chat…",
+      "openChat": "Open chat",
+      "errors": {
+        "messaging": {
+          "not_allowed": "You cannot message this person.",
+          "request_required": "They require a message request first.",
+          "not_found": "User or conversation not found.",
+          "not_member": "You are not a member of this conversation."
+        },
+        "platform": {
+          "unauthenticated": "Sign in to continue.",
+          "unexpected": "Something went wrong.",
+          "rate_limited": "You're doing that too fast. Try again in a moment.",
+          "forbidden": "You don't have permission to do that.",
+          "conflict": "That conflicts with the current state. Refresh and try again."
+        }
+      }
     }
   }
 }

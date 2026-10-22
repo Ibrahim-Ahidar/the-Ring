@@ -542,6 +542,27 @@
           "not_found": "Cette demande n'existe plus."
         }
       }
+    },
+    "newChat": {
+      "title": "Démarrer une discussion",
+      "usernameLabel": "Nom d'utilisateur",
+      "opening": "Ouverture de la discussion…",
+      "openChat": "Ouvrir la discussion",
+      "errors": {
+        "messaging": {
+          "not_allowed": "Vous ne pouvez pas contacter cette personne.",
+          "request_required": "Une demande de message est requise.",
+          "not_found": "Utilisateur ou conversation introuvable.",
+          "not_member": "Vous n'êtes pas membre de cette conversation."
+        },
+        "platform": {
+          "unauthenticated": "Connectez-vous pour continuer.",
+          "unexpected": "Une erreur s'est produite.",
+          "rate_limited": "Vous allez trop vite. Réessayez dans un instant.",
+          "forbidden": "Vous n'avez pas l'autorisation de faire cela.",
+          "conflict": "Cela entre en conflit avec l'état actuel. Actualisez et réessayez."
+        }
+      }
     }
   }
 }

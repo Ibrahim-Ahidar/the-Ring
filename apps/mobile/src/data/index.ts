@@ -81,6 +81,7 @@ export {
   listBlockedUsers,
   listMessageRequests,
   listSentMessageRequests,
+  sendMessageRequest,
   reportChatUser,
   unblockChatUser,
   type BlockRow,

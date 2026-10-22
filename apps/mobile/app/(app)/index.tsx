@@ -215,7 +215,7 @@ export default function ChatListScreen() {
               <IconButton
                 icon={MessageSquarePlus}
                 label={t("mobile.organization.newChat")}
-                onPress={() => router.push("/contacts")}
+                onPress={() => router.push("/chats/new")}
               />
             </>
           }
