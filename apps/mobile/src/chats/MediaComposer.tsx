@@ -1,7 +1,7 @@
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder } from "expo-audio";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
-import { Mic, Paperclip, Square } from "lucide-react-native";
+import { Paperclip } from "lucide-react-native";
 import { Alert } from "react-native";
 import { useTranslations } from "use-intl";
 
@@ -10,8 +10,12 @@ import { AUDIO_MAX_DURATION_MS, type MediaUploadInput } from "@/data";
 
 type Upload = Omit<MediaUploadInput, "conversationId" | "clientId">;
 
-/** Photo picker and voice-note recorder buttons for the composer. */
-export function MediaComposer({ disabled, onUpload }: { disabled: boolean; onUpload: (u: Upload) => void }) {
+/**
+ * Photo picker and voice-note recorder for the composer. The attach button sits on the left of the
+ * input; `recording` / `toggleRecording` drive the round accent button on the right (mic when the
+ * draft is empty), as on the web.
+ */
+export function useMediaComposer({ disabled, onUpload }: { disabled: boolean; onUpload: (u: Upload) => void }) {
   const t = useTranslations();
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [recording, setRecording] = useState(false);
@@ -68,28 +72,23 @@ export function MediaComposer({ disabled, onUpload }: { disabled: boolean; onUpl
     timer.current = setTimeout(() => void stopAndSend(), AUDIO_MAX_DURATION_MS);
   }
 
-  return (
-    <>
-      {!recording ? (
-        <IconButton
-          icon={Paperclip}
-          label={t("mobile.media.attach")}
-          onPress={() => void pickImage()}
-          disabled={disabled}
-        />
-      ) : null}
-      <IconButton
-        icon={recording ? Square : Mic}
-        label={recording ? t("mobile.media.stop") : t("mobile.media.record")}
-        selected={recording}
-        onPress={() => void (recording ? stopAndSend() : start())}
-        disabled={disabled && !recording}
-      />
-      {recording ? (
-        <Text variant="caption" tone="danger" style={{ alignSelf: "center" }}>
-          {t("mobile.media.recording")}
-        </Text>
-      ) : null}
-    </>
+  const attach = recording ? null : (
+    <IconButton
+      icon={Paperclip}
+      label={t("mobile.media.attach")}
+      onPress={() => void pickImage()}
+      disabled={disabled}
+    />
   );
+  const recordingLabel = recording ? (
+    <Text variant="caption" tone="danger" style={{ flex: 1, paddingHorizontal: 4, paddingVertical: 14 }}>
+      {t("mobile.media.recording")}
+    </Text>
+  ) : null;
+  return {
+    attach,
+    recordingLabel,
+    recording,
+    toggleRecording: () => void (recording ? stopAndSend() : start()),
+  };
 }

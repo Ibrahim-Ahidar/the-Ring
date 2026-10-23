@@ -158,6 +158,7 @@ export function useSendMedia(conversationId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: messagesKey(conversationId) });
       void queryClient.invalidateQueries({ queryKey: chatsKey });
+      void queryClient.invalidateQueries({ queryKey: ["media"] });
     },
   });
 }
@@ -168,6 +169,10 @@ export function useMessageMedia(messageId: string, enabled: boolean) {
     queryKey: ["media", messageId],
     enabled,
     staleTime: 60_000,
+    // The message shows up while its upload is still finishing; the download RPC answers
+    // "media.not_ready" until then, so keep trying instead of failing for good.
+    retry: (count, error) => (error.message === "media.not_ready" ? count < 30 : count < 2),
+    retryDelay: (count) => Math.min(1000 + count * 500, 4000),
     queryFn: async () => {
       const list = unwrap(await listMessageAttachments(messageId));
       const attachment = list[0];

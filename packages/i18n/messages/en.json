@@ -227,7 +227,7 @@
       "unreadDivider": "Unread messages",
       "forwarded": "Forwarded",
       "pinnedMessage": "Pinned message",
-      "composerPlaceholder": "Message",
+      "composerPlaceholder": "Write a message…",
       "send": "Send",
       "sendError": "Couldn't send. Try again.",
       "status": {

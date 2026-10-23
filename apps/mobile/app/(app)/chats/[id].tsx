@@ -1,6 +1,6 @@
 import { setStringAsync } from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check, Images, Pin, SendHorizontal, UsersRound, X } from "lucide-react-native";
+import { Check, EllipsisVertical, Images, Mic, Pin, SendHorizontal, Square, UsersRound, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, FlatList, KeyboardAvoidingView, TextInput, View } from "react-native";
 import { useTranslations } from "use-intl";
@@ -9,7 +9,7 @@ import { useSession } from "@/auth/session";
 import { ChatPattern } from "@/chats/ChatPattern";
 import { canSend } from "@/chats/composer";
 import { dayKey, dayLabel } from "@/chats/format";
-import { MediaComposer } from "@/chats/MediaComposer";
+import { useMediaComposer } from "@/chats/MediaComposer";
 import { MessageBubble } from "@/chats/MessageBubble";
 import { MessageMenu } from "@/chats/MessageMenu";
 import {
@@ -35,7 +35,7 @@ import {
   type MessageReaction,
   type RpcMessageRow,
 } from "@/data";
-import { AppHeader, Avatar, Banner, ErrorState, Icon, IconButton, Screen, Spinner, Text, useTheme } from "@/ui";
+import { AppHeader, Avatar, Banner, ErrorState, Icon, IconButton, ListRow, Screen, Spinner, Text, useTheme } from "@/ui";
 
 export default function ChatScreen() {
   const t = useTranslations();
@@ -55,6 +55,7 @@ export default function ChatScreen() {
   const [selected, setSelected] = useState<RpcMessageRow | null>(null);
   const [replyTo, setReplyTo] = useState<RpcMessageRow | null>(null);
   const [editing, setEditing] = useState<RpcMessageRow | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const listRef = useRef<FlatList<RpcMessageRow>>(null);
 
   const rows = flattenPages(messages.data?.pages.map((p) => p.items) ?? []);
@@ -145,6 +146,8 @@ export default function ChatScreen() {
 
   const busy = send.isPending || messageActions.edit.isPending;
   const sendable = canSend({ online, draft, pending: busy });
+  const voice = useMediaComposer({ disabled: !online || sendMedia.isPending, onUpload: (u) => sendMedia.mutate(u) });
+  const showMic = !editing && draft.trim().length === 0;
 
   function submit() {
     const body = draft.trim();
@@ -247,25 +250,9 @@ export default function ChatScreen() {
         subtitle={subtitleText ?? undefined}
         onBack={() => router.back()}
         backLabel={t("mobile.chats.back")}
-        leading={<Avatar name={title || "?"} seed={id} src={detail.data?.other_avatar_url} size="md" />}
+        leading={<Avatar name={title || "?"} seed={detail.data?.other_user_id ?? id} src={detail.data?.other_avatar_url} size="md" />}
         actions={
-          <>
-            {detail.data?.type === "direct" && detail.data.other_user_id ? (
-              <SafetyMenu userId={detail.data.other_user_id} onBlocked={() => router.back()} />
-            ) : null}
-            <IconButton
-              icon={Images}
-              label={t("mobile.sharedMedia.sharedMedia")}
-              onPress={() => router.push({ pathname: "/media/[conversationId]", params: { conversationId: id } })}
-            />
-            {detail.data?.type === "group" ? (
-              <IconButton
-                icon={UsersRound}
-                label={t("mobile.groups.info")}
-                onPress={() => router.push({ pathname: "/groups/[id]", params: { id } })}
-              />
-            ) : null}
-          </>
+          <IconButton icon={EllipsisVertical} label={t("mobile.safety.menu")} onPress={() => setMenuOpen(true)} />
         }
       />
       {!online ? <Banner kind="offline" message={t("mobile.offline.banner")} /> : null}
@@ -412,12 +399,8 @@ export default function ChatScreen() {
               ...shadows.bubble,
             }}
           >
-            {!editing ? (
-              <View style={{ flexDirection: "row", alignItems: "flex-end", gap: spacing.s4, marginBottom: 2 }}>
-                <MediaComposer disabled={!online || sendMedia.isPending} onUpload={(u) => sendMedia.mutate(u)} />
-              </View>
-            ) : null}
-            <TextInput
+            {!editing && voice.attach ? <View style={{ marginBottom: 2 }}>{voice.attach}</View> : null}
+            {voice.recording ? voice.recordingLabel : <TextInput
               style={{
                 flex: 1,
                 minHeight: 44,
@@ -439,19 +422,58 @@ export default function ChatScreen() {
               }}
               placeholder={t("mobile.chats.composerPlaceholder")}
               multiline
-            />
-            <IconButton
-              icon={editing ? Check : SendHorizontal}
-              label={editing ? t("mobile.actions.save") : t("mobile.chats.send")}
-              accent
-              flipRtl={!editing}
-              disabled={!sendable}
-              style={{ marginBottom: 2 }}
-              onPress={submit}
-            />
+            />}
+            {showMic || voice.recording ? (
+              <IconButton
+                icon={voice.recording ? Square : Mic}
+                label={voice.recording ? t("mobile.media.stop") : t("mobile.media.record")}
+                accent
+                disabled={!voice.recording && (!online || sendMedia.isPending)}
+                style={{ marginBottom: 2 }}
+                onPress={voice.toggleRecording}
+              />
+            ) : (
+              <IconButton
+                icon={editing ? Check : SendHorizontal}
+                label={editing ? t("mobile.actions.save") : t("mobile.chats.send")}
+                accent
+                flipRtl={!editing}
+                disabled={!sendable}
+                style={{ marginBottom: 2 }}
+                onPress={submit}
+              />
+            )}
           </View>
         </View>
       </KeyboardAvoidingView>
+      <SafetyMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        userId={detail.data?.type === "direct" ? detail.data.other_user_id : null}
+        onBlocked={() => router.back()}
+        extraRows={
+          <>
+            <ListRow
+              title={t("mobile.sharedMedia.sharedMedia")}
+              leading={<Icon icon={Images} size={20} />}
+              onPress={() => {
+                setMenuOpen(false);
+                router.push({ pathname: "/media/[conversationId]", params: { conversationId: id } });
+              }}
+            />
+            {detail.data?.type === "group" ? (
+              <ListRow
+                title={t("mobile.groups.info")}
+                leading={<Icon icon={UsersRound} size={20} />}
+                onPress={() => {
+                  setMenuOpen(false);
+                  router.push({ pathname: "/groups/[id]", params: { id } });
+                }}
+              />
+            ) : null}
+          </>
+        }
+      />
       <MessageMenu
         visible={selected !== null}
         actions={selected ? availableActions(selected, userId) : []}
