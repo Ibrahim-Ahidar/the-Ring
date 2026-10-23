@@ -13,6 +13,7 @@ import {
 import { observeElementRect, useVirtualizer } from "@tanstack/react-virtual";
 import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
 
+import { timingBubbleShown, timingChatOpenPainted } from "@/platform/timing/hooks";
 import { useGroupMemberDirectory } from "@/features/groups/hooks/useGroupMemberNames";
 import type { TimelineMessage } from "@pulse/core/timeline";
 
@@ -177,6 +178,21 @@ function MessageTimelineInner({
     });
     return [...merged].reverse();
   }, [currentUserId, pending, stored]);
+
+  const reportedBubbles = useRef(new Set<string>());
+  useEffect(() => {
+    for (const entry of pending) {
+      if (!reportedBubbles.current.has(entry.clientId)) {
+        reportedBubbles.current.add(entry.clientId);
+        timingBubbleShown(entry.clientId);
+      }
+    }
+  }, [pending]);
+
+  const messagesPainted = !loading;
+  useEffect(() => {
+    if (messagesPainted) timingChatOpenPainted(conversationId);
+  }, [conversationId, messagesPainted]);
 
   const applyOpenTarget = (instance: {
     measurementsCache: readonly { start: number; size: number }[];

@@ -8,6 +8,7 @@ import { useTranslations } from "use-intl";
 import { useSession } from "@/auth/session";
 import { ChatPattern } from "@/chats/ChatPattern";
 import { canSend } from "@/chats/composer";
+import { timingBubbleShown, timingChatOpenPainted, timingTapStart } from "@/timing";
 import { dayKey, dayLabel } from "@/chats/format";
 import { useMediaComposer } from "@/chats/MediaComposer";
 import { MessageBubble } from "@/chats/MessageBubble";
@@ -92,6 +93,10 @@ export default function ChatScreen() {
       pagesLoaded,
     });
 
+  useEffect(() => {
+    if (ready) timingChatOpenPainted(id);
+  }, [ready, id]);
+
   const { fetchNextPage, isFetchingNextPage } = messages;
   useEffect(() => {
     if (needsHistory && !isFetchingNextPage) void fetchNextPage();
@@ -165,10 +170,13 @@ export default function ChatScreen() {
       );
       return;
     }
+    timingTapStart(id);
     send.mutate(
       { body, replyToId: replyTo?.id ?? null },
       {
         onSuccess: () => {
+          // Mobile has no optimistic bubble yet: this measures tap to server ack.
+          timingBubbleShown(id);
           setDraft("");
           setReplyTo(null);
         },

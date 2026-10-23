@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { timingColdStartPainted } from "@/platform/timing/hooks";
 import { useTranslations } from "next-intl";
 
 import { PaneLayout } from "@/shell/components/PaneLayout";
@@ -47,6 +48,9 @@ export function ChatsShell({ userId, viewer, inbox, children }: Props) {
   const seeding = useMessagingSeeding();
   const { state } = useMessaging();
   const activeId = useActiveConversationId();
+  useEffect(() => {
+    timingColdStartPainted();
+  }, []);
 
   const archivedParam = searchParams.get("archived") ?? undefined;
   const folderParam = searchParams.get("folder") ?? undefined;

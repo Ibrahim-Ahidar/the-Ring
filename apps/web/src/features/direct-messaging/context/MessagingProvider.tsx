@@ -19,6 +19,7 @@ import {
 
 import { emitComposerActivity } from "@/platform/composer-events";
 import { joinConversation, joinInbox } from "@/platform/realtime-hub";
+import { timingArrival, timingTapStart } from "@/platform/timing/hooks";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 import type { TimelineMessage } from "@pulse/core/timeline";
 import { randomUUID } from "@pulse/core/uuid";
@@ -634,6 +635,9 @@ export function MessagingProvider({
       }
 
       if (change.eventType === "INSERT" || change.eventType === "UPDATE") {
+        if (change.eventType === "INSERT" && change.new.sender_id !== userId && typeof change.new.created_at === "string") {
+          timingArrival(change.new.created_at);
+        }
         applyMessageRow(change.new);
       }
     });
@@ -696,6 +700,7 @@ export function MessagingProvider({
       replyToId?: string | null;
     }) => {
       const clientId = randomUUID();
+      timingTapStart(clientId);
       const pending: PendingSend = {
         clientId,
         conversationId: input.conversationId,

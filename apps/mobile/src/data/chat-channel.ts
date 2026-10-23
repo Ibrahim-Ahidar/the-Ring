@@ -1,3 +1,4 @@
+import { timingArrival } from "@/timing";
 import { supabase } from "./client";
 
 type Handlers = {
@@ -45,7 +46,13 @@ export function acquireChatChannel(
       channel.on(
         "postgres_changes",
         { event: "*", schema: "public", table, ...(filter ? { filter } : {}) },
-        fire,
+        (change) => {
+          if (table === "messages" && change.eventType === "INSERT") {
+            const row = change.new as { created_at?: string };
+            if (row.created_at) timingArrival(row.created_at);
+          }
+          fire();
+        },
       );
     }
     channel.on("broadcast", { event: "*" }, (message) => {

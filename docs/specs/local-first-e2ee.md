@@ -272,6 +272,12 @@ Before P0, add a development-only timing tool:
 
 Also check the Supabase project region against where testers are. Moving the project closer is part of P1.
 
+**Timing tool (issue #215, built).** Core: `packages/core/src/timing` (recorder with p50/p95, NTP-style clock offset). Web and desktop: `apps/web/src/platform/timing`, enabled when `NODE_ENV !== "production"` or `NEXT_PUBLIC_PULSE_TIMING=1`, otherwise the dynamic import is dead code and the runtime is not bundled. Mobile: dev builds only (`__DEV__`). Until the Envelope carries `sentAt`, arrival is measured against the message row's `created_at` (server clock) corrected by the `server_now()` offset; swap in the Envelope `sentAt` in `runtime.ts` `arrival()` once section 5 lands. How to run it: docs/operations/README.md.
+
+**Baseline (to fill).** Needs a live backend and real devices, so it is not measured yet. Run the tool on two Devices in the same region (web, desktop, one physical phone), send about 30 messages each way, open about 10 chats, cold start about 5 times, then copy p50 / p95 from `window.__pulseTiming.summaries()` (mobile: the `[pulse-timing]` log) into the Baseline column above. Database size: run docs/operations/db-size.sql and record it.
+
+**Region check.** The project in use (`pjaljbmuapcrrbfnujvx`, "the ring", read with `supabase projects list`) is in `eu-west-2` (London). The testers' location is not known here: the user must confirm where testers are. If they are in the UK or western Europe, same-region targets are realistic; if they are elsewhere (for example North Africa or the Middle East), expect higher latency and decide in P1 whether to move the project. The other project in the account (`Synexa`) is in `eu-west-1` and is not this app.
+
 ## 12. Phases
 
 Each phase is one ticket, or a few. Everything sits behind the `e2ee` flag until P10.

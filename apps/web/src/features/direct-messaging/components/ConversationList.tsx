@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { timingChatOpenStart } from "@/platform/timing/hooks";
 import { Ban, BellOff, Check, CheckCheck, Pin } from "lucide-react";
 import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
@@ -233,6 +234,7 @@ function ConversationListInner({ activeConversationId }: Props) {
             <Link
               href={queryHref(`/app/chats/${item.id}`, { info: null, message: null })}
               prefetch={false}
+              onClickCapture={() => timingChatOpenStart(item.id)}
               className={styles.chatRow}
               {...press}
               aria-current={item.id === activeConversationId ? "true" : undefined}

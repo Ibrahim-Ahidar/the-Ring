@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { Archive, FolderPlus, Inbox, MessageSquare, MessageSquarePlus, MoreVertical, UsersRound } from "lucide-react-native";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import { useTranslations } from "use-intl";
 
@@ -12,6 +12,7 @@ import { useMyProfile } from "@/contacts/queries";
 import { useOnline } from "@/net/useOnline";
 import { ChatActionsSheet } from "@/organization/ChatActionsSheet";
 import { useArchivedSummary, useFolders } from "@/organization/queries";
+import { timingChatOpenStart, timingColdStartPainted } from "@/timing";
 import { avatarUrl, type ChatListFilter, type ConversationSummary } from "@/data";
 import {
   AppHeader,
@@ -172,7 +173,13 @@ export default function ChatListScreen() {
   ];
 
   const chats = list.data?.pages.flatMap((p) => p.items) ?? [];
-  const open = useCallback((id: string) => router.push({ pathname: "/chats/[id]", params: { id } }), [router]);
+  useEffect(() => {
+    if (list.data) timingColdStartPainted();
+  }, [list.data]);
+  const open = useCallback((id: string) => {
+    timingChatOpenStart(id);
+    router.push({ pathname: "/chats/[id]", params: { id } });
+  }, [router]);
   const untitled = t("mobile.chats.untitled");
   const deleted = t("mobile.chats.deleted");
   const noMessages = t("mobile.chats.noMessages");
