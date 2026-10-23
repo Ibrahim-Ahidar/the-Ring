@@ -79,6 +79,10 @@ function menuContextOf(item: ConversationSummary): ListItemMenuContext {
       muted_until: item.muted_until,
       archived_at: item.archived_at,
     },
+    otherUserId: item.other_user_id,
+    otherUsername: item.other_username,
+    unreadCount: item.unread_count,
+    lastMessageId: item.last_message_id,
   };
 }
 

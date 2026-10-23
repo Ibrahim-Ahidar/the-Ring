@@ -158,6 +158,11 @@ export type ListItemMenuContext = {
   };
   /** Viewport point the menu should anchor to (cursor or row); absent means a sheet. */
   point?: { x: number; y: number } | null;
+  /** Direct chats: the other participant (block / favourite targets). */
+  otherUserId?: string | null;
+  otherUsername?: string | null;
+  unreadCount?: number;
+  lastMessageId?: string | null;
 };
 
 /**

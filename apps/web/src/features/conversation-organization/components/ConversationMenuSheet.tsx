@@ -3,23 +3,55 @@
 import {
   Archive,
   ArchiveRestore,
+  Ban,
   Bell,
   BellOff,
-  ChevronDown,
+  ChevronRight,
+  Eraser,
   FolderInput,
   FolderMinus,
+  ListPlus,
+  LogOut,
+  MailCheck,
+  MailOpen,
   Pin,
   PinOff,
+  Star,
+  StarOff,
+  Trash2,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 
+import { markReadAction } from "@/features/direct-messaging/actions";
+import {
+  favoriteAction,
+  listFavoritesAction,
+  unfavoriteAction,
+} from "@/features/discovery-contacts/actions";
+import { leaveGroupAction } from "@/features/groups/actions";
+import { ConfirmDialog } from "@/features/groups/components/ConfirmDialog";
+import {
+  blockUserAction,
+  fetchBlocksAction,
+  unblockUserAction,
+} from "@/features/safety/actions";
 import type { ListItemMenuContext } from "@/shell/slots/types";
 import ui from "@/shell/styles/ui.module.css";
 
 import {
   archiveConversationAction,
+  clearChatAction,
+  deleteChatAction,
   moveToFolderAction,
   muteConversationAction,
   pinConversationAction,
@@ -31,6 +63,7 @@ import {
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { organizationErrorMessage } from "../error-message";
 import { isMuted } from "../mute-until";
+import { isMarkedUnread, setMarkedUnread } from "../unread-flags";
 import type { ChatFolder, MuteDurationKey } from "../types";
 import { computeMenuPosition } from "@/features/direct-messaging/components/menuPosition";
 import styles from "../conversation-organization.module.css";
@@ -41,6 +74,9 @@ type Props = {
   onClose: () => void;
 };
 
+type ConfirmKind = "block" | "clear" | "delete" | "exit";
+type ActionResult = { ok: boolean; error?: { code: string } };
+
 const MUTE_KEYS: MuteDurationKey[] = ["1h", "8h", "24h", "7d", "forever"];
 
 export const ConversationMenuSheet = memo(function ConversationMenuSheet({
@@ -49,14 +85,47 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
   onClose,
 }: Props) {
   const t = useTranslations("conversation-organization");
+  const router = useRouter();
   const trapRef = useFocusTrap(true);
   const [error, setError] = useState<string | null>(null);
   const [showMute, setShowMute] = useState(false);
+  const [showList, setShowList] = useState(false);
+  const [confirm, setConfirm] = useState<ConfirmKind | null>(null);
+  const [blocked, setBlocked] = useState(false);
+  const [favourite, setFavourite] = useState(false);
+  const [flaggedUnread, setFlaggedUnread] = useState(false);
   const [busy, setBusy] = useState(false);
   const [placement, setPlacement] = useState<
     { top: number; left: number } | "sheet" | null
   >(null);
   const point = ctx.point ?? null;
+  const isGroup = ctx.conversationType === "group";
+  const otherUserId = ctx.otherUserId ?? null;
+  const otherUsername = ctx.otherUsername ?? null;
+
+  useEffect(() => {
+    setFlaggedUnread(isMarkedUnread(ctx.conversationId));
+  }, [ctx.conversationId]);
+
+  useEffect(() => {
+    if (isGroup || !otherUserId) {
+      return;
+    }
+    let live = true;
+    void fetchBlocksAction().then((r) => {
+      if (live && r?.ok) {
+        setBlocked(r.value.some((b) => b.blockedId === otherUserId));
+      }
+    });
+    void listFavoritesAction().then((r) => {
+      if (live && r?.ok) {
+        setFavourite(r.value.some((f) => f.favoriteUserId === otherUserId));
+      }
+    });
+    return () => {
+      live = false;
+    };
+  }, [isGroup, otherUserId]);
 
   useLayoutEffect(() => {
     const panel = trapRef.current;
@@ -113,9 +182,10 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
   const pinned = ctx.membership.pinned_at != null;
   const archived = ctx.membership.archived_at != null;
   const muted = isMuted(ctx.membership.muted_until);
+  const isUnread = flaggedUnread || (ctx.unreadCount ?? 0) > 0;
 
   const run = useCallback(
-    async (action: () => Promise<{ ok: boolean; error?: { code: string } }>) => {
+    async (action: () => Promise<ActionResult>) => {
       setBusy(true);
       setError(null);
       const result = await action();
@@ -129,8 +199,152 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
     [onClose, t],
   );
 
+  const toggleUnread = useCallback(async () => {
+    if (!isUnread) {
+      setMarkedUnread(ctx.conversationId, true);
+      onClose();
+      return;
+    }
+    setMarkedUnread(ctx.conversationId, false);
+    if (ctx.lastMessageId && (ctx.unreadCount ?? 0) > 0) {
+      const messageId = ctx.lastMessageId;
+      await run(() => markReadAction({ conversationId: ctx.conversationId, messageId }));
+      return;
+    }
+    onClose();
+  }, [ctx, isUnread, onClose, run]);
+
+  const confirmed = useCallback(async () => {
+    const kind = confirm;
+    setConfirm(null);
+    if (kind === "block" && otherUserId) {
+      await run(() =>
+        blocked ? unblockUserAction(otherUserId) : blockUserAction(otherUserId),
+      );
+    } else if (kind === "clear") {
+      await run(() => clearChatAction());
+    } else if (kind === "delete") {
+      await run(() => deleteChatAction());
+    } else if (kind === "exit") {
+      await run(async () => {
+        const result = await leaveGroupAction(ctx.conversationId);
+        if (result.ok) {
+          router.push("/app/chats");
+        }
+        return result;
+      });
+    }
+  }, [blocked, confirm, ctx.conversationId, otherUserId, router, run]);
+
+  const toggleFavourite = () =>
+    run(async () => {
+      if (!otherUsername) {
+        return { ok: false, error: { code: "organization.not_found" } };
+      }
+      return favourite ? unfavoriteAction(otherUsername) : favoriteAction(otherUsername);
+    });
+
+  const item = (key: string, icon: ReactNode, label: string, onClick: () => void) => (
+    <li key={key}>
+      <button type="button" className={ui.menuItem} disabled={busy} onClick={onClick}>
+        {icon}
+        {label}
+      </button>
+    </li>
+  );
+
+  const submenu = (
+    key: string,
+    icon: ReactNode,
+    label: string,
+    open: boolean,
+    toggle: () => void,
+    children: ReactNode,
+  ) => (
+    <li key={key}>
+      <button
+        type="button"
+        className={ui.menuItem}
+        disabled={busy}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={toggle}
+      >
+        {icon}
+        <span className={styles.grow}>{label}</span>
+        <ChevronRight
+          size={16}
+          className={styles.disclosure}
+          data-open={open ? "true" : "false"}
+          aria-hidden
+        />
+      </button>
+      {open ? <div className={styles.muteSubmenu}>{children}</div> : null}
+    </li>
+  );
+
+  const muteBody = MUTE_KEYS.map((key) => (
+    <button
+      key={key}
+      type="button"
+      className={ui.menuItem}
+      disabled={busy}
+      onClick={() =>
+        void run(() =>
+          muteConversationAction({ conversationId: ctx.conversationId, duration: key }),
+        )
+      }
+    >
+      {t(`muteDuration.${key}`)}
+    </button>
+  ));
+
+  const listBody = (
+    <>
+      {folders.map((folder) => (
+        <button
+          key={folder.id}
+          type="button"
+          className={ui.menuItem}
+          disabled={busy}
+          onClick={() =>
+            void run(() =>
+              moveToFolderAction({
+                conversationId: ctx.conversationId,
+                folderId: folder.id,
+              }),
+            )
+          }
+        >
+          <FolderInput aria-hidden />
+          {folder.name}
+        </button>
+      ))}
+      <button
+        type="button"
+        className={ui.menuItem}
+        disabled={busy}
+        onClick={() => void run(() => removeFromFolderAction(ctx.conversationId))}
+      >
+        <FolderMinus aria-hidden />
+        {t("removeFromList")}
+      </button>
+    </>
+  );
+
   return createPortal(
     <>
+      {confirm ? (
+        <ConfirmDialog
+          title={t(`confirm.${confirm}Title`)}
+          body={t(`confirm.${confirm}Body`)}
+          confirmLabel={t("confirm.confirm")}
+          cancelLabel={t("cancel")}
+          destructive
+          onCancel={() => setConfirm(null)}
+          onConfirm={() => void confirmed()}
+        />
+      ) : null}
       <button
         type="button"
         className={styles.menuBackdrop}
@@ -145,7 +359,7 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
       <div
         ref={trapRef}
         className={styles.menuPanel}
-        style={panelStyle}
+        style={confirm ? { ...panelStyle, visibility: "hidden" } : panelStyle}
         role="dialog"
         aria-modal="true"
         aria-label={t("menuTitle")}
@@ -156,154 +370,71 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
           </p>
         ) : null}
         <ul className={styles.menuList}>
-          {archived ? (
-            <li>
-              <button
-                type="button"
-                className={ui.menuItem}
-                disabled={busy}
-                onClick={() =>
-                  void run(() => unarchiveConversationAction(ctx.conversationId))
-                }
-              >
-                <ArchiveRestore aria-hidden />
-                {t("unarchive")}
-              </button>
-            </li>
-          ) : (
-            <>
-              <li>
-                <button
-                  type="button"
-                  className={ui.menuItem}
-                  disabled={busy}
-                  onClick={() =>
-                    void run(() =>
-                      pinned
-                        ? unpinConversationAction(ctx.conversationId)
-                        : pinConversationAction(ctx.conversationId),
-                    )
-                  }
-                >
-                  {pinned ? <PinOff aria-hidden /> : <Pin aria-hidden />}
-                  {pinned ? t("unpin") : t("pin")}
-                </button>
-              </li>
-              <li>
-                {muted ? (
-                  <button
-                    type="button"
-                    className={ui.menuItem}
-                    disabled={busy}
-                    onClick={() =>
-                      void run(() => unmuteConversationAction(ctx.conversationId))
-                    }
-                  >
-                    <Bell aria-hidden />
-                    {t("unmute")}
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      className={ui.menuItem}
-                      disabled={busy}
-                      aria-expanded={showMute}
-                      onClick={() => setShowMute((v) => !v)}
-                    >
-                      <BellOff aria-hidden />
-                      <span className={styles.grow}>{t("mute")}</span>
-                      <ChevronDown
-                        size={16}
-                        className={styles.disclosure}
-                        data-open={showMute ? "true" : "false"}
-                        aria-hidden
-                      />
-                    </button>
-                    {showMute ? (
-                      <div className={styles.muteSubmenu}>
-                        {MUTE_KEYS.map((key) => (
-                          <button
-                            key={key}
-                            type="button"
-                            className={ui.menuItem}
-                            disabled={busy}
-                            onClick={() =>
-                              void run(() =>
-                                muteConversationAction({
-                                  conversationId: ctx.conversationId,
-                                  duration: key,
-                                }),
-                              )
-                            }
-                          >
-                            {t(`muteDuration.${key}`)}
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
-                  </>
-                )}
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className={`${ui.menuItem} ${ui.menuItemDanger}`}
-                  disabled={busy}
-                  onClick={() =>
-                    void run(() => archiveConversationAction(ctx.conversationId))
-                  }
-                >
-                  <Archive aria-hidden />
-                  {t("archive")}
-                </button>
-              </li>
-            </>
+          {archived
+            ? item("archive", <ArchiveRestore aria-hidden />, t("unarchive"), () =>
+                void run(() => unarchiveConversationAction(ctx.conversationId)),
+              )
+            : item("archive", <Archive aria-hidden />, t("archive"), () =>
+                void run(() => archiveConversationAction(ctx.conversationId)),
+              )}
+          {muted
+            ? item("mute", <Bell aria-hidden />, t("unmute"), () =>
+                void run(() => unmuteConversationAction(ctx.conversationId)),
+              )
+            : submenu(
+                "mute",
+                <BellOff aria-hidden />,
+                t("mute"),
+                showMute,
+                () => setShowMute((v) => !v),
+                muteBody,
+              )}
+          {item(
+            "pin",
+            pinned ? <PinOff aria-hidden /> : <Pin aria-hidden />,
+            pinned ? t("unpin") : t("pin"),
+            () =>
+              void run(() =>
+                pinned
+                  ? unpinConversationAction(ctx.conversationId)
+                  : pinConversationAction(ctx.conversationId),
+              ),
+          )}
+          {item(
+            "unread",
+            isUnread ? <MailCheck aria-hidden /> : <MailOpen aria-hidden />,
+            isUnread ? t("markRead") : t("markUnread"),
+            () => void toggleUnread(),
+          )}
+          {item(
+            "favourite",
+            favourite ? <StarOff aria-hidden /> : <Star aria-hidden />,
+            favourite ? t("removeFavourite") : t("addFavourite"),
+            () => void toggleFavourite(),
+          )}
+          {submenu(
+            "list",
+            <ListPlus aria-hidden />,
+            t("addToList"),
+            showList,
+            () => setShowList((v) => !v),
+            listBody,
           )}
         </ul>
-        {!archived && folders.length > 0 ? (
-          <>
-            <hr className={ui.menuSep} />
-            <p className={`${ui.sectionLabel} ${ui.sectionLabelMuted}`}>
-              {t("folderSection")}
-            </p>
-            <ul className={styles.menuList}>
-              {folders.map((folder) => (
-                <li key={folder.id}>
-                  <button
-                    type="button"
-                    className={ui.menuItem}
-                    disabled={busy}
-                    onClick={() =>
-                      void run(() =>
-                        moveToFolderAction({
-                          conversationId: ctx.conversationId,
-                          folderId: folder.id,
-                        }),
-                      )
-                    }
-                  >
-                    <FolderInput aria-hidden />
-                    {t("moveToFolder", { name: folder.name })}
-                  </button>
-                </li>
-              ))}
-              <li>
-                <button
-                  type="button"
-                  className={ui.menuItem}
-                  disabled={busy}
-                  onClick={() =>
-                    void run(() => removeFromFolderAction(ctx.conversationId))
-                  }
-                >
-                  <FolderMinus aria-hidden />
-                  {t("removeFromFolder")}
-                </button>
-              </li>
-            </ul>
-          </>
-        ) : null}
+        <hr className={ui.menuSep} />
+        <ul className={styles.menuList}>
+          {isGroup
+            ? null
+            : item("block", <Ban aria-hidden />, blocked ? t("unblock") : t("block"), () =>
+                setConfirm("block"),
+              )}
+          {item("clear", <Eraser aria-hidden />, t("clearChat"), () => setConfirm("clear"))}
+          {isGroup
+            ? item("exit", <LogOut aria-hidden />, t("exitGroup"), () => setConfirm("exit"))
+            : item("delete", <Trash2 aria-hidden />, t("deleteChat"), () =>
+                setConfirm("delete"),
+              )}
+        </ul>
       </div>
     </>,
     document.body,

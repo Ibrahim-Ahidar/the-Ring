@@ -1,12 +1,12 @@
 {
   "menuOpen": "Options de conversation",
   "menuTitle": "Organiser la conversation",
-  "pin": "Épingler",
+  "pin": "Épingler la discussion",
   "unpin": "Retirer l'épingle",
   "mute": "Couper les notifications",
   "unmute": "Réactiver les notifications",
-  "archive": "Archiver",
-  "unarchive": "Désarchiver",
+  "archive": "Archiver la discussion",
+  "unarchive": "Désarchiver la discussion",
   "close": "Fermer",
   "cancel": "Annuler",
   "save": "Enregistrer",
@@ -32,7 +32,8 @@
       "not_found": "Conversation introuvable.",
       "invalid_name": "Le nom du dossier doit contenir entre 1 et 40 caractères.",
       "invalid_mute": "Durée de silence invalide.",
-      "invalid_order": "Impossible de réordonner les dossiers."
+      "invalid_order": "Impossible de réordonner les dossiers.",
+      "unsupported": "Cette action n'est pas encore disponible."
     },
     "platform": {
       "unauthenticated": "Connectez-vous pour continuer."
@@ -47,5 +48,27 @@
   "moveFolderRight": "Déplacer à droite",
   "deleteFolderTitle": "Supprimer « {name} » ?",
   "deleteFolderBody": "Seul le dossier est supprimé. Ses discussions restent dans votre liste, sans être archivées ni supprimées.",
-  "deleteFolderConfirm": "Supprimer"
+  "deleteFolderConfirm": "Supprimer",
+  "markUnread": "Marquer comme non lu",
+  "markRead": "Marquer comme lu",
+  "addFavourite": "Ajouter aux favoris",
+  "removeFavourite": "Retirer des favoris",
+  "addToList": "Ajouter à une liste",
+  "removeFromList": "Retirer de la liste",
+  "block": "Bloquer",
+  "unblock": "Débloquer",
+  "clearChat": "Effacer la discussion",
+  "deleteChat": "Supprimer la discussion",
+  "exitGroup": "Quitter le groupe",
+  "confirm": {
+    "confirm": "Confirmer",
+    "blockTitle": "Bloquer ce contact ?",
+    "blockBody": "Cette personne ne pourra plus vous écrire.",
+    "clearTitle": "Effacer cette discussion ?",
+    "clearBody": "Tous les messages de cette discussion seront supprimés pour vous.",
+    "deleteTitle": "Supprimer cette discussion ?",
+    "deleteBody": "La discussion sera retirée de votre liste.",
+    "exitTitle": "Quitter ce groupe ?",
+    "exitBody": "Vous ne recevrez plus les messages de ce groupe."
+  }
 }

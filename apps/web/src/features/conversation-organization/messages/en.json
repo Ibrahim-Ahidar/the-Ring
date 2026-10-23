@@ -1,12 +1,12 @@
 {
   "menuOpen": "Conversation options",
   "menuTitle": "Organize conversation",
-  "pin": "Pin",
-  "unpin": "Unpin",
+  "pin": "Pin chat",
+  "unpin": "Unpin chat",
   "mute": "Mute notifications",
   "unmute": "Unmute",
-  "archive": "Archive",
-  "unarchive": "Unarchive",
+  "archive": "Archive chat",
+  "unarchive": "Unarchive chat",
   "close": "Close",
   "cancel": "Cancel",
   "save": "Save",
@@ -32,7 +32,8 @@
       "not_found": "Conversation not found.",
       "invalid_name": "Folder name must be 1–40 characters.",
       "invalid_mute": "Invalid mute duration.",
-      "invalid_order": "Could not reorder folders."
+      "invalid_order": "Could not reorder folders.",
+      "unsupported": "This action is not available yet."
     },
     "platform": {
       "unauthenticated": "Sign in to continue."
@@ -47,5 +48,27 @@
   "moveFolderRight": "Move right",
   "deleteFolderTitle": "Delete \"{name}\"?",
   "deleteFolderBody": "Only the folder is removed. Its chats stay in your list and are not archived or deleted.",
-  "deleteFolderConfirm": "Delete"
+  "deleteFolderConfirm": "Delete",
+  "markUnread": "Mark as unread",
+  "markRead": "Mark as read",
+  "addFavourite": "Add to favourites",
+  "removeFavourite": "Remove from favourites",
+  "addToList": "Add to list",
+  "removeFromList": "Remove from list",
+  "block": "Block",
+  "unblock": "Unblock",
+  "clearChat": "Clear chat",
+  "deleteChat": "Delete chat",
+  "exitGroup": "Exit group",
+  "confirm": {
+    "confirm": "Confirm",
+    "blockTitle": "Block this contact?",
+    "blockBody": "They will no longer be able to message you.",
+    "clearTitle": "Clear this chat?",
+    "clearBody": "All messages in this chat will be removed for you.",
+    "deleteTitle": "Delete this chat?",
+    "deleteBody": "The chat will be removed from your list.",
+    "exitTitle": "Exit this group?",
+    "exitBody": "You will no longer receive messages from this group."
+  }
 }

@@ -1,12 +1,12 @@
 {
   "menuOpen": "خيارات المحادثة",
   "menuTitle": "تنظيم المحادثة",
-  "pin": "تثبيت",
-  "unpin": "إلغاء التثبيت",
+  "pin": "تثبيت المحادثة",
+  "unpin": "إلغاء تثبيت المحادثة",
   "mute": "كتم الإشعارات",
   "unmute": "إلغاء الكتم",
-  "archive": "أرشفة",
-  "unarchive": "إلغاء الأرشفة",
+  "archive": "أرشفة المحادثة",
+  "unarchive": "إلغاء أرشفة المحادثة",
   "close": "إغلاق",
   "cancel": "إلغاء",
   "save": "حفظ",
@@ -32,7 +32,8 @@
       "not_found": "المحادثة غير موجودة.",
       "invalid_name": "يجب أن يكون اسم المجلد من 1 إلى 40 حرفاً.",
       "invalid_mute": "مدة كتم غير صالحة.",
-      "invalid_order": "تعذر إعادة ترتيب المجلدات."
+      "invalid_order": "تعذر إعادة ترتيب المجلدات.",
+      "unsupported": "هذا الإجراء غير متاح بعد."
     },
     "platform": {
       "unauthenticated": "سجّل الدخول للمتابعة."
@@ -47,5 +48,27 @@
   "moveFolderRight": "نقل لليمين",
   "deleteFolderTitle": "حذف «{name}»؟",
   "deleteFolderBody": "يُحذف المجلد فقط. تبقى محادثاته في قائمتك ولا تُؤرشف ولا تُحذف.",
-  "deleteFolderConfirm": "حذف"
+  "deleteFolderConfirm": "حذف",
+  "markUnread": "تعليم كغير مقروءة",
+  "markRead": "تعليم كمقروءة",
+  "addFavourite": "إضافة إلى المفضلة",
+  "removeFavourite": "إزالة من المفضلة",
+  "addToList": "إضافة إلى قائمة",
+  "removeFromList": "إزالة من القائمة",
+  "block": "حظر",
+  "unblock": "إلغاء الحظر",
+  "clearChat": "مسح المحادثة",
+  "deleteChat": "حذف المحادثة",
+  "exitGroup": "مغادرة المجموعة",
+  "confirm": {
+    "confirm": "تأكيد",
+    "blockTitle": "حظر جهة الاتصال هذه؟",
+    "blockBody": "لن يتمكن من مراسلتك بعد الآن.",
+    "clearTitle": "مسح هذه المحادثة؟",
+    "clearBody": "ستتم إزالة جميع رسائل هذه المحادثة من عندك.",
+    "deleteTitle": "حذف هذه المحادثة؟",
+    "deleteBody": "ستتم إزالة المحادثة من قائمتك.",
+    "exitTitle": "مغادرة هذه المجموعة؟",
+    "exitBody": "لن تتلقى رسائل هذه المجموعة بعد الآن."
+  }
 }
