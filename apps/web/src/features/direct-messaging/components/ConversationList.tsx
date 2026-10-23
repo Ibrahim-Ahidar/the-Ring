@@ -298,7 +298,10 @@ function ConversationListInner({ activeConversationId }: Props) {
                       className={`${ui.iconBtn} ${ui.iconBtnSm}`}
                       aria-label={`${label}: ${title}`}
                       title={label}
-                      onClick={() => void menu.run(menuCtx)}
+                      onClick={(event) => {
+                        const rect = event.currentTarget.getBoundingClientRect();
+                        void menu.run({ ...menuCtx, point: { x: rect.left, y: rect.bottom } });
+                      }}
                     >
                       <Icon size={18} aria-hidden />
                     </button>

@@ -87,7 +87,10 @@ function ConversationDrawerInner({ conversationId, detail }: Props) {
                 key={menu.id}
                 type="button"
                 className={ui.listRow}
-                onClick={() => void menu.run(menuCtx)}
+                onClick={(event) => {
+                  const rect = event.currentTarget.getBoundingClientRect();
+                  void menu.run({ ...menuCtx, point: { x: rect.left, y: rect.bottom } });
+                }}
               >
                 <SlidersHorizontal size={24} aria-hidden />
                 <span className={ui.listRowBody}>

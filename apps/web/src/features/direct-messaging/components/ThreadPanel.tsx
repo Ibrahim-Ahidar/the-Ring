@@ -104,7 +104,10 @@ function ThreadPanelInner({ conversationId, detail, currentUserId }: Props) {
                 className={ui.iconBtn}
                 aria-label={label}
                 title={label}
-                onClick={() => void menu.run(menuCtx)}
+                onClick={(event) => {
+                  const rect = event.currentTarget.getBoundingClientRect();
+                  void menu.run({ ...menuCtx, point: { x: rect.left, y: rect.bottom } });
+                }}
               >
                 <Icon size={24} aria-hidden />
               </button>
