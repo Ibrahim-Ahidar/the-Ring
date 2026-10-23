@@ -1,5 +1,7 @@
 /** Spec 6.2 schema, shared by every adapter. Bump when a statement changes. */
-export const LOCAL_SCHEMA_VERSION = 1;
+import { SEARCH_SCHEMA_STATEMENTS } from "./search-schema";
+
+export const LOCAL_SCHEMA_VERSION = 2;
 
 export const LOCAL_SCHEMA_STATEMENTS: readonly string[] = [
   `CREATE TABLE IF NOT EXISTS conversations (
@@ -64,20 +66,7 @@ export const LOCAL_SCHEMA_STATEMENTS: readonly string[] = [
     key TEXT PRIMARY KEY,
     value TEXT
   )`,
-  // FTS5 external-content table over messages.body; search queries arrive with #218.
-  `CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(
-    body, content='messages', content_rowid='rowid'
-  )`,
-  `CREATE TRIGGER IF NOT EXISTS messages_fts_ai AFTER INSERT ON messages BEGIN
-    INSERT INTO messages_fts(rowid, body) VALUES (new.rowid, new.body);
-  END`,
-  `CREATE TRIGGER IF NOT EXISTS messages_fts_ad AFTER DELETE ON messages BEGIN
-    INSERT INTO messages_fts(messages_fts, rowid, body) VALUES ('delete', old.rowid, old.body);
-  END`,
-  `CREATE TRIGGER IF NOT EXISTS messages_fts_au AFTER UPDATE ON messages BEGIN
-    INSERT INTO messages_fts(messages_fts, rowid, body) VALUES ('delete', old.rowid, old.body);
-    INSERT INTO messages_fts(rowid, body) VALUES (new.rowid, new.body);
-  END`,
+  ...SEARCH_SCHEMA_STATEMENTS,
 ];
 
 export const LOCAL_TABLES = [
@@ -88,6 +77,6 @@ export const LOCAL_TABLES = [
   "outbox",
   "media",
   "crypto_state",
-  "messages_fts",
+  "messages_search",
   "kv",
 ] as const;

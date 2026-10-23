@@ -88,7 +88,7 @@ describe("LocalStore over SQLite", () => {
 
   it("keeps the FTS index in step through insert and update", async () => {
     const hit = (term: string) =>
-      exec.query("SELECT rowid FROM messages_fts WHERE messages_fts MATCH ?", [term]);
+      exec.query("SELECT rowid FROM messages_search WHERE messages_search MATCH ?", [term]);
     await store.upsertMessages([msg("m1", "2026-01-01T00:00:01Z", "c1", "banana split")]);
     expect(await hit("banana")).toHaveLength(1);
     await store.upsertMessages([msg("m1", "2026-01-01T00:00:01Z", "c1", "cherry pie")]);
@@ -145,7 +145,7 @@ describe("LocalStore over SQLite", () => {
     expect(await store.countMessages("c1")).toBe(0);
     expect(await store.getKv("x")).toBeNull();
     expect(
-      await exec.query("SELECT rowid FROM messages_fts WHERE messages_fts MATCH ?", ["zebra"]),
+      await exec.query("SELECT rowid FROM messages_search WHERE messages_search MATCH ?", ["zebra"]),
     ).toHaveLength(0);
     await store.upsertMessages([msg("m2", "2026-01-01T00:00:02Z")]);
     expect(await store.countMessages("c1")).toBe(1);

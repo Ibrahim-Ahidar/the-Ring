@@ -1,3 +1,4 @@
+import { searchLocalMessages, type MessageSearchHit, type MessageSearchOptions } from "./search";
 import { LOCAL_SCHEMA_STATEMENTS, LOCAL_SCHEMA_VERSION } from "./schema";
 import type {
   ConversationRow,
@@ -32,6 +33,8 @@ export interface LocalStore {
     opts?: { limit?: number; before?: MessagePageCursor | null },
   ): Promise<MessageRow[]>;
   countMessages(conversationId: string): Promise<number>;
+  /** FTS5 search over message bodies: ranked, with highlighted snippets. */
+  searchMessages(opts: MessageSearchOptions): Promise<MessageSearchHit[]>;
 
   setReaction(row: ReactionRow): Promise<void>;
   removeReaction(messageId: string, userId: string): Promise<void>;
@@ -185,6 +188,10 @@ export function createSqlLocalStore(db: SqlExecutor): LocalStore {
         [conversationId],
       );
       return Number(rows[0]?.n ?? 0);
+    },
+
+    searchMessages(opts) {
+      return searchLocalMessages(db, opts);
     },
 
     async setReaction(row) {
