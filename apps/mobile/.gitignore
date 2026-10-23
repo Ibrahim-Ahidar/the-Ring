@@ -2,3 +2,6 @@
 dist/
 android/
 expo-env.d.ts
+
+# the vodozemac module's android/ is source, not a prebuild output
+!modules/vodozemac/android/

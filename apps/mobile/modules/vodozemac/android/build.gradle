@@ -1,0 +1,22 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'expo-module-gradle-plugin'
+
+group = 'expo.modules.vodozemac'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.vodozemac"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+  sourceSets {
+    main { jniLibs.srcDirs = ['src/main/jniLibs'] }
+  }
+}
+
+dependencies {
+  // The uniffi Kotlin bindings load the .so through JNA.
+  implementation "net.java.dev.jna:jna:5.14.0@aar"
+}
