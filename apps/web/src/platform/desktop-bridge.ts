@@ -9,6 +9,8 @@ export type DesktopBridge = {
   version: string;
   notify(payload: { chatId: string; title: string; body: string }): void;
   setUnreadCount(count: number): void;
+  /** Base64 32-byte key protected by Electron safeStorage; null if the OS cannot protect it. */
+  getLocalStorageKey(): Promise<string | null>;
   onOpenChat(cb: (chatId: string) => void): () => void;
 };
 

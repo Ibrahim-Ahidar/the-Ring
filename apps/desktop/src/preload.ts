@@ -7,6 +7,10 @@ contextBridge.exposeInMainWorld("pulseDesktop", {
   notify(payload: { chatId: string; title: string; body: string }): void {
     ipcRenderer.send("pulse:notify", payload);
   },
+  /** Base64 32-byte key protected by the OS keychain (safeStorage); null if unavailable. */
+  getLocalStorageKey(): Promise<string | null> {
+    return ipcRenderer.invoke("pulse:local-storage-key") as Promise<string | null>;
+  },
   setUnreadCount(count: number): void {
     ipcRenderer.send("pulse:set-unread", count);
   },

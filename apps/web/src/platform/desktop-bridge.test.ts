@@ -41,6 +41,7 @@ describe("getDesktopBridge", () => {
     const bridge: DesktopBridge = {
       version: "1",
       notify: vi.fn(),
+      getLocalStorageKey: vi.fn(),
       setUnreadCount: vi.fn(),
       onOpenChat: vi.fn(),
     };

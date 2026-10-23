@@ -9,14 +9,18 @@ import {
   screen,
   session,
   shell,
+  safeStorage,
   Tray,
   type IpcMainEvent,
+  type IpcMainInvokeEvent,
 } from "electron";
+import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { autoUpdater } from "electron-updater";
 import { parseNotifyPayload, parseUnreadCount, trayTooltip } from "./bridge-validation";
 import { shouldHideOnClose } from "./close-policy";
+import { getOrCreateLocalStorageKey } from "./local-storage-key";
 import { isOfflineError } from "./offline";
 import { isPulseUrl } from "./origin";
 import { createRetryController } from "./retry-controller";
@@ -77,7 +81,7 @@ function setupTray(): void {
 }
 
 /** Only frames on the Pulse origin may use the bridge. */
-function fromPulseFrame(event: IpcMainEvent): boolean {
+function fromPulseFrame(event: IpcMainEvent | IpcMainInvokeEvent): boolean {
   const url = event.senderFrame?.url ?? "";
   return isPulseUrl(url, PULSE_URL);
 }
@@ -110,6 +114,16 @@ function applyUnread(count: number): void {
 }
 
 function setupBridge(): void {
+  ipcMain.handle("pulse:local-storage-key", (event) => {
+    if (!fromPulseFrame(event)) return null;
+    const file = path.join(app.getPath("userData"), "crypto-key.bin");
+    return getOrCreateLocalStorageKey({
+      safeStorage,
+      read: () => (fs.existsSync(file) ? fs.readFileSync(file) : null),
+      write: (data) => fs.writeFileSync(file, data),
+      randomBytes: (n) => crypto.randomBytes(n),
+    });
+  });
   ipcMain.on("pulse:notify", (event, raw) => {
     if (!fromPulseFrame(event)) return;
     const payload = parseNotifyPayload(raw);
