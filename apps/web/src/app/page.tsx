@@ -30,10 +30,10 @@ export default async function HomePage() {
           </div>
           <p className={styles.downloadLabel}>{t("landing.downloadTitle")}</p>
           <div className={styles.actions}>
-            <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/desktop" download>
+            <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/desktop">
               {t("landing.downloadDesktop")}
             </a>
-            <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/android" download>
+            <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/android">
               {t("landing.downloadMobile")}
             </a>
           </div>

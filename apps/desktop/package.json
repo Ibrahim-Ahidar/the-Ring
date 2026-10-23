@@ -54,7 +54,8 @@
       {
         "provider": "github",
         "owner": "Ibrahim-Ahidar",
-        "repo": "the-Ring"
+        "repo": "the-Ring",
+        "releaseType": "release"
       }
     ],
     "electronVersion": "39.8.10",
