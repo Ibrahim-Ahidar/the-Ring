@@ -24,7 +24,6 @@
   "retrySend": "Retry",
   "messageActions": "Message actions",
   "chatActions": "Chat actions",
-  "closeSheet": "Close",
   "closeActionMenu": "Close menu",
   "reconnecting": "Reconnecting…",
   "requestRequired": "This person only accepts message requests.",

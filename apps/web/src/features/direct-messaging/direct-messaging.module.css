@@ -158,24 +158,6 @@
   }
 }
 
-.rowSheet {
-  width: min(320px, 100%);
-  max-height: 80dvh;
-  overflow-y: auto;
-}
-
-.rowSheetTitle {
-  padding: var(--space-8) var(--space-16) var(--space-12);
-  font-size: var(--text-md);
-  font-weight: var(--weight-medium);
-}
-
-.rowSheetList {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 .listEmpty {
   display: flex;
   flex-direction: column;

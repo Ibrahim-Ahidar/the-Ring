@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Ban, BellOff, Check, CheckCheck, Pin } from "lucide-react";
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { useFormatter, useNow, useTimeZone, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
@@ -12,6 +12,7 @@ import ui from "@/shell/styles/ui.module.css";
 
 import { useChatsLoading } from "../context/LoadingContext";
 import { useMessaging } from "../context/MessagingProvider";
+import type { MenuPoint } from "../hooks/useBubbleContextMenu";
 import { useLongPress } from "../hooks/useLongPress";
 import { useQueryHref } from "../hooks/useQueryHref";
 import { calendarDaysAgo } from "../lib/calendar";
@@ -101,7 +102,14 @@ function ConversationListInner({ activeConversationId }: Props) {
   const { inbox: loading, inboxFailed } = useChatsLoading();
   const menus = useMemo(() => getContributions("listItemMenu"), []);
   const [sheetId, setSheetId] = useState<string | null>(null);
-  const bindPress = useLongPress<string>(setSheetId);
+  // Where the menu opens: the cursor, the touch point or the focused row.
+  const [sheetPoint, setSheetPoint] = useState<MenuPoint | null>(null);
+  const pressPoint = useRef<MenuPoint | null>(null);
+  const bindPress = useLongPress<string>((id) => {
+    setSheetPoint(pressPoint.current);
+    setSheetId(id);
+  });
+  const closeSheet = useCallback(() => setSheetId(null), []);
 
   if (state.conversations.length === 0) {
     if (loading) {
@@ -160,7 +168,8 @@ function ConversationListInner({ activeConversationId }: Props) {
         title={displayTitle(sheetItem)}
         menus={sheetMenus}
         ctx={sheetCtx}
-        onClose={() => setSheetId(null)}
+        point={sheetPoint}
+        onClose={closeSheet}
       />
     ) : null;
 
@@ -174,7 +183,25 @@ function ConversationListInner({ activeConversationId }: Props) {
         const receipt = state.receiptsByConversation[item.id];
         const menuCtx = menuContextOf(item);
         const availableMenus = menus.filter((menu) => menu.isAvailable(menuCtx));
-        const press = availableMenus.length > 0 ? bindPress(item.id) : {};
+        const bound = availableMenus.length > 0 ? bindPress(item.id) : null;
+        const press = bound
+          ? {
+              ...bound,
+              onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
+                pressPoint.current = { x: event.clientX, y: event.clientY };
+                bound.onPointerDown(event);
+              },
+              onContextMenu: (event: React.MouseEvent<HTMLElement>) => {
+                pressPoint.current = { x: event.clientX, y: event.clientY };
+                bound.onContextMenu(event);
+              },
+              onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
+                const rect = event.currentTarget.getBoundingClientRect();
+                pressPoint.current = { x: rect.left + rect.width / 2, y: rect.bottom };
+                bound.onKeyDown(event);
+              },
+            }
+          : {};
 
         return (
           <li key={item.id} className={styles.chatItem}>
