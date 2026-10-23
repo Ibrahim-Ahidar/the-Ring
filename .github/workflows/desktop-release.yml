@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +30,9 @@ jobs:
       - name: Build installers
         working-directory: apps/desktop
         run: npx electron-builder --publish never
+        env:
+          # No Apple signing identity yet; ship an unsigned build.
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
       # Publishing here, not from electron-builder, keeps the release on the pushed desktop-v* tag.
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/desktop-v')
@@ -39,4 +42,6 @@ jobs:
             apps/desktop/release/*.exe
             apps/desktop/release/*.exe.blockmap
             apps/desktop/release/*.AppImage
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*-mac.zip
             apps/desktop/release/latest*.yml

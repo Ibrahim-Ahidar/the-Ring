@@ -43,6 +43,24 @@
       ],
       "icon": "assets/icon.png"
     },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "category": "public.app-category.social-networking",
+      "icon": "assets/icon.png"
+    },
     "linux": {
       "target": [
         "AppImage"

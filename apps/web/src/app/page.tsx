@@ -33,6 +33,9 @@ export default async function HomePage() {
             <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/desktop">
               {t("landing.downloadDesktop")}
             </a>
+            <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/mac">
+              {t("landing.downloadMac")}
+            </a>
             <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/android">
               {t("landing.downloadMobile")}
             </a>

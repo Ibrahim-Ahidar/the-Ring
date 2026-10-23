@@ -7,6 +7,7 @@ export type Release = {
 
 const PLATFORMS: Record<string, { tagPrefix: string; extension: string }> = {
   desktop: { tagPrefix: "desktop-v", extension: ".exe" },
+  mac: { tagPrefix: "desktop-v", extension: ".dmg" },
   android: { tagPrefix: "mobile-v", extension: ".apk" },
 };
 
