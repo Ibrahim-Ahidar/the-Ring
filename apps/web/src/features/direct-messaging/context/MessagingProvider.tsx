@@ -30,12 +30,16 @@ import {
   getConversationAction,
   getConversationReceiptsAction,
   getArchivedSummaryAction,
-  listConversationsAction,
-  listMessagesAction,
   markDeliveredAction,
   markReadAction,
   sendTextAction,
 } from "../actions";
+import {
+  readMessages,
+  refreshConversations,
+  refreshMessages,
+  storeRealtimeMessage,
+} from "../lib/data-source";
 import { needsAttachmentFetch } from "../lib/realtime-message";
 import { firstUnreadMessageId } from "../delivery";
 import { mapMessageRow, messagePageNextCursor } from "../service";
@@ -209,7 +213,7 @@ export function MessagingProvider({
     const args = inboxFiltersToListArgs(
       inboxFiltersRef.current ?? DEFAULT_INBOX_FILTERS,
     );
-    return listConversationsAction(args);
+    return refreshConversations(args);
   }, []);
   const [state, dispatch] = useReducer(
     messagingReducer,
@@ -357,7 +361,7 @@ export function MessagingProvider({
       openIds.add(pending.conversationId);
     }
     for (const conversationId of openIds) {
-      const page = await listMessagesAction({ conversationId });
+      const page = await refreshMessages(conversationId);
       if (!page.ok) {
         continue;
       }
@@ -491,9 +495,7 @@ export function MessagingProvider({
       syncing = true;
       lastSyncAt = Date.now();
       try {
-        const page = await listMessagesAction({
-          conversationId: conversationId,
-        });
+        const page = await refreshMessages(conversationId);
         if (disposed || !page.ok) {
           return;
         }
@@ -567,6 +569,7 @@ export function MessagingProvider({
     });
 
     const applyMessageRow = (row: Record<string, unknown>) => {
+      void storeRealtimeMessage(row).catch(() => {});
       const message = rowToTimelineMessage(row);
       if (!message) {
         return;
@@ -752,7 +755,7 @@ export function MessagingProvider({
       if (!cursor) {
         return;
       }
-      const page = await listMessagesAction({ conversationId, cursor });
+      const page = await readMessages({ conversationId, cursor });
       if (!page.ok) {
         return;
       }
@@ -768,7 +771,7 @@ export function MessagingProvider({
   );
 
   const refreshConversation = useCallback(async (conversationId: string) => {
-    const page = await listMessagesAction({ conversationId });
+    const page = await refreshMessages(conversationId);
     if (page.ok) {
       dispatch({
         type: "messages/set",
