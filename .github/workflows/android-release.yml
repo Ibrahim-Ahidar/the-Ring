@@ -93,3 +93,5 @@ jobs:
         with:
           files: ${{ steps.apk.outputs.name }}
           generate_release_notes: true
+          # The desktop auto-updater reads the repo's "latest" release, so mobile releases never take it.
+          make_latest: false
