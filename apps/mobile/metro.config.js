@@ -8,7 +8,13 @@ const workspaceRoot = path.resolve(projectRoot, "../..");
 
 const config = getDefaultConfig(projectRoot);
 
-config.watchFolders = [workspaceRoot];
+// Watch only what the app imports. Watching the whole repo root makes the Windows
+// watcher walk every worktree and time out ("Failed to start watch mode"), and then
+// every bundle request fails with "Cannot read properties of undefined (reading 'get')".
+config.watchFolders = [
+  path.resolve(workspaceRoot, "packages"),
+  path.resolve(workspaceRoot, "node_modules"),
+];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules"),
