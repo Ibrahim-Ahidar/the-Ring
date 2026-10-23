@@ -23,3 +23,5 @@ export type * from "./contacts-types";
 export * from "./account";
 export * from "./preferences";
 export * from "./app-version";
+export * from "./crypto/crypto-engine";
+export * from "./e2ee-flag";

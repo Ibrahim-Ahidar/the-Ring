@@ -19,6 +19,7 @@
     "perf:nav": "node scripts/perf-nav.mjs"
   },
   "dependencies": {
+    "@kinsh/vodozemac-wasm": "0.4.2",
     "@pulse/core": "*",
     "@pulse/i18n": "*",
     "@supabase/ssr": "^0.12.7",
