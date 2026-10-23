@@ -4,10 +4,10 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --go",
     "start:usb": "node scripts/start-usb.js",
-    "start:tunnel": "expo start --tunnel",
-    "android": "expo start --android",
+    "start:tunnel": "expo start --go --tunnel",
+    "android": "expo start --go --android",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."

@@ -16,5 +16,5 @@ try {
   process.exit(1);
 }
 
-spawn("npx", ["expo", "start", "--localhost", ...process.argv.slice(2)], { stdio: "inherit", shell: true })
+spawn("npx", ["expo", "start", "--go", "--localhost", ...process.argv.slice(2)], { stdio: "inherit", shell: true })
   .on("exit", (code) => process.exit(code ?? 0));
