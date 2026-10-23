@@ -5,6 +5,8 @@ import { PublicFrame } from "./_public/PublicFrame";
 import styles from "./_public/public.module.css";
 import ui from "@/shell/styles/ui.module.css";
 
+const RELEASES_URL = "https://github.com/Ibrahim-Ahidar/the-Ring/releases";
+
 type Feature = { title: string; body: string };
 type DemoMessage = { side: "in" | "out"; text: string; time: string };
 type Demo = { name: string; status: string; messages: DemoMessage[] };
@@ -27,6 +29,15 @@ export default async function HomePage() {
             <Link className={`${ui.btn} ${ui.btnSecondary}`} href="/login">
               {t("landing.login")}
             </Link>
+          </div>
+          <p className={styles.downloadLabel}>{t("landing.downloadTitle")}</p>
+          <div className={styles.actions}>
+            <a className={`${ui.btn} ${ui.btnSecondary}`} href={RELEASES_URL} rel="noopener noreferrer">
+              {t("landing.downloadDesktop")}
+            </a>
+            <a className={`${ui.btn} ${ui.btnSecondary}`} href={RELEASES_URL} rel="noopener noreferrer">
+              {t("landing.downloadMobile")}
+            </a>
           </div>
         </div>
 

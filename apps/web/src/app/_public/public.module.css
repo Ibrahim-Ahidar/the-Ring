@@ -283,3 +283,9 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
 }
+
+.downloadLabel {
+  margin-block: var(--space-8) 0;
+  color: var(--text-secondary, inherit);
+  font-size: 0.875rem;
+}

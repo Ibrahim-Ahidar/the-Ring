@@ -4,6 +4,9 @@
     "proposition": "Find people by username, start a conversation, and keep communication organized.",
     "login": "Log in",
     "signup": "Sign up",
+    "downloadTitle": "Download Pulse",
+    "downloadDesktop": "Windows desktop app",
+    "downloadMobile": "Android app",
     "features": [
       {
         "title": "Find by username",

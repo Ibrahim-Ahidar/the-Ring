@@ -4,6 +4,9 @@
     "proposition": "Trouvez des personnes par nom d'utilisateur, démarrez une conversation et gardez vos échanges organisés.",
     "login": "Connexion",
     "signup": "Inscription",
+    "downloadTitle": "Télécharger Pulse",
+    "downloadDesktop": "Application de bureau Windows",
+    "downloadMobile": "Application Android",
     "features": [
       {
         "title": "Trouvez par nom d'utilisateur",

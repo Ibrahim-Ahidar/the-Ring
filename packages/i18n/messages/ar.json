@@ -4,6 +4,9 @@
     "proposition": "اعثر على الناس باسم المستخدم، ابدأ محادثة، وابقَ على تواصل منظم.",
     "login": "تسجيل الدخول",
     "signup": "إنشاء حساب",
+    "downloadTitle": "حمّل Pulse",
+    "downloadDesktop": "تطبيق سطح المكتب لويندوز",
+    "downloadMobile": "تطبيق أندرويد",
     "features": [
       {
         "title": "ابحث باسم المستخدم",
