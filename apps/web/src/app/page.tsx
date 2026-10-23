@@ -30,12 +30,15 @@ export default async function HomePage() {
           </div>
           <p className={styles.downloadLabel}>{t("landing.downloadTitle")}</p>
           <div className={styles.actions}>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- route handler that returns a file, not a page */}
             <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/desktop">
               {t("landing.downloadDesktop")}
             </a>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- route handler that returns a file, not a page */}
             <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/mac">
               {t("landing.downloadMac")}
             </a>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- route handler that returns a file, not a page */}
             <a className={`${ui.btn} ${ui.btnSecondary}`} href="/download/android">
               {t("landing.downloadMobile")}
             </a>
