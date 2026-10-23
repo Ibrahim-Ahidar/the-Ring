@@ -46,17 +46,18 @@ vi.mock("../context/MessagingProvider", () => ({
     },
   }),
 }));
+const contribution = (id: string) => ({
+  id,
+  order: 1,
+  labelKey: "direct-messaging.pinned",
+  icon: Pin,
+  isAvailable: () => true,
+  run,
+});
+const slots = vi.hoisted(() => ({ count: 2 }));
 vi.mock("@/shell/slots", () => ({
-  getContributions: () => [
-    {
-      id: "pin",
-      order: 1,
-      labelKey: "direct-messaging.pinned",
-      icon: Pin,
-      isAvailable: () => true,
-      run,
-    },
-  ],
+  getContributions: () =>
+    Array.from({ length: slots.count }, (_, i) => contribution(`pin-${i}`)),
 }));
 
 import { ConversationList } from "./ConversationList";
@@ -76,6 +77,7 @@ function renderList() {
 beforeEach(() => {
   vi.useFakeTimers();
   run.mockClear();
+  slots.count = 2;
 });
 afterEach(() => {
   cleanup();
@@ -128,7 +130,7 @@ describe("ConversationList row actions", () => {
     expect(dialog.style.top).not.toBe("");
     expect(parseFloat(dialog.style.left)).toBeGreaterThan(100);
     expect(parseFloat(dialog.style.top)).toBeGreaterThan(40);
-    expect(within(dialog).getByRole("menuitem", { name: /pinned/i })).toBeTruthy();
+    expect(within(dialog).getAllByRole("menuitem", { name: /pinned/i })[0]).toBeTruthy();
     expect(screen.queryByRole("heading")).toBeNull();
   });
 
@@ -145,8 +147,20 @@ describe("ConversationList row actions", () => {
   it("runs an action from the sheet and closes it", () => {
     const row = renderList();
     fireEvent.contextMenu(row);
-    fireEvent.click(within(screen.getByRole("dialog")).getByRole("menuitem", { name: /pinned/i }));
+    fireEvent.click(within(screen.getByRole("dialog")).getAllByRole("menuitem", { name: /pinned/i })[0]);
     expect(run).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("with one contribution, right-click runs it at the cursor with no intermediate menu", () => {
+    slots.count = 1;
+    const row = renderList();
+    fireEvent.contextMenu(row, { clientX: 123, clientY: 45 });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(run.mock.calls[0][0]).toMatchObject({
+      conversationId: expect.any(String),
+      point: { x: 123, y: 45 },
+    });
   });
 });

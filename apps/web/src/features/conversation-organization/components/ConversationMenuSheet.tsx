@@ -11,7 +11,8 @@ import {
   Pin,
   PinOff,
 } from "lucide-react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 
 import type { ListItemMenuContext } from "@/shell/slots/types";
@@ -31,6 +32,7 @@ import { useFocusTrap } from "../hooks/useFocusTrap";
 import { organizationErrorMessage } from "../error-message";
 import { isMuted } from "../mute-until";
 import type { ChatFolder, MuteDurationKey } from "../types";
+import { computeMenuPosition } from "@/features/direct-messaging/components/menuPosition";
 import styles from "../conversation-organization.module.css";
 
 type Props = {
@@ -51,6 +53,62 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
   const [error, setError] = useState<string | null>(null);
   const [showMute, setShowMute] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [placement, setPlacement] = useState<
+    { top: number; left: number } | "sheet" | null
+  >(null);
+  const point = ctx.point ?? null;
+
+  useLayoutEffect(() => {
+    const panel = trapRef.current;
+    if (!panel) {
+      return;
+    }
+    const narrow =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(max-width: 767px)").matches;
+    if (!point || narrow) {
+      setPlacement("sheet");
+      return;
+    }
+    const rect = panel.getBoundingClientRect();
+    const { top, left } = computeMenuPosition(
+      { top: point.y, bottom: point.y, left: point.x, right: point.x },
+      { width: rect.width, height: rect.height },
+      { width: window.innerWidth, height: window.innerHeight },
+      document.documentElement.dir === "rtl" ? "rtl" : "ltr",
+    );
+    setPlacement({ top, left });
+  }, [point, trapRef]);
+
+  useEffect(() => {
+    const panel = trapRef.current;
+    const onScroll = (event: Event) => {
+      if (!(panel && event.target instanceof Node && panel.contains(event.target))) {
+        onClose();
+      }
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onClose);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onClose);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose, trapRef]);
+
+  const panelStyle =
+    placement === null
+      ? ({ visibility: "hidden" } as const)
+      : placement === "sheet"
+        ? undefined
+        : { top: placement.top, left: placement.left };
 
   const pinned = ctx.membership.pinned_at != null;
   const archived = ctx.membership.archived_at != null;
@@ -71,32 +129,27 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
     [onClose, t],
   );
 
-  return (
-    <div
-      className={`${ui.scrim} ${ui.scrimCenter} ${ui.scrimSheet}`}
-      role="presentation"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) {
+  return createPortal(
+    <>
+      <button
+        type="button"
+        className={styles.menuBackdrop}
+        tabIndex={-1}
+        aria-hidden="true"
+        onClick={onClose}
+        onContextMenu={(event) => {
+          event.preventDefault();
           onClose();
-        }
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
-          event.stopPropagation();
-          onClose();
-        }
-      }}
-    >
+        }}
+      />
       <div
         ref={trapRef}
-        className={`${ui.menu} ${styles.sheet}`}
+        className={styles.menuPanel}
+        style={panelStyle}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="org-menu-title"
+        aria-label={t("menuTitle")}
       >
-        <h2 id="org-menu-title" className={styles.sheetTitle}>
-          {t("menuTitle")}
-        </h2>
         {error ? (
           <p className={`${ui.errorText} ${styles.sheetError}`} role="alert">
             {error}
@@ -251,16 +304,8 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
             </ul>
           </>
         ) : null}
-        <hr className={ui.menuSep} />
-        <button
-          type="button"
-          className={ui.menuItem}
-          onClick={onClose}
-          disabled={busy}
-        >
-          {t("close")}
-        </button>
       </div>
-    </div>
+    </>,
+    document.body,
   );
 });

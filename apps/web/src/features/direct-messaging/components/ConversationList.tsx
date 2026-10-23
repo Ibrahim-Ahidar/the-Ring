@@ -106,7 +106,26 @@ function ConversationListInner({ activeConversationId }: Props) {
   const [sheetPoint, setSheetPoint] = useState<MenuPoint | null>(null);
   const pressPoint = useRef<MenuPoint | null>(null);
   const bindPress = useLongPress<string>((id) => {
-    setSheetPoint(pressPoint.current);
+    const item = state.conversations.find((c) => c.id === id);
+    if (!item) {
+      return;
+    }
+    const point = pressPoint.current;
+    const ctx = menuContextOf(item);
+    const available = menus.filter((menu) => menu.isAvailable(ctx));
+    const narrow =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(max-width: 767px)").matches;
+    // One option set: show it straight away instead of a one-item chooser.
+    if (available.length === 1 && !narrow) {
+      void available[0].run({ ...ctx, point });
+      return;
+    }
+    if (available.length === 1) {
+      void available[0].run({ ...ctx, point: null });
+      return;
+    }
+    setSheetPoint(point);
     setSheetId(id);
   });
   const closeSheet = useCallback(() => setSheetId(null), []);

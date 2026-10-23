@@ -43,3 +43,42 @@
     transition: none;
   }
 }
+
+/* Row menu: floating at the pointer on desktop, bottom sheet when narrow. */
+.menuBackdrop {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: default;
+}
+
+.menuPanel {
+  position: fixed;
+  z-index: 61;
+  min-width: 220px;
+  max-width: min(100vw - var(--space-24), 320px);
+  max-height: 80dvh;
+  overflow-y: auto;
+  padding: var(--space-8) 0;
+  border-radius: var(--radius-card);
+  background: var(--color-elevated);
+  box-shadow: var(--shadow-menu);
+  font-size: var(--text-md);
+}
+
+@media (max-width: 767px) {
+  .menuBackdrop {
+    background: var(--color-overlay);
+  }
+
+  .menuPanel {
+    inset-block: auto 0;
+    inset-inline: 0;
+    max-width: none;
+    padding-block-end: max(var(--space-16), env(safe-area-inset-bottom));
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+  }
+}

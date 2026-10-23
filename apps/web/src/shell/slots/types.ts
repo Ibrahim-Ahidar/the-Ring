@@ -156,6 +156,8 @@ export type ListItemMenuContext = {
     muted_until: string | null;
     archived_at: string | null;
   };
+  /** Viewport point the menu should anchor to (cursor or row); absent means a sheet. */
+  point?: { x: number; y: number } | null;
 };
 
 /**
