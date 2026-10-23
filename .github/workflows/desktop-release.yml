@@ -27,8 +27,16 @@ jobs:
         shell: bash
         run: npm version --no-git-tag-version --allow-same-version "${GITHUB_REF_NAME#desktop-v}" -w apps/desktop
       - run: npm run build -w @pulse/desktop
-      - name: Build and publish
+      - name: Build installers
         working-directory: apps/desktop
-        run: npx electron-builder --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --publish never
+      # Publishing here, not from electron-builder, keeps the release on the pushed desktop-v* tag.
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.exe.blockmap
+            apps/desktop/release/*.AppImage
+            apps/desktop/release/latest*.yml

@@ -23,6 +23,7 @@
   "build": {
     "appId": "com.pulse.desktop",
     "productName": "Pulse",
+    "executableName": "pulse",
     "files": [
       "dist/**",
       "assets/**",
