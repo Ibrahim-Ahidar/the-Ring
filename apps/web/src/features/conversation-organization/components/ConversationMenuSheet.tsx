@@ -20,7 +20,7 @@ import {
   StarOff,
   Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   memo,
   useCallback,
@@ -51,6 +51,7 @@ import ui from "@/shell/styles/ui.module.css";
 import {
   archiveConversationAction,
   clearChatAction,
+  setConversationUnreadAction,
   deleteChatAction,
   moveToFolderAction,
   muteConversationAction,
@@ -63,7 +64,6 @@ import {
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { organizationErrorMessage } from "../error-message";
 import { isMuted } from "../mute-until";
-import { isMarkedUnread, setMarkedUnread } from "../unread-flags";
 import type { ChatFolder, MuteDurationKey } from "../types";
 import { computeMenuPosition } from "@/features/direct-messaging/components/menuPosition";
 import styles from "../conversation-organization.module.css";
@@ -86,6 +86,7 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
 }: Props) {
   const t = useTranslations("conversation-organization");
   const router = useRouter();
+  const pathname = usePathname();
   const trapRef = useFocusTrap(true);
   const [error, setError] = useState<string | null>(null);
   const [showMute, setShowMute] = useState(false);
@@ -93,7 +94,6 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
   const [confirm, setConfirm] = useState<ConfirmKind | null>(null);
   const [blocked, setBlocked] = useState(false);
   const [favourite, setFavourite] = useState(false);
-  const [flaggedUnread, setFlaggedUnread] = useState(false);
   const [busy, setBusy] = useState(false);
   const [placement, setPlacement] = useState<
     { top: number; left: number } | "sheet" | null
@@ -102,10 +102,6 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
   const isGroup = ctx.conversationType === "group";
   const otherUserId = ctx.otherUserId ?? null;
   const otherUsername = ctx.otherUsername ?? null;
-
-  useEffect(() => {
-    setFlaggedUnread(isMarkedUnread(ctx.conversationId));
-  }, [ctx.conversationId]);
 
   useEffect(() => {
     if (isGroup || !otherUserId) {
@@ -182,7 +178,7 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
   const pinned = ctx.membership.pinned_at != null;
   const archived = ctx.membership.archived_at != null;
   const muted = isMuted(ctx.membership.muted_until);
-  const isUnread = flaggedUnread || (ctx.unreadCount ?? 0) > 0;
+  const isUnread = ctx.manualUnread === true || (ctx.unreadCount ?? 0) > 0;
 
   const run = useCallback(
     async (action: () => Promise<ActionResult>) => {
@@ -201,18 +197,25 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
 
   const toggleUnread = useCallback(async () => {
     if (!isUnread) {
-      setMarkedUnread(ctx.conversationId, true);
-      onClose();
+      await run(() =>
+        setConversationUnreadAction({ conversationId: ctx.conversationId, unread: true }),
+      );
       return;
     }
-    setMarkedUnread(ctx.conversationId, false);
-    if (ctx.lastMessageId && (ctx.unreadCount ?? 0) > 0) {
-      const messageId = ctx.lastMessageId;
-      await run(() => markReadAction({ conversationId: ctx.conversationId, messageId }));
-      return;
-    }
-    onClose();
-  }, [ctx, isUnread, onClose, run]);
+    await run(async () => {
+      const flag = await setConversationUnreadAction({
+        conversationId: ctx.conversationId,
+        unread: false,
+      });
+      if (!flag.ok || !ctx.lastMessageId || (ctx.unreadCount ?? 0) === 0) {
+        return flag;
+      }
+      return markReadAction({
+        conversationId: ctx.conversationId,
+        messageId: ctx.lastMessageId,
+      });
+    });
+  }, [ctx, isUnread, run]);
 
   const confirmed = useCallback(async () => {
     const kind = confirm;
@@ -222,9 +225,15 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
         blocked ? unblockUserAction(otherUserId) : blockUserAction(otherUserId),
       );
     } else if (kind === "clear") {
-      await run(() => clearChatAction());
+      await run(() => clearChatAction(ctx.conversationId));
     } else if (kind === "delete") {
-      await run(() => deleteChatAction());
+      await run(async () => {
+        const result = await deleteChatAction(ctx.conversationId);
+        if (result.ok && pathname?.includes(ctx.conversationId)) {
+          router.push("/app/chats");
+        }
+        return result;
+      });
     } else if (kind === "exit") {
       await run(async () => {
         const result = await leaveGroupAction(ctx.conversationId);
@@ -234,7 +243,7 @@ export const ConversationMenuSheet = memo(function ConversationMenuSheet({
         return result;
       });
     }
-  }, [blocked, confirm, ctx.conversationId, otherUserId, router, run]);
+  }, [blocked, confirm, ctx.conversationId, otherUserId, pathname, router, run]);
 
   const toggleFavourite = () =>
     run(async () => {

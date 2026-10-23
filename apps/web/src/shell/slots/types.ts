@@ -162,6 +162,8 @@ export type ListItemMenuContext = {
   otherUserId?: string | null;
   otherUsername?: string | null;
   unreadCount?: number;
+  /** Chat was flagged unread by hand (server-side manual_unread). */
+  manualUnread?: boolean;
   lastMessageId?: string | null;
 };
 

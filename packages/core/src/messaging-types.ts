@@ -39,6 +39,8 @@ export type ConversationSummary = {
   pinned_at: string | null;
   archived_at: string | null;
   muted_until: string | null;
+  /** Forced unread flag set by "Mark as unread". Absent on older servers. */
+  manual_unread?: boolean;
   other_user_id: string | null;
   other_username: string | null;
   other_display_name: string | null;

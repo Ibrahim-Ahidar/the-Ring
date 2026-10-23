@@ -32,8 +32,7 @@
       "not_found": "Conversation not found.",
       "invalid_name": "Folder name must be 1–40 characters.",
       "invalid_mute": "Invalid mute duration.",
-      "invalid_order": "Could not reorder folders.",
-      "unsupported": "This action is not available yet."
+      "invalid_order": "Could not reorder folders."
     },
     "platform": {
       "unauthenticated": "Sign in to continue."

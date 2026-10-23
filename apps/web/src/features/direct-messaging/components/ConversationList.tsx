@@ -82,6 +82,7 @@ function menuContextOf(item: ConversationSummary): ListItemMenuContext {
     otherUserId: item.other_user_id,
     otherUsername: item.other_username,
     unreadCount: item.unread_count,
+    manualUnread: item.manual_unread ?? false,
     lastMessageId: item.last_message_id,
   };
 }
@@ -200,7 +201,8 @@ function ConversationListInner({ activeConversationId }: Props) {
     <ul className={styles.chatList}>
       {state.conversations.map((item) => {
         const title = displayTitle(item);
-        const unread = item.unread_count > 0;
+        const manualUnread = item.manual_unread === true;
+        const unread = item.unread_count > 0 || manualUnread;
         const muted = isMuted(item, now);
         const deleted = item.last_message_deletion_scope === "everyone";
         const receipt = state.receiptsByConversation[item.id];
@@ -279,6 +281,13 @@ function ConversationListInner({ activeConversationId }: Props) {
                     ) : null}
                     {muted ? (
                       <BellOff size={16} aria-label={t("muted")} role="img" />
+                    ) : null}
+                    {item.unread_count === 0 && manualUnread ? (
+                      <span
+                        className={`${ui.badge} ${muted ? ui.badgeMuted : ""}`}
+                        role="img"
+                        aria-label={t("unreadCount", { count: 1 })}
+                      />
                     ) : null}
                     <UnreadBadge
                       count={item.unread_count}

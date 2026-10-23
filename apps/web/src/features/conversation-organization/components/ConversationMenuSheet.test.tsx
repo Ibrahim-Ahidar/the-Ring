@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import en from "../messages/en.json";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }), usePathname: () => "/app/chats" }));
 vi.mock("../actions", () => ({
   archiveConversationAction: vi.fn(),
   clearChatAction: vi.fn(),
@@ -14,6 +14,7 @@ vi.mock("../actions", () => ({
   muteConversationAction: vi.fn(),
   pinConversationAction: vi.fn(),
   removeFromFolderAction: vi.fn(),
+  setConversationUnreadAction: vi.fn(),
   unarchiveConversationAction: vi.fn(),
   unmuteConversationAction: vi.fn(),
   unpinConversationAction: vi.fn(),

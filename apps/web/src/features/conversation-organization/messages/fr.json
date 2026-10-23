@@ -32,8 +32,7 @@
       "not_found": "Conversation introuvable.",
       "invalid_name": "Le nom du dossier doit contenir entre 1 et 40 caractères.",
       "invalid_mute": "Durée de silence invalide.",
-      "invalid_order": "Impossible de réordonner les dossiers.",
-      "unsupported": "Cette action n'est pas encore disponible."
+      "invalid_order": "Impossible de réordonner les dossiers."
     },
     "platform": {
       "unauthenticated": "Connectez-vous pour continuer."

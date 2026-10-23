@@ -207,3 +207,34 @@ export async function removeFromFolder(
   }
   return ok(undefined);
 }
+
+export async function clearChat(
+  rpc: RpcClient,
+  conversationId: string,
+): Promise<Result<null>> {
+  const result = await callRpc<unknown>(rpc, "clear_chat", {
+    p_conversation_id: conversationId,
+  });
+  return result.ok ? ok(null) : result;
+}
+
+export async function deleteChatForMe(
+  rpc: RpcClient,
+  conversationId: string,
+): Promise<Result<null>> {
+  const result = await callRpc<unknown>(rpc, "delete_chat_for_me", {
+    p_conversation_id: conversationId,
+  });
+  return result.ok ? ok(null) : result;
+}
+
+export async function setConversationUnread(
+  rpc: RpcClient,
+  input: { conversationId: string; unread: boolean },
+): Promise<Result<null>> {
+  const result = await callRpc<unknown>(rpc, "set_conversation_unread", {
+    p_conversation_id: input.conversationId,
+    p_unread: input.unread,
+  });
+  return result.ok ? ok(null) : result;
+}

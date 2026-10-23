@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { archiveConversation, createFolder, listFolders, moveToFolder, reorderFolders } from "./organization";
+import { archiveConversation, clearChat, deleteChatForMe, setConversationUnread, createFolder, listFolders, moveToFolder, reorderFolders } from "./organization";
 import type { RpcClient } from "./rpc";
 
 function client(data: unknown, error?: string) {
@@ -34,6 +34,26 @@ describe("organization", () => {
 
   it("surfaces rpc errors", async () => {
     const r = await archiveConversation(client(null, "organization.not_found"), "c1");
+    expect(r).toMatchObject({ ok: false, error: { code: "organization.not_found" } });
+  });
+
+  it("calls the clear, delete and unread rpcs", async () => {
+    const c = client(null);
+    expect(await clearChat(c, "c1")).toEqual({ ok: true, value: null });
+    expect(await deleteChatForMe(c, "c1")).toEqual({ ok: true, value: null });
+    expect(await setConversationUnread(c, { conversationId: "c1", unread: true })).toEqual({
+      ok: true,
+      value: null,
+    });
+    expect(c.rpc.mock.calls).toEqual([
+      ["clear_chat", { p_conversation_id: "c1" }],
+      ["delete_chat_for_me", { p_conversation_id: "c1" }],
+      ["set_conversation_unread", { p_conversation_id: "c1", p_unread: true }],
+    ]);
+  });
+
+  it("surfaces clear_chat errors", async () => {
+    const r = await clearChat(client(null, "organization.not_found"), "c1");
     expect(r).toMatchObject({ ok: false, error: { code: "organization.not_found" } });
   });
 });

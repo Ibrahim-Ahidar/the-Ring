@@ -4,7 +4,9 @@ import { getSessionContext } from "@/platform/session";
 
 import {
   archiveConversation,
+  clearChat,
   createFolder,
+  deleteChatForMe,
   deleteFolder,
   listFolders,
   moveToFolder,
@@ -13,6 +15,7 @@ import {
   removeFromFolder,
   renameFolder,
   reorderFolders,
+  setConversationUnread,
   unarchiveConversation,
   unmuteConversation,
   unpinConversation,
@@ -137,13 +140,29 @@ export async function removeFromFolderAction(conversationId: string) {
   return removeFromFolder(session.rpc, conversationId);
 }
 
-// No server support yet: clearing a chat's messages and deleting a conversation
-// for the current user need new RPCs. Kept as explicit "unsupported" results so
-// the menu can show them without inventing backend endpoints.
-export async function clearChatAction() {
-  return { ok: false as const, error: { code: "organization.unsupported" } };
+export async function clearChatAction(conversationId: string) {
+  const session = await requireSession();
+  if (!session) {
+    return { ok: false as const, error: { code: "platform.unauthenticated" } };
+  }
+  return clearChat(session.rpc, conversationId);
 }
 
-export async function deleteChatAction() {
-  return { ok: false as const, error: { code: "organization.unsupported" } };
+export async function deleteChatAction(conversationId: string) {
+  const session = await requireSession();
+  if (!session) {
+    return { ok: false as const, error: { code: "platform.unauthenticated" } };
+  }
+  return deleteChatForMe(session.rpc, conversationId);
+}
+
+export async function setConversationUnreadAction(input: {
+  conversationId: string;
+  unread: boolean;
+}) {
+  const session = await requireSession();
+  if (!session) {
+    return { ok: false as const, error: { code: "platform.unauthenticated" } };
+  }
+  return setConversationUnread(session.rpc, input);
 }
