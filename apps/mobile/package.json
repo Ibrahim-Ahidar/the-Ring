@@ -5,6 +5,8 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
+    "start:usb": "node scripts/start-usb.js",
+    "start:tunnel": "expo start --tunnel",
     "android": "expo start --android",
     "test": "jest",
     "typecheck": "tsc --noEmit",

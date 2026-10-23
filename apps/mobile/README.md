@@ -23,6 +23,10 @@ Variables: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Never co
 ## Run
 
 - Expo Go on a phone or emulator: `npm run start`, then scan the QR code (or press `a` for an emulator). Expo Go must match SDK 58.
+- Phone over USB (most reliable): `npm run start:usb`. It runs `adb reverse tcp:8081 tcp:8081`, so Wi-Fi and the firewall don't matter. Needs USB debugging on.
+- Phone on another network: `npm run start:tunnel` (slower).
+- If Expo Go can't load the project over Wi-Fi on Windows, the phone usually can't reach port 8081. Put the phone and PC on the same Wi-Fi, set that network to Private, and allow Metro through the firewall (admin PowerShell): `Set-NetConnectionProfile -InterfaceAlias Wi-Fi -NetworkCategory Private` then `New-NetFirewallRule -DisplayName "Expo Metro 8081" -Direction Inbound -Protocol TCP -LocalPort 8081 -Action Allow -Profile Private`.
+- The first bundle takes about a minute. If Expo Go times out, reload once it finishes. `npx expo start --clear` resets a stale Metro cache.
 - Dev build (needed for features Expo Go lacks): `npx expo run:android` with Android Studio and an emulator, or a USB-connected device with debugging on.
 - Android emulator on the same machine reaches a local Supabase at `http://10.0.2.2:54321`.
 
