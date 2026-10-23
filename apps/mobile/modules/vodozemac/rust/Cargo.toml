@@ -1,0 +1,23 @@
+[package]
+name = "pulse_vodozemac"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+# Not compiled on the authoring machine (no host linker): pin exact versions after the first successful build.
+vodozemac = "0.9"
+uniffi = { version = "0.29", features = ["cli"] }
+thiserror = "2"
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "uniffi-bindgen.rs"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true

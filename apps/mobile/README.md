@@ -20,19 +20,24 @@ cp .env.example .env     # fill in the same Supabase URL and anon key as apps/we
 
 Variables: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Never commit real values.
 
-## Run
+## Run (development build)
 
-- Expo Go on a phone or emulator: `npm run start`, then scan the QR code (or press `a` for an emulator). Expo Go must match SDK 58.
-- Phone over USB (most reliable): `npm run start:usb`. It runs `adb reverse tcp:8081 tcp:8081`, so Wi-Fi and the firewall don't matter. Needs USB debugging on.
-- Phone on another network: `npm run start:tunnel` (slower).
-- If Expo Go can't load the project over Wi-Fi on Windows, the phone usually can't reach port 8081. Put the phone and PC on the same Wi-Fi, set that network to Private, and allow Metro through the firewall (admin PowerShell): `Set-NetConnectionProfile -InterfaceAlias Wi-Fi -NetworkCategory Private` then `New-NetFirewallRule -DisplayName "Expo Metro 8081" -Direction Inbound -Protocol TCP -LocalPort 8081 -Action Allow -Profile Private`.
-- The first bundle takes about a minute. If Expo Go times out, reload once it finishes. `npx expo start --clear` resets a stale Metro cache.
-- Dev build (needed for features Expo Go lacks): `npx expo run:android` with Android Studio and an emulator, or a USB-connected device with debugging on.
-- Android emulator on the same machine reaches a local Supabase at `http://10.0.2.2:54321`.
+The app no longer runs in Expo Go: the vodozemac native module (spec section 6.1) and push need a development build (`expo-dev-client`). Build the app once, then use Metro as usual.
+
+1. One-time native library build (needs Rust, `cargo-ndk`, the Android NDK and a host linker; see `docs/specs/e2ee-mobile-crypto-spike.md`): `npm run build:vodozemac`. Without it the app still builds, but `getVodozemac()` throws on first use.
+2. Local build and install (Android Studio SDK, emulator or USB device with debugging on): `npx expo run:android` (also `npm run android`).
+3. Cloud build: `eas login`, then `npm run build:dev` (`eas build --profile development --platform android`). Install the resulting APK on the phone. Needs your Expo account; nothing here logs in for you.
+4. Daily work: `npm run start` (`expo start --dev-client`), open the installed Pulse dev app and connect. `npm run start:usb` runs `adb reverse tcp:8081 tcp:8081` first (most reliable); `npm run start:tunnel` works across networks (slower).
+5. `npm run start:go` starts Metro for Expo Go. Only screens that don't touch native modules beyond the Expo SDK work there.
+6. Rebuild the dev app only when native code or `app.json` plugins change (new Expo module, the Rust library). JS changes hot reload.
+7. If the phone can't reach port 8081 over Wi-Fi on Windows, set the network to Private and allow Metro through the firewall (admin PowerShell): `Set-NetConnectionProfile -InterfaceAlias Wi-Fi -NetworkCategory Private` then `New-NetFirewallRule -DisplayName "Expo Metro 8081" -Direction Inbound -Protocol TCP -LocalPort 8081 -Action Allow -Profile Private`. `npx expo start --clear` resets a stale Metro cache.
+8. An Android emulator on the same machine reaches a local Supabase at `http://10.0.2.2:54321`.
+
+`eas.json` profiles: `development` (dev client, internal APK), `preview` (internal APK), `production` (app bundle).
 
 ## Scripts
 
-`npm run start`, `android`, `test` (jest-expo), `typecheck`, `lint`.
+`start`, `start:usb`, `start:tunnel`, `start:go`, `android` (local dev build), `build:dev` (EAS), `build:vodozemac`, `test` (jest-expo), `typecheck`, `lint`.
 
 ## React versions
 

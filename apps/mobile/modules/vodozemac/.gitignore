@@ -1,0 +1,3 @@
+rust/target/
+android/src/main/jniLibs/
+android/src/main/java/uniffi/
