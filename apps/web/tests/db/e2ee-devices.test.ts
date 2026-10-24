@@ -16,9 +16,13 @@ afterAll(async () => {
   await db?.close();
 });
 
+const owners = new WeakMap<PgliteRpcClient, string>();
+
 async function newUser(name: string) {
   const user = await createUser(db, { username: name });
-  return { ...user, rpc: createRpcClient(db, user.id) };
+  const rpc = createRpcClient(db, user.id);
+  owners.set(rpc, user.id);
+  return { ...user, rpc };
 }
 
 async function register(rpc: PgliteRpcClient, id: string = randomUUID(), name = "Laptop") {
@@ -31,6 +35,17 @@ async function register(rpc: PgliteRpcClient, id: string = randomUUID(), name = 
     p_account_signature: "sig",
     p_account_signing_key: "account-key",
   });
+  // Since #224 a second device of an account goes through add_fresh_device. These #223
+  // tests only need extra rows, so seed them directly.
+  if (res.error?.message.includes("e2ee.approval_required")) {
+    await asSuperuser(
+      db,
+      `insert into public.e2ee_devices (id, user_id, name, platform, identity_key, signing_key, account_signature)
+       values ($1, $2, $3, 'web', $4, $5, 'sig')`,
+      [id, owners.get(rpc), name, `idk-${id}`, `sgk-${id}`],
+    );
+    return { id, res: { ...res, error: null } };
+  }
   return { id, res };
 }
 
