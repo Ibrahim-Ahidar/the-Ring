@@ -1,4 +1,7 @@
 import { err, ok, type CryptoEngine, type Result, type RpcClient } from "@pulse/core";
+import { accountPublicKey, generateAccountSeed, signAsAccount } from "@pulse/core/linking";
+
+import type { AccountKeyStore } from "@/platform/crypto/account-key";
 
 import {
   addFreshDevice,
@@ -96,9 +99,12 @@ export async function startFreshDevice(
   engine: CryptoEngine,
   info: FreshDeviceInfo,
   lostDevices: boolean,
+  accountKeys: AccountKeyStore,
 ): Promise<Result<FreshDeviceOutcome>> {
   const keys = await engine.createAccount();
-  const signature = await engine.sign(keys.curve25519);
+  // A candidate Account Signing Key: kept only when this device ends up holding the account key.
+  const seed = generateAccountSeed();
+  const signature = signAsAccount(seed, keys.curve25519);
   const input = {
     deviceId: info.deviceId,
     name: info.name,
@@ -106,20 +112,25 @@ export async function startFreshDevice(
     identityKey: keys.curve25519,
     signingKey: keys.ed25519,
     accountSignature: signature,
-    accountSigningKey: keys.ed25519,
+    accountSigningKey: accountPublicKey(seed),
   };
-  return lostDevices
-    ? replaceAccountKey(client, input)
-    : addFreshDevice(client, { ...input, lostDevices: false });
+  const res = lostDevices
+    ? await replaceAccountKey(client, input)
+    : await addFreshDevice(client, { ...input, lostDevices: false });
+  // A "pending" device receives the seed later, through QR linking.
+  if (res.ok && res.value !== "pending") await accountKeys.save(seed);
+  return res;
 }
 
 /** An approved device signs the pending device's identity key and allows it. */
 export async function allowPendingDevice(
   client: RpcClient,
-  engine: CryptoEngine,
+  accountKeys: AccountKeyStore,
   pending: PendingDevice,
 ): Promise<Result<null>> {
-  const signature = await engine.sign(pending.identity_key);
+  const seed = await accountKeys.load();
+  if (!seed) return err("e2ee.no_account_key");
+  const signature = signAsAccount(seed, pending.identity_key);
   return approveDevice(client, pending.id, signature);
 }
 

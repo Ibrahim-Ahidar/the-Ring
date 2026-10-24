@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { isE2eeEnabled } from "@pulse/core";
 
-import { createCryptoEngine } from "@/platform/crypto/create-engine";
+import { openAccountKeyStore } from "@/platform/crypto/account-key";
 
 import { allowPendingDevice } from "../devices-changed";
 import styles from "../e2ee-devices.module.css";
@@ -49,7 +49,7 @@ function Watcher() {
     setBusy(device.id);
     setError(false);
     const res = allow
-      ? await allowPendingDevice(rpc, createCryptoEngine(), device).catch(() => null)
+      ? await allowPendingDevice(rpc, await openAccountKeyStore(), device).catch(() => null)
       : await denyDevice(rpc, device.id);
     setBusy(null);
     if (!res || !res.ok) {

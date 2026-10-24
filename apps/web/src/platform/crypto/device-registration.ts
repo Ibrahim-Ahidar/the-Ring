@@ -3,6 +3,9 @@
  * pool of one-time keys topped up. Works against any CryptoEngine and RpcClient.
  */
 import { callRpc, err, ok, type CryptoEngine, type Result, type RpcClient } from "@pulse/core";
+import { accountPublicKey, generateAccountSeed, signAsAccount } from "@pulse/core/linking";
+
+import type { AccountKeyStore } from "./account-key";
 
 /** Keep this many one-time keys on the server. */
 export const ONE_TIME_KEY_TARGET = 50;
@@ -50,9 +53,13 @@ export async function registerThisDevice(
   client: RpcClient,
   engine: CryptoEngine,
   info: DeviceInfo,
+  accountKeys: AccountKeyStore,
 ): Promise<Result<number>> {
   const keys = await engine.createAccount();
-  const signature = await engine.sign(keys.curve25519);
+  // The Account Signing Key is its own key (spec 4); reuse this install's seed if it has one.
+  const existing = await accountKeys.load();
+  const seed = existing ?? generateAccountSeed();
+  const signature = signAsAccount(seed, keys.curve25519);
   const reg = await callRpc<null>(client, "register_device", {
     p_device_id: info.deviceId,
     p_name: info.name,
@@ -60,9 +67,10 @@ export async function registerThisDevice(
     p_identity_key: keys.curve25519,
     p_signing_key: keys.ed25519,
     p_account_signature: signature,
-    p_account_signing_key: keys.ed25519,
+    p_account_signing_key: accountPublicKey(seed),
   });
   if (!reg.ok) return err(reg.error.code);
+  if (!existing) await accountKeys.save(seed);
   const counted = await callRpc<number>(client, "one_time_key_count", { p_device_id: info.deviceId });
   if (!counted.ok) return counted;
   return uploadFresh(client, engine, info.deviceId, ONE_TIME_KEY_TARGET - counted.value, true);

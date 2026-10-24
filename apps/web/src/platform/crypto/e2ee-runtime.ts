@@ -39,6 +39,7 @@ import {
 import { getLocalStore } from "@/platform/local-store";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 
+import { createAccountKeyStore } from "./account-key";
 import { registerThisDevice, topUpKeys } from "./device-registration";
 import { loadEngineState, saveEngineState } from "./encrypted-state";
 import { createCryptoEngine } from "./create-engine";
@@ -70,6 +71,7 @@ async function build(
   const engine = createCryptoEngine();
   const key = await getLocalStorageKey();
   const states = new IdbCryptoStateStore();
+  const accountKeys = createAccountKeyStore(states, key);
   const persist = () => saveEngineState(engine, states, key);
 
   let deviceId = await store.getKv(DEVICE_ID_KV);
@@ -85,7 +87,7 @@ async function build(
           ? "Browser"
           : navigator.userAgent.slice(0, 60),
       platform: "web",
-    });
+    }, accountKeys);
     if (!reg.ok) return null;
     await persist();
     await store.setKv(DEVICE_ID_KV, deviceId);

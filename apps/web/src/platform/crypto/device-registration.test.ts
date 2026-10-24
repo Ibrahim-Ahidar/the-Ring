@@ -2,6 +2,22 @@ import { describe, expect, it } from "vitest";
 import type { CryptoEngine, RpcClient } from "@pulse/core";
 import { ONE_TIME_KEY_TARGET, ONE_TIME_KEY_LOW_WATER, registerThisDevice, topUpKeys } from "./device-registration";
 
+import { accountPublicKey, signAsAccount } from "@pulse/core/linking";
+import type { AccountKeyStore } from "./account-key";
+
+function memoryKeys(): AccountKeyStore {
+  let seed: Uint8Array | null = null;
+  return {
+    load: async () => seed,
+    save: async (s) => {
+      seed = s;
+    },
+    clear: async () => {
+      seed = null;
+    },
+  };
+}
+
 type Call = { fn: string; args: Record<string, unknown> };
 
 function fakeRpc(count: number, failOn?: string) {
@@ -86,14 +102,14 @@ describe("registerThisDevice", () => {
   it("creates the account, registers, then uploads keys and a fallback key", async () => {
     const { client, calls } = fakeRpc(0);
     const { engine, log } = fakeEngine();
-    const res = await registerThisDevice(client, engine, { deviceId: "dev", name: "Laptop", platform: "web" });
+    const keys = memoryKeys();
+    const res = await registerThisDevice(client, engine, { deviceId: "dev", name: "Laptop", platform: "web" }, keys);
     expect(res.ok).toBe(true);
     expect(calls.map((c) => c.fn)).toEqual(["register_device", "one_time_key_count", "upload_keys"]);
     expect(calls[0]!.args).toMatchObject({
       p_device_id: "dev",
       p_identity_key: "CURVE",
       p_signing_key: "ED",
-      p_account_signature: "SIG",
     });
     expect(calls[2]!.args.p_fallback_key).toEqual({ fb: "fbpub" });
     expect(log[0]).toBe("createAccount");
@@ -104,7 +120,8 @@ describe("registerThisDevice", () => {
   it("surfaces the device limit error and uploads nothing", async () => {
     const { client, calls } = fakeRpc(0, "register_device");
     const { engine } = fakeEngine();
-    const res = await registerThisDevice(client, engine, { deviceId: "dev", name: "x", platform: "web" });
+    const keys = memoryKeys();
+    const res = await registerThisDevice(client, engine, { deviceId: "dev", name: "x", platform: "web" }, keys);
     expect(res).toEqual({ ok: false, error: { code: "e2ee.device_limit" } });
     expect(calls).toHaveLength(1);
   });

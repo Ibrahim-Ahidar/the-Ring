@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { openAccountKeyStore } from "@/platform/crypto/account-key";
 import { createCryptoEngine } from "@/platform/crypto/create-engine";
 
 import { startFreshDevice, waitForApproval } from "../devices-changed";
@@ -52,6 +53,7 @@ export function FreshDevicePanel() {
       createCryptoEngine(),
       { deviceId, name: t("unnamedWeb"), platform: "web" },
       lost,
+      await openAccountKeyStore(),
     ).catch(() => null);
     if (!started || !started.ok) {
       setPhase("error");
