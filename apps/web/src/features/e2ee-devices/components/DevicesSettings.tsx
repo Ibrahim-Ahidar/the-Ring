@@ -1,12 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { removeDeviceAction } from "../actions";
 import styles from "../e2ee-devices.module.css";
-import type { E2eeDevice } from "../service";
+import { useDevicesSession } from "../hooks/use-devices-session";
+import { setDeviceApproval, type E2eeDevice } from "../service";
+
+import { FreshDevicePanel } from "./FreshDevicePanel";
 
 type Props = { devices: E2eeDevice[] };
 
@@ -18,6 +21,40 @@ export function DevicesSettings({ devices }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { supabase, rpc, announce } = useDevicesSession();
+  const [requireApproval, setRequireApproval] = useState(true);
+
+  useEffect(() => {
+    let live = true;
+    // Owner-readable row; keep the default (on) when it cannot be read.
+    void (
+      supabase.from("account_keys" as never) as unknown as {
+        select(c: string): {
+          maybeSingle(): Promise<{ data: { require_approval?: boolean } | null }>;
+        };
+      }
+    )
+      .select("require_approval")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (live && typeof data?.require_approval === "boolean") {
+          setRequireApproval(data.require_approval);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [supabase]);
+
+  async function toggleApproval(next: boolean) {
+    setRequireApproval(next);
+    const res = await setDeviceApproval(rpc, next);
+    if (!res.ok) {
+      setRequireApproval(!next);
+      setError(t("errorUnexpected"));
+    }
+  }
 
   const visible = devices.filter((d) => !removed.has(d.id));
 
@@ -36,7 +73,12 @@ export function DevicesSettings({ devices }: Props) {
       return;
     }
     setRemoved((prev) => new Set(prev).add(device.id));
+    announce("device_changed");
     router.refresh();
+  }
+
+  if (!devices.some((d) => d.is_current_session)) {
+    return <FreshDevicePanel />;
   }
 
   if (visible.length === 0) {
@@ -45,6 +87,15 @@ export function DevicesSettings({ devices }: Props) {
 
   return (
     <>
+      <label className={styles.meta}>
+        <input
+          type="checkbox"
+          checked={requireApproval}
+          onChange={(e) => void toggleApproval(e.target.checked)}
+        />{" "}
+        {t("approvalToggle")}
+      </label>
+      {requireApproval ? null : <p className={styles.meta}>{t("approvalToggleHelp")}</p>}
       <p className={styles.meta}>{t("intro")}</p>
       {error ? (
         <p role="alert" className={styles.error}>

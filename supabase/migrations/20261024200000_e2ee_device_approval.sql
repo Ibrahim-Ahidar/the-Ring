@@ -536,13 +536,18 @@ create or replace function public.replace_account_key(
   p_account_signing_key text default null
 )
 returns text
-language sql
+language plpgsql
 security definer
 set search_path = ''
 as $$
-  select public.add_fresh_device(
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
+  return public.add_fresh_device(
     p_device_id, p_name, p_platform, p_identity_key, p_signing_key,
     p_account_signature, p_account_signing_key, true);
+end;
 $$;
 
 revoke all on function public.replace_account_key(uuid, text, text, text, text, text, text) from public, anon;
