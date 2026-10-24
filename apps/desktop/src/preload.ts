@@ -11,6 +11,12 @@ contextBridge.exposeInMainWorld("pulseDesktop", {
   getLocalStorageKey(): Promise<string | null> {
     return ipcRenderer.invoke("pulse:local-storage-key") as Promise<string | null>;
   },
+  /** Local SQLite database in the main process: exec / query / destroy requests only. */
+  localDb: {
+    request(req: unknown): Promise<unknown> {
+      return ipcRenderer.invoke("pulse:local-db", req);
+    },
+  },
   setUnreadCount(count: number): void {
     ipcRenderer.send("pulse:set-unread", count);
   },
