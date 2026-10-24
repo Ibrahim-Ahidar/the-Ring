@@ -1,5 +1,8 @@
 import { createSqlLocalStore, isE2eeEnabled, type LocalStore } from "@pulse/core";
 
+import { getDesktopBridge } from "../desktop-bridge";
+import { createBridgeWorker } from "./desktop-worker";
+import type { WorkerLike } from "./protocol";
 import type { WorkerExecutor } from "./worker-executor";
 import { createWorkerExecutor } from "./worker-executor";
 
@@ -20,6 +23,10 @@ function requestPersistence() {
   }
 }
 
+function storageAvailable(): boolean {
+  return Boolean(getDesktopBridge()?.localDb) || typeof Worker !== "undefined";
+}
+
 async function openHandle(): Promise<Handle> {
   requestPersistence();
   const worker = new Worker(new URL("./sqlite.worker.ts", import.meta.url), { type: "module" });
@@ -31,7 +38,7 @@ async function openHandle(): Promise<Handle> {
 
 /** The browser's local database, or null when the e2ee flag is off or OPFS is unavailable. */
 export function getLocalStore(): Promise<LocalStore | null> {
-  if (!isE2eeEnabled() || typeof Worker === "undefined") return Promise.resolve(null);
+  if (!isE2eeEnabled() || !storageAvailable()) return Promise.resolve(null);
   handle ??= openHandle();
   return handle.then(
     (h) => h.store,
@@ -58,7 +65,7 @@ export async function getLocalDb(): Promise<{ store: LocalStore; db: WorkerExecu
 export async function deleteLocalDatabase(): Promise<void> {
   if (!handle) {
     // Nothing opened in this tab; open once so the files of an earlier session are removed too.
-    if (!isE2eeEnabled() || typeof Worker === "undefined") return;
+    if (!isE2eeEnabled() || !storageAvailable()) return;
     handle = openHandle();
   }
   const current = handle;

@@ -11,6 +11,8 @@ export type DesktopBridge = {
   setUnreadCount(count: number): void;
   /** Base64 32-byte key protected by Electron safeStorage; null if the OS cannot protect it. */
   getLocalStorageKey(): Promise<string | null>;
+  /** Local SQLite file in the main process (e2ee flag on only). One narrow request channel. */
+  localDb?: { request(req: unknown): Promise<unknown> };
   onOpenChat(cb: (chatId: string) => void): () => void;
 };
 

@@ -20,6 +20,8 @@ import * as path from "node:path";
 import { autoUpdater } from "electron-updater";
 import { parseNotifyPayload, parseUnreadCount, trayTooltip } from "./bridge-validation";
 import { shouldHideOnClose } from "./close-policy";
+import { createLocalDbService, type DbDriver } from "./local-db";
+import { createLocalDbService, type DbDriver } from "./local-db";
 import { getOrCreateLocalStorageKey } from "./local-storage-key";
 import { isOfflineError } from "./offline";
 import { isPulseUrl } from "./origin";
@@ -113,16 +115,45 @@ function applyUnread(count: number): void {
   }
 }
 
+function localKeyFile(): string {
+  return path.join(app.getPath("userData"), "crypto-key.bin");
+}
+
+function readLocalStorageKey(): string | null {
+  const file = localKeyFile();
+  return getOrCreateLocalStorageKey({
+    safeStorage,
+    read: () => (fs.existsSync(file) ? fs.readFileSync(file) : null),
+    write: (data) => fs.writeFileSync(file, data),
+    randomBytes: (n) => crypto.randomBytes(n),
+  });
+}
+
+// The local SQLite file (spec D11). Nothing is opened until the page's first request, and the
+// page only makes requests while the e2ee flag is on.
+const localDb = createLocalDbService({
+  get file() {
+    return path.join(app.getPath("userData"), "pulse-local.db");
+  },
+  getKey: readLocalStorageKey,
+  deleteKey: () => fs.rmSync(localKeyFile(), { force: true }),
+  open: (file) => {
+    // Loaded lazily: the native module is only needed once the flag is on.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const Database = require("better-sqlite3-multiple-ciphers") as new (f: string) => DbDriver;
+    return new Database(file);
+  },
+  removeFile: (p) => fs.rmSync(p, { force: true }),
+});
+
 function setupBridge(): void {
   ipcMain.handle("pulse:local-storage-key", (event) => {
     if (!fromPulseFrame(event)) return null;
-    const file = path.join(app.getPath("userData"), "crypto-key.bin");
-    return getOrCreateLocalStorageKey({
-      safeStorage,
-      read: () => (fs.existsSync(file) ? fs.readFileSync(file) : null),
-      write: (data) => fs.writeFileSync(file, data),
-      randomBytes: (n) => crypto.randomBytes(n),
-    });
+    return readLocalStorageKey();
+  });
+  ipcMain.handle("pulse:local-db", (event, raw) => {
+    if (!fromPulseFrame(event)) return { ok: false, error: "forbidden" };
+    return localDb.handle(raw);
   });
   ipcMain.on("pulse:notify", (event, raw) => {
     if (!fromPulseFrame(event)) return;
@@ -327,6 +358,7 @@ if (!app.requestSingleInstanceLock()) {
     });
   });
   app.on("before-quit", () => {
+    localDb.close();
     isQuitting = true;
   });
   // Stay alive in the tray when the window is closed; Quit exits explicitly.
