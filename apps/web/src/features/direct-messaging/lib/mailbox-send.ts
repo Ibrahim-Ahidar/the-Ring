@@ -1,81 +1,44 @@
-import { decodePlaintext, encodePlaintext } from "@pulse/core/mailbox/codec";
-import { sendEnvelopes } from "@pulse/core/mailbox/client";
-import type { OutgoingEnvelope } from "@pulse/core/mailbox/types";
+import { sendEncrypted } from "@pulse/core/e2ee/encrypted-sender";
+import type { OlmSessionManager } from "@pulse/core/e2ee/olm-sessions";
 import type { RpcMessageRow } from "@pulse/core/messaging-types";
-import { callRpc, type RpcClient } from "@pulse/core/rpc";
-import { err, ok, type Result } from "@pulse/core/result";
+import type { RpcClient } from "@pulse/core/rpc";
+import type { Result } from "@pulse/core/result";
+import { ok } from "@pulse/core/result";
 
 import type { TextPayload } from "./text-outbox";
 
-export const TEXT_ENVELOPE_KIND = 1;
-
-/** The plaintext body of a text envelope. Becomes the encrypted body once #226+ land. */
-export type TextEnvelopeBody = {
-  v: 1;
-  type: "text";
-  client_id: string;
-  conversation_id: string;
-  body: string;
-  reply_to_id: string | null;
-  sent_at: string;
-};
-
-export function decodeTextEnvelope(payload: Uint8Array): TextEnvelopeBody {
-  return decodePlaintext<TextEnvelopeBody>(payload);
-}
-
-type RecipientRow = { user_id: string; device_id: string; is_current_session: boolean };
-
 /**
- * Sends a text through the mailbox: one envelope per recipient device (the other members'
- * devices and the sender's own other devices). Each mailbox id is derived from the outbox
- * client id and the device, so a resend is deduped server-side.
+ * Sends a text as Olm ciphertext through the mailbox: one envelope per recipient Device (the
+ * other members' Devices and the sender's own other Devices). The mailbox never sees
+ * plaintext. Each mailbox id is derived from the outbox client id and the Device, so a
+ * resend is deduped server-side.
  */
-export function createMailboxTextSender(args: {
+export function createEncryptedTextSender(args: {
   client: RpcClient;
+  sessions: OlmSessionManager;
   userId: string;
+  deviceId?: string;
   now?: () => Date;
 }): (input: TextPayload) => Promise<Result<RpcMessageRow>> {
   return async (input) => {
     const now = (args.now ?? (() => new Date()))().toISOString();
-    const rec = await callRpc<RecipientRow[]>(args.client, "mailbox_recipients", {
-      p_conversation_id: input.conversationId,
-    });
-    if (!rec.ok) return rec;
-    const sender = rec.value.find((r) => r.is_current_session) ?? rec.value.find((r) => r.user_id === args.userId);
-    if (!sender) return err("e2ee.device_not_found");
-
-    const body: TextEnvelopeBody = {
-      v: 1,
-      type: "text",
-      client_id: input.clientId,
-      conversation_id: input.conversationId,
-      body: input.body,
-      reply_to_id: input.replyToId ?? null,
-      sent_at: now,
-    };
-    const payload = encodePlaintext(body);
-    const targets = rec.value.filter((r) => r.device_id !== sender.device_id);
-    const envelopes: OutgoingEnvelope[] = [];
-    for (const t of targets) {
-      envelopes.push({
-        // Deterministic per (client id, device): a resend dedups instead of duplicating.
-        id: derivedId(input.clientId, t.device_id),
-        recipientDeviceId: t.device_id,
-        senderDeviceId: sender.device_id,
+    const sent = await sendEncrypted({
+      client: args.client,
+      sessions: args.sessions,
+      userId: args.userId,
+      deviceId: args.deviceId,
+      deriveId: derivedId,
+      body: {
+        v: 1,
+        id: input.clientId,
         conversationId: input.conversationId,
-        kind: TEXT_ENVELOPE_KIND,
-        payload,
-      });
-    }
-    if (envelopes.length > 0) {
-      const sent = await sendEnvelopes(args.client, envelopes);
-      if (!sent.ok) return sent;
-      const failed = sent.value.find((s) => s.status === "forbidden");
-      if (failed && sent.value.every((s) => s.status === "forbidden")) {
-        return err("messaging.forbidden");
-      }
-    }
+        sentAt: now,
+        kind: "text",
+        body: input.body,
+        ...(input.replyToId ? { replyToId: input.replyToId } : {}),
+      },
+    });
+    if (!sent.ok) return sent;
     return ok({
       id: input.clientId,
       conversation_id: input.conversationId,

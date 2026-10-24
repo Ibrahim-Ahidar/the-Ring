@@ -7,7 +7,7 @@ import type { Result } from "@pulse/core/result";
 
 import { getLocalDb } from "@/platform/local-store";
 
-import { sendTextAction } from "../actions";
+import { getE2eeRuntime } from "@/platform/crypto/e2ee-runtime";
 
 export type TextPayload = {
   conversationId: string;
@@ -115,7 +115,12 @@ export function getTextOutbox(userId: string): Promise<TextOutbox | null> {
           const box = createTextOutbox({
             db: h.db,
             store: h.store,
-            sendText: (input) => sendTextAction(input) as Promise<Result<RpcMessageRow>>,
+            // Ciphertext only: the plaintext send action is never used with the flag on.
+            sendText: async (input) => {
+              const rt = await getE2eeRuntime(userId);
+              if (!rt) throw new Error("e2ee.runtime_unavailable"); // retried with backoff
+              return rt.sendText(input);
+            },
             events: () => events,
             userId,
           });

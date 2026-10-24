@@ -39,6 +39,13 @@ vi.mock("../actions", () => ({
   sendTextAction: (...args: unknown[]) => sendTextAction(...args),
 }));
 
+// The encrypted sender stands in as sendTextAction: same input, same result shape.
+vi.mock("@/platform/crypto/e2ee-runtime", () => ({
+  getE2eeRuntime: async () => ({
+    sendText: (input: unknown) => sendTextAction(input),
+  }),
+}));
+
 vi.mock("@/platform/local-store", () => ({
   getLocalDb: async () => ({ db: dbHolder.db, store: dbHolder.store }),
   getLocalStore: async () => dbHolder.store,
