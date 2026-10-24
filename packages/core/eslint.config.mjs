@@ -10,6 +10,8 @@ export default [
   { ignores: ["node_modules/**", "coverage/**"] },
   {
     files: ["**/*.ts"],
+    // Test-only executor for vitest; runs on Node, never shipped to clients.
+    ignores: ["src/local-store/node-sqlite-executor.ts"],
     languageOptions: { parser: tsParser },
     rules: {
       "no-restricted-imports": [
