@@ -7,6 +7,9 @@ import { asRpcClient } from "@pulse/core/rpc";
 import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
 import { createControlActions } from "@pulse/core/e2ee/control-actions";
 import { claimKeysRpc, createControlSender } from "@pulse/core/e2ee/encrypted-sender";
+import { createGroupSender } from "@pulse/core/e2ee/group-sender";
+import { createGroupStateManager, type GroupStateManager } from "@pulse/core/e2ee/group-state";
+import { createGroupSessionManager } from "@pulse/core/e2ee/megolm-sessions";
 import { createOlmSessionManager, type OlmSessionManager } from "@pulse/core/e2ee/olm-sessions";
 import { createEncryptedEnvelopeHandler } from "@pulse/core/e2ee/receive";
 import type { RpcClient } from "@pulse/core/rpc";
@@ -30,6 +33,9 @@ export type E2eeRuntime = {
   sessions: OlmSessionManager;
   /** Encrypted Control Messages: react, edit, remove, pin, markRead, retry of failed sends. */
   actions: ReturnType<typeof createControlActions>;
+  /** Encrypted groups (Megolm + group_state): send to a group and read its encrypted name. */
+  groupSender: ReturnType<typeof createGroupSender>;
+  groupState: GroupStateManager;
   sendText(input: TextPayload): ReturnType<ReturnType<typeof createEncryptedTextSender>>;
   stop(): void;
 };
@@ -79,8 +85,22 @@ async function build(userId: string, client: RpcClient): Promise<E2eeRuntime | n
     send: sendControl,
     newId: () => crypto.randomUUID(),
   });
+  const groups = createGroupSessionManager({ engine, kv: store, persist });
+  const groupState = createGroupStateManager({ client, kv: store });
+  const groupSender = createGroupSender({
+    client,
+    sessions,
+    groups,
+    state: groupState,
+    userId,
+    deviceId,
+    deriveId: derivedId,
+    newId: () => crypto.randomUUID(),
+  });
   const handler = createEncryptedEnvelopeHandler({
     sessions,
+    groups,
+    onStateKey: (c, k, v) => groupState.acceptKey(c, k, v),
     store,
     selfUserId: userId,
     sendControl,
@@ -91,6 +111,8 @@ async function build(userId: string, client: RpcClient): Promise<E2eeRuntime | n
     deviceId,
     sessions,
     actions,
+    groupSender,
+    groupState,
     sendText: createEncryptedTextSender({ client, sessions, userId, deviceId }),
     stop: () => sub.stop(),
   };
