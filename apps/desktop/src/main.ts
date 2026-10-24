@@ -21,7 +21,6 @@ import { autoUpdater } from "electron-updater";
 import { parseNotifyPayload, parseUnreadCount, trayTooltip } from "./bridge-validation";
 import { shouldHideOnClose } from "./close-policy";
 import { createLocalDbService, type DbDriver } from "./local-db";
-import { createLocalDbService, type DbDriver } from "./local-db";
 import { getOrCreateLocalStorageKey } from "./local-storage-key";
 import { isOfflineError } from "./offline";
 import { isPulseUrl } from "./origin";
