@@ -1,5 +1,6 @@
 import { err, ok, type Result } from "@pulse/core";
 
+import { deleteLocalDatabase } from "@/local/db";
 import { mapAuthError } from "./auth-errors";
 import { supabase } from "./client";
 import { devices } from "./devices";
@@ -58,6 +59,7 @@ async function rawSignInWithPassword(email: string, password: string): Promise<R
 async function rawSignOut(): Promise<Result<null>> {
   // scope "local" ends only this device's session and always clears local storage.
   const { error } = await supabase.auth.signOut({ scope: "local" });
+  await deleteLocalDatabase(); // no-op unless the e2ee flag opened a local database
   return error ? err("mobile.logout.error") : ok(null);
 }
 

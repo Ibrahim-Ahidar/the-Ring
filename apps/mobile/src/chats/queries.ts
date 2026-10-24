@@ -15,6 +15,7 @@ import {
   removeChatReaction,
   listChatMessages,
   listChats,
+  localChats,
   markChatDelivered,
   markChatRead,
   newClientId,
@@ -60,6 +61,14 @@ export function useChatMessages(conversationId: string) {
         void queryClient.invalidateQueries({ queryKey: messagesKey(conversationId) });
         void queryClient.invalidateQueries({ queryKey: reactionsKey(conversationId) });
         void queryClient.invalidateQueries({ queryKey: chatKey(conversationId) });
+        void queryClient.invalidateQueries({ queryKey: chatsKey });
+      }),
+    [conversationId, queryClient],
+  );
+  useEffect(
+    () =>
+      localChats.onOutboxChange(() => {
+        void queryClient.invalidateQueries({ queryKey: messagesKey(conversationId) });
         void queryClient.invalidateQueries({ queryKey: chatsKey });
       }),
     [conversationId, queryClient],

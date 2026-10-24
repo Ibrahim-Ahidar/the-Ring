@@ -19,6 +19,9 @@ import {
   type TimelineMessage,
 } from "@pulse/core";
 
+import { createLocalChatData } from "@/local/chat-data";
+import { getLocalDb, onLocalDbDeleted } from "@/local/db";
+
 import { acquireChatChannel } from "./chat-channel";
 import { supabase } from "./client";
 import { rpcClient } from "./rpc";
@@ -30,10 +33,30 @@ export type ChatListFilter =
   | { kind: "all" | "unread" | "groups" | "archived" }
   | { kind: "folder"; folderId: string };
 
+/** Local-first reads and the outbox; every method yields null when the e2ee flag is off. */
+export const localChats = createLocalChatData({
+  getDb: () => getLocalDb(),
+  async getUserId() {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.user.id ?? null;
+  },
+  remote: {
+    listConversations: (args) => listConversations(rpcClient, args),
+    listMessages: (input) => listMessages(rpcClient, { ...input, limit: MESSAGE_PAGE_SIZE }),
+  },
+  sendText: (input) => sendText(rpcClient, input) as Promise<Result<RpcMessageRow>>,
+});
+
+onLocalDbDeleted(() => localChats.reset());
+
 export async function listChats(
   cursor: string | null,
   filter: ChatListFilter = { kind: "all" },
 ): Promise<Result<ChatPage<ConversationSummary>>> {
+  if (filter.kind === "all" && !cursor) {
+    const local = await localChats.listChats({});
+    if (local) return local;
+  }
   const result = await listConversations(rpcClient, {
     cursor,
     archivedOnly: filter.kind === "archived",
@@ -55,6 +78,8 @@ export async function listChatMessages(
   conversationId: string,
   cursor: string | null,
 ): Promise<Result<ChatPage<RpcMessageRow>>> {
+  const local = await localChats.listMessages(conversationId, cursor);
+  if (local) return local;
   const result = await listMessages(rpcClient, { conversationId, cursor, limit: MESSAGE_PAGE_SIZE });
   if (!result.ok) return result;
   const { items, hasMore } = result.value;
@@ -69,7 +94,7 @@ export function sendChatText(input: {
 }): Promise<Result<TimelineMessage>> {
   const body = input.body.trim();
   if (!body) return Promise.resolve(err("messaging.empty"));
-  return sendText(rpcClient, { ...input, body });
+  return localChats.sendText({ ...input, body }).then((queued) => queued ?? sendText(rpcClient, { ...input, body }));
 }
 
 export function markChatRead(conversationId: string, messageId: string): Promise<Result<MarkReadResult>> {

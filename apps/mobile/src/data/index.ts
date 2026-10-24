@@ -5,6 +5,7 @@ export {
   getChat,
   listChatMessages,
   listChats,
+  localChats,
   markChatDelivered,
   markChatRead,
   newClientId,
