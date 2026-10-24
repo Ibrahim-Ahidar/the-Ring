@@ -16,11 +16,13 @@ afterAll(async () => {
   await db?.close();
 });
 
-type Actor = { id: string; rpc: PgliteRpcClient; device: string };
+type Actor = { id: string; rpc: PgliteRpcClient; device: string; sid: string };
 
 async function actor(name: string): Promise<Actor> {
   const user = await createUser(db, { username: name });
-  const rpc = createRpcClient(db, user.id);
+  const sid = randomUUID();
+  await asSuperuser(db, "insert into auth.sessions (id, user_id) values ($1, $2)", [sid, user.id]);
+  const rpc = createRpcClient(db, user.id, { session_id: sid });
   const device = randomUUID();
   const res = await rpc.rpc("register_device", {
     p_device_id: device,
@@ -31,19 +33,30 @@ async function actor(name: string): Promise<Actor> {
     p_account_signing_key: "account-key",
   });
   expect(res.error).toBeNull();
-  return { id: user.id, rpc, device };
+  return { id: user.id, rpc, device, sid };
 }
 
+// A second device joins through the real approval flow: it asks (add_fresh_device from its
+// own session) and the first, approved device allows it (approve_device).
 async function addDevice(a: Actor): Promise<string> {
   const device = randomUUID();
-  const res = await a.rpc.rpc("register_device", {
+  const sid2 = randomUUID();
+  await asSuperuser(db, "insert into auth.sessions (id, user_id) values ($1, $2)", [sid2, a.id]);
+  const rpc2 = createRpcClient(db, a.id, { session_id: sid2 });
+  const asked = await rpc2.rpc("add_fresh_device", {
     p_device_id: device,
     p_name: "Phone",
     p_platform: "ios",
     p_identity_key: `idk-${device}`,
     p_signing_key: `sgk-${device}`,
   });
-  expect(res.error).toBeNull();
+  expect(asked.error).toBeNull();
+  expect(asked.data).toBe("pending");
+  const allowed = await a.rpc.rpc("approve_device", {
+    p_device_id: device,
+    p_account_signature: "sig",
+  });
+  expect(allowed.error).toBeNull();
   return device;
 }
 
