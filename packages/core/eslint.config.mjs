@@ -33,4 +33,9 @@ export default [
       ],
     },
   },
+  // Test-only SQLite executor for vitest under Node; never imported by app code paths.
+  {
+    files: ["src/local-store/node-sqlite-executor.ts"],
+    rules: { "no-restricted-imports": "off" },
+  },
 ];
