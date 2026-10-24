@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { RestoreOffer } from "@/features/backup/components/RestoreOffer";
 import { MessagingProvider } from "@/features/direct-messaging/context/MessagingProvider";
 import { assertAppAccess } from "@/features/identity/session-guard";
 import { loginPath, parseLoginReason } from "@/platform/login-redirect";
@@ -31,7 +32,10 @@ export default async function ProtectedAppLayout({
 
   return (
     <AppShell>
-      <MessagingProvider userId={session.userId}>{children}</MessagingProvider>
+      <MessagingProvider userId={session.userId}>
+        <RestoreOffer />
+        {children}
+      </MessagingProvider>
     </AppShell>
   );
 }

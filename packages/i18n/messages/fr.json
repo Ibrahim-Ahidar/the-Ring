@@ -68,6 +68,7 @@
     "privacyDesc": "Vu pour la dernière fois, confirmations de lecture, qui peut vous écrire, bloqués",
     "securityDesc": "Sessions actives, déconnexion",
     "devicesDesc": "Appareils de messages chiffrés, retirer un appareil",
+    "backupDesc": "Sauvegarder et restaurer votre historique",
     "notificationsDesc": "Dans l'app, push, mentions uniquement",
     "appearanceDesc": "Thème clair, sombre ou système"
   },
@@ -92,6 +93,7 @@
     "settingsAccount": "Compte",
     "settingsSecurity": "Sécurité",
     "settingsDevices": "Appareils",
+    "settingsBackup": "Sauvegarde",
     "settingsPrivacy": "Confidentialité",
     "settingsNotifications": "Notifications",
     "settingsAppearance": "Apparence",

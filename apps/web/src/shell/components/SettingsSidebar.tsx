@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ArchiveRestore,
   ChevronRight,
   Globe,
   KeyRound,
@@ -81,6 +82,12 @@ function SettingsSidebarInner({ profile, footer }: Props) {
               icon: Laptop,
               title: t("routes.settingsDevices"),
               desc: t("settings.devicesDesc"),
+            },
+            {
+              href: "/app/settings/backup",
+              icon: ArchiveRestore,
+              title: t("routes.settingsBackup"),
+              desc: t("settings.backupDesc"),
             },
           ]
         : []),
