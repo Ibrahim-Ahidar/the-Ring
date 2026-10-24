@@ -21,7 +21,7 @@ async function newUser(name: string) {
   return { ...user, rpc: createRpcClient(db, user.id) };
 }
 
-async function register(rpc: PgliteRpcClient, id = randomUUID(), name = "Laptop") {
+async function register(rpc: PgliteRpcClient, id: string = randomUUID(), name = "Laptop") {
   const res = await rpc.rpc("register_device", {
     p_device_id: id,
     p_name: name,

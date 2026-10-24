@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import { callRpc, mapRpcError, type RpcClient } from "./rpc";
 
 describe("mapRpcError", () => {
+  it("accepts digits in the feature name (e2ee.device_limit)", () => {
+    expect(mapRpcError("e2ee.device_limit", "P0001")).toBe("e2ee.device_limit");
+  });
+
   it("passes through feature error codes in the message", () => {
     expect(mapRpcError("identity.username_taken")).toBe(
       "identity.username_taken",

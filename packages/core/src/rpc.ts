@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { err, ok, type Result } from "./result";
 
-const FEATURE_ERROR = /^[a-z_]+\.[a-z0-9_]+$/;
+const FEATURE_ERROR = /^[a-z][a-z0-9_]*\.[a-z0-9_]+$/;
 
 export interface RpcClient {
   rpc(
