@@ -4,3 +4,4 @@ export * from "./olm-sessions";
 export * from "./encrypted-sender";
 export * from "./receive";
 export * from "./controls";
+export * from "./control-actions";

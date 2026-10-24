@@ -99,12 +99,13 @@ export function createControlSender(args: {
     conversationId: string,
     kind: K,
     body: ControlBodies[K],
+    meta?: { id?: string; sentAt?: string },
   ): Promise<Result<SendResult[]>> {
     const envelope = {
       v: 1,
-      id: args.newId(),
+      id: meta?.id ?? args.newId(),
       conversationId,
-      sentAt: (args.now?.() ?? new Date()).toISOString(),
+      sentAt: meta?.sentAt ?? (args.now?.() ?? new Date()).toISOString(),
       kind,
       body,
     } as ControlEnvelope;
