@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { resetTextOutbox } from "@/features/direct-messaging/lib/text-outbox";
 import { deleteLocalDatabase } from "@/platform/local-store";
 import ui from "@/shell/styles/ui.module.css";
 import { signOutAction } from "../actions";
@@ -15,6 +16,7 @@ function SignOutButtonInner() {
   const onClick = useCallback(async () => {
     setPending(true);
     // Logout deletes the on-device database (no-op with the e2ee flag off).
+    resetTextOutbox();
     await deleteLocalDatabase().catch(() => {});
     const result = await signOutAction();
     if (!result.ok) {

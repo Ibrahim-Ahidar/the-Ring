@@ -42,6 +42,18 @@ export function getLocalStore(): Promise<LocalStore | null> {
   );
 }
 
+/** The executor behind the local store (outbox needs transactions), or null when unavailable. */
+export async function getLocalDb(): Promise<{ store: LocalStore; db: WorkerExecutor } | null> {
+  const store = await getLocalStore();
+  if (!store || !handle) return null;
+  try {
+    const h = await handle;
+    return { store: h.store, db: h.executor };
+  } catch {
+    return null;
+  }
+}
+
 /** Logout: delete the local database file. A later getLocalStore() starts a fresh one. */
 export async function deleteLocalDatabase(): Promise<void> {
   if (!handle) {

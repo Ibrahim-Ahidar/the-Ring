@@ -108,10 +108,13 @@ export function createLocalFirstSource(
     cursor: string | null,
   ): Promise<{ items: RpcMessageRow[]; more: boolean }> {
     const decoded = cursor ? decodeMessagePageCursor(cursor) : null;
-    const rows = await store.listMessages(conversationId, {
-      limit: limit + 1,
-      before: decoded ? { sentAt: decoded.createdAt, id: decoded.id } : null,
-    });
+    // Unsent local rows (outbox) are shown as pending bubbles, never as real messages.
+    const rows = (
+      await store.listMessages(conversationId, {
+        limit: limit + 1,
+        before: decoded ? { sentAt: decoded.createdAt, id: decoded.id } : null,
+      })
+    ).filter((r) => r.status !== "pending" && r.status !== "failed");
     return { items: rows.slice(0, limit).map(rowToRpcMessage), more: rows.length > limit };
   }
 

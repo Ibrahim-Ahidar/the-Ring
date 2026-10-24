@@ -17,6 +17,7 @@ import {
   type ReactNode,
 } from "react";
 
+import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
 import { emitComposerActivity } from "@/platform/composer-events";
 import { joinConversation, joinInbox } from "@/platform/realtime-hub";
 import { timingArrival, timingTapStart } from "@/platform/timing/hooks";
@@ -41,6 +42,7 @@ import {
   storeRealtimeMessage,
 } from "../lib/data-source";
 import { needsAttachmentFetch } from "../lib/realtime-message";
+import { getTextOutbox, setTextOutboxEvents } from "../lib/text-outbox";
 import { firstUnreadMessageId } from "../delivery";
 import { mapMessageRow, messagePageNextCursor } from "../service";
 import type {
@@ -335,6 +337,8 @@ export function MessagingProvider({
   }, []);
 
   const flushPending = useCallback(async () => {
+    // With the e2ee flag on the outbox drainer owns redelivery.
+    if (isE2eeEnabled()) return;
     const queue = pendingSendsRef.current.filter((p) => p.status === "pending");
     for (const pending of queue) {
       await deliver(pending);
@@ -715,10 +719,20 @@ export function MessagingProvider({
       dispatch({ type: "pending/add", pending });
       draftStore.set(input.conversationId, "");
 
+      // e2ee flag on: the send is persisted in the local outbox and drained from there.
+      if (isE2eeEnabled()) {
+        const box = await getTextOutbox(userId);
+        if (box) {
+          pendingSendsRef.current = [...pendingSendsRef.current, pending];
+          await box.enqueueText(pending, pending.createdAt);
+          return;
+        }
+      }
+
       // Sending is a server action and does not depend on the realtime socket.
       await deliver(pending);
     },
-    [deliver, draftStore],
+    [deliver, draftStore, userId],
   );
 
   const retrySend = useCallback(
@@ -732,9 +746,16 @@ export function MessagingProvider({
         clientId,
         status: "pending",
       });
+      if (isE2eeEnabled()) {
+        const box = await getTextOutbox(userId);
+        if (box) {
+          await box.enqueueText(pending, pending.createdAt);
+          return;
+        }
+      }
       await deliver({ ...pending, status: "pending" });
     },
-    [deliver],
+    [deliver, userId],
   );
 
   const discardSend = useCallback((clientId: string) => {
@@ -801,6 +822,44 @@ export function MessagingProvider({
     },
     [],
   );
+
+  // e2ee flag on: outbox results update the UI; unsent sends of an earlier session come back.
+  useEffect(() => {
+    if (!isE2eeEnabled()) {
+      return;
+    }
+    let cancelled = false;
+    setTextOutboxEvents({
+      onSent(clientId, message) {
+        const conversationId = message.conversation_id;
+        pendingSendsRef.current = pendingSendsRef.current.filter((p) => p.clientId !== clientId);
+        dispatch({ type: "pending/remove", clientId });
+        dispatch({ type: "messages/upsert", conversationId, message });
+        emitComposerActivity({ kind: "sent", conversationId });
+      },
+      onFailed(clientId) {
+        pendingSendsRef.current = pendingSendsRef.current.map((p) =>
+          p.clientId === clientId ? { ...p, status: "failed" } : p,
+        );
+        dispatch({ type: "pending/update", clientId, status: "failed" });
+      },
+    });
+    void getTextOutbox(userId).then(async (box) => {
+      if (!box || cancelled) return;
+      const unsent = await box.listPending();
+      for (const p of unsent) {
+        if (pendingSendsRef.current.some((x) => x.clientId === p.clientId)) continue;
+        pendingSendsRef.current = [...pendingSendsRef.current, p];
+        dispatch({ type: "pending/add", pending: p });
+      }
+    });
+    const onOnline = () => void getTextOutbox(userId).then((b) => b?.drain({ force: true }));
+    window.addEventListener("online", onOnline);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("online", onOnline);
+    };
+  }, [userId]);
 
   // Browser connectivity: queue sends while offline, flush when back online.
   useEffect(() => {
