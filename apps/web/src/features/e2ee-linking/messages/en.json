@@ -1,0 +1,21 @@
+{
+  "title": "Link a device",
+  "intro": "Move your account to a new device by scanning a code. Your Security Code stays the same.",
+  "showCode": "Show a link code on this device",
+  "qrAlt": "Link code",
+  "qrText": "Or copy this code to the device that is already signed in:",
+  "safetyCode": "Check that this number matches the other device: {code}",
+  "waiting": "Waiting for the other device...",
+  "progress": "Transferring history: {done} of {total}",
+  "done": "Linked. {count} messages moved.",
+  "enterCode": "On the signed-in device, paste the link code from the new device:",
+  "connect": "Connect",
+  "confirmTitle": "Does this number match the new device? {code}",
+  "confirmYes": "It matches, link it",
+  "confirmNo": "Cancel",
+  "sent": "Device linked. History sent.",
+  "errorInvalid": "That link code is not valid.",
+  "errorNoKey": "This device cannot link others yet.",
+  "errorUnexpected": "Linking failed. Try again.",
+  "cancel": "Cancel"
+}

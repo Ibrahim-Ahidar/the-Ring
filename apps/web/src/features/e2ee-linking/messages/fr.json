@@ -1,0 +1,21 @@
+{
+  "title": "Associer un appareil",
+  "intro": "Transférez votre compte vers un nouvel appareil en scannant un code. Votre code de sécurité reste identique.",
+  "showCode": "Afficher un code d'association sur cet appareil",
+  "qrAlt": "Code d'association",
+  "qrText": "Ou copiez ce code vers l'appareil déjà connecté :",
+  "safetyCode": "Vérifiez que ce nombre est identique sur l'autre appareil : {code}",
+  "waiting": "En attente de l'autre appareil...",
+  "progress": "Transfert de l'historique : {done} sur {total}",
+  "done": "Associé. {count} messages transférés.",
+  "enterCode": "Sur l'appareil connecté, collez le code d'association du nouvel appareil :",
+  "connect": "Connecter",
+  "confirmTitle": "Ce nombre est-il identique sur le nouvel appareil ? {code}",
+  "confirmYes": "Identique, associer",
+  "confirmNo": "Annuler",
+  "sent": "Appareil associé. Historique envoyé.",
+  "errorInvalid": "Ce code d'association n'est pas valide.",
+  "errorNoKey": "Cet appareil ne peut pas encore en associer d'autres.",
+  "errorUnexpected": "L'association a échoué. Réessayez.",
+  "cancel": "Annuler"
+}

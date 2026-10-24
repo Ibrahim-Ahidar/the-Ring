@@ -1,0 +1,42 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-16);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.qr {
+  inline-size: 12rem;
+  block-size: 12rem;
+  padding: var(--space-8);
+  background: #fff;
+}
+
+.code {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+.meta {
+  color: var(--color-text-muted);
+}
+
+.field {
+  inline-size: 100%;
+  min-block-size: 4rem;
+  padding: var(--space-8);
+  font-family: monospace;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.error {
+  color: var(--color-danger);
+}

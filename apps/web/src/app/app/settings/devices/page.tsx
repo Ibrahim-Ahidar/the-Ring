@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { isE2eeEnabled } from "@pulse/core";
 
 import { DevicesSettings } from "@/features/e2ee-devices/components/DevicesSettings";
+import { LinkExistingDevice } from "@/features/e2ee-linking/components/LinkExistingDevice";
+import { LinkNewDevice } from "@/features/e2ee-linking/components/LinkNewDevice";
 import * as devices from "@/features/e2ee-devices/service";
 import { getSessionContext } from "@/platform/session";
 import { SettingsSection } from "@/shell/components/SettingsSection";
@@ -27,6 +29,8 @@ export default async function SettingsDevicesPage() {
   return (
     <SettingsSection title={t("routes.settingsDevices")}>
       <DevicesSettings devices={list} />
+      <LinkNewDevice />
+      <LinkExistingDevice />
     </SettingsSection>
   );
 }
