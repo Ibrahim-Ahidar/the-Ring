@@ -67,6 +67,7 @@
     "accountDesc": "Profil, nom d'utilisateur, photo, suppression du compte",
     "privacyDesc": "Vu pour la dernière fois, confirmations de lecture, qui peut vous écrire, bloqués",
     "securityDesc": "Sessions actives, déconnexion",
+    "devicesDesc": "Appareils de messages chiffrés, retirer un appareil",
     "notificationsDesc": "Dans l'app, push, mentions uniquement",
     "appearanceDesc": "Thème clair, sombre ou système"
   },
@@ -90,6 +91,7 @@
     "publicProfile": "Profil public",
     "settingsAccount": "Compte",
     "settingsSecurity": "Sécurité",
+    "settingsDevices": "Appareils",
     "settingsPrivacy": "Confidentialité",
     "settingsNotifications": "Notifications",
     "settingsAppearance": "Apparence",

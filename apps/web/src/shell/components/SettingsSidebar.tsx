@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Globe,
   KeyRound,
+  Laptop,
   Lock,
   Palette,
   UserRound,
@@ -13,6 +14,8 @@ import {
 } from "lucide-react";
 import { memo, useMemo, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
+
+import { isE2eeEnabled } from "@pulse/core";
 
 import ui from "@/shell/styles/ui.module.css";
 import { Avatar } from "./Avatar";
@@ -71,6 +74,16 @@ function SettingsSidebarInner({ profile, footer }: Props) {
         title: t("routes.settingsSecurity"),
         desc: t("settings.securityDesc"),
       },
+      ...(isE2eeEnabled()
+        ? [
+            {
+              href: "/app/settings/devices",
+              icon: Laptop,
+              title: t("routes.settingsDevices"),
+              desc: t("settings.devicesDesc"),
+            },
+          ]
+        : []),
       {
         href: "/app/settings/appearance",
         icon: Palette,

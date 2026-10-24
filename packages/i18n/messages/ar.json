@@ -67,6 +67,7 @@
     "accountDesc": "الملف الشخصي، اسم المستخدم، الصورة، حذف الحساب",
     "privacyDesc": "آخر ظهور، إيصالات القراءة، من يراسلك، المحظورون",
     "securityDesc": "الجلسات النشطة، تسجيل الخروج",
+    "devicesDesc": "أجهزة الرسائل المشفرة، إزالة جهاز",
     "notificationsDesc": "داخل التطبيق، الإشعارات الفورية، الإشارات فقط",
     "appearanceDesc": "سمة فاتحة أو داكنة أو حسب النظام"
   },
@@ -90,6 +91,7 @@
     "publicProfile": "ملف عام",
     "settingsAccount": "الحساب",
     "settingsSecurity": "الأمان",
+    "settingsDevices": "الأجهزة",
     "settingsPrivacy": "الخصوصية",
     "settingsNotifications": "الإشعارات",
     "settingsAppearance": "المظهر",

@@ -1,0 +1,12 @@
+{
+  "intro": "Appareils pouvant lire vos messages chiffrés. Retirez ceux que vous n’utilisez plus : leurs clés sont supprimées et ils sont déconnectés. Vous pouvez avoir jusqu’à 5 appareils.",
+  "empty": "Aucun appareil enregistré pour le moment.",
+  "unnamed": "Appareil sans nom",
+  "thisDevice": "Cet appareil",
+  "lastSeen": "Dernière activité {when}",
+  "remove": "Retirer",
+  "confirmRemove": "Confirmer le retrait",
+  "errorNotFound": "Cet appareil n’existe plus.",
+  "errorUnexpected": "Une erreur s’est produite. Réessayez.",
+  "limitReached": "Vous avez déjà 5 appareils. Retirez-en un avant d’en ajouter un autre."
+}

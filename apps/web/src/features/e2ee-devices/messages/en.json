@@ -1,0 +1,12 @@
+{
+  "intro": "Devices that can read your encrypted messages. Remove one you no longer use: its keys are deleted and it is signed out. You can have up to 5 devices.",
+  "empty": "No devices registered yet.",
+  "unnamed": "Unnamed device",
+  "thisDevice": "This device",
+  "lastSeen": "Last active {when}",
+  "remove": "Remove",
+  "confirmRemove": "Confirm removal",
+  "errorNotFound": "That device no longer exists.",
+  "errorUnexpected": "Something went wrong. Try again.",
+  "limitReached": "You already have 5 devices. Remove one before adding another."
+}
