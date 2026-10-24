@@ -5,15 +5,26 @@ import { createSqlLocalStore, type LocalStore } from "../local-store";
 import { createNodeSqliteExecutor } from "../local-store/node-sqlite-executor";
 import type { MessageRow } from "../local-store/types";
 import { toB64 } from "./bytes";
-import type { LinkFrame, LinkTransport } from "./channel";
+import {
+  createEphemeralKey,
+  createLinkChannel,
+  type LinkFrame,
+  type LinkTransport,
+  parseLinkFrame,
+} from "./channel";
 import { LinkError } from "./errors";
 import type { ArchiveStorage } from "./history";
 import { encodeLinkQr, linkTopic, parseLinkQr } from "./qr";
-import { accountPublicKey, runExistingDeviceLink, startNewDeviceLink } from "./session";
+import {
+  accountPublicKey,
+  runExistingDeviceLink,
+  startNewDeviceLink,
+} from "./session";
 
 function pair() {
   const log: LinkFrame[] = [];
-  const subs: { a: ((f: LinkFrame) => void)[]; b: ((f: LinkFrame) => void)[] } = { a: [], b: [] };
+  const subs: { a: ((f: LinkFrame) => void)[]; b: ((f: LinkFrame) => void)[] } =
+    { a: [], b: [] };
   const mk = (me: "a" | "b"): LinkTransport => ({
     send(f) {
       log.push(f);
@@ -55,7 +66,12 @@ function msg(i: number, conv: string, body: string): MessageRow {
   };
 }
 
-async function seed(store: LocalStore, convs: number, per: number, body?: string) {
+async function seed(
+  store: LocalStore,
+  convs: number,
+  per: number,
+  body?: string,
+) {
   for (let c = 0; c < convs; c++) {
     await store.upsertConversations([
       {
@@ -69,7 +85,9 @@ async function seed(store: LocalStore, convs: number, per: number, body?: string
       },
     ]);
     await store.upsertMessages(
-      Array.from({ length: per }, (_, i) => msg(i, `c${c}`, body ?? `hello ${i}`)),
+      Array.from({ length: per }, (_, i) =>
+        msg(i, `c${c}`, body ?? `hello ${i}`),
+      ),
     );
   }
   await store.setReaction({ message_id: "c0-m1", user_id: "u2", emoji: "+1" });
@@ -108,6 +126,7 @@ async function link(opts: {
     store: dst,
     device,
     archive: opts.archive,
+    confirmSafetyCode: async () => true,
     onSafetyCode: (c) => codes.push(c),
     onProgress: (p) => progress.push(p.done),
   });
@@ -155,7 +174,11 @@ describe("QR device linking", () => {
     const r = await link({ convs: 3, per: 4 });
     const [out] = await Promise.all([r.newRun, r.exRun]);
     expect(out.imported).toBe(12);
-    expect((await r.dst.listConversations()).map((c) => c.id).sort()).toEqual(["c0", "c1", "c2"]);
+    expect((await r.dst.listConversations()).map((c) => c.id).sort()).toEqual([
+      "c0",
+      "c1",
+      "c2",
+    ]);
     expect(await r.dst.countMessages("c0")).toBe(4);
     expect(await r.dst.listReactions(["c0-m1"])).toHaveLength(1);
     expect(await r.dst.listReceipts(["c0-m1"])).toHaveLength(1);
@@ -176,7 +199,9 @@ describe("QR device linking", () => {
     const r = await link({ convs: 1, per: 2, decline: true });
     const res = await Promise.allSettled([r.newRun, r.exRun]);
     expect(res[0].status).toBe("rejected");
-    expect((res[1] as PromiseRejectedResult).reason).toMatchObject({ code: "declined" });
+    expect((res[1] as PromiseRejectedResult).reason).toMatchObject({
+      code: "declined",
+    });
     expect(await r.dst.listConversations()).toHaveLength(0);
   });
 
@@ -192,7 +217,12 @@ describe("QR device linking", () => {
         return blobs.get(id)!;
       },
     };
-    const r = await link({ convs: 2, per: 60, body: "BIGBODY" + "x".repeat(50_000), archive });
+    const r = await link({
+      convs: 2,
+      per: 60,
+      body: "BIGBODY" + "x".repeat(50_000),
+      archive,
+    });
     const [out] = await Promise.all([r.newRun, r.exRun]);
     expect(blobs.size).toBe(1);
     const blob = new TextDecoder("latin1").decode([...blobs.values()][0]);
@@ -212,7 +242,13 @@ describe("QR device linking", () => {
   it("refuses a QR whose device id does not match", async () => {
     const t = pair();
     const dst = await openStore();
-    const fresh = startNewDeviceLink({ transport: t.fresh, store: dst, device, timeoutMs: 500 });
+    const fresh = startNewDeviceLink({
+      transport: t.fresh,
+      store: dst,
+      device,
+      confirmSafetyCode: async () => true,
+      timeoutMs: 500,
+    });
     const qr = parseLinkQr(fresh.qrText)!;
     const forged = encodeLinkQr({ ...qr, deviceId: "someone-else" });
     const p = fresh.run().catch((e) => e);
@@ -227,5 +263,217 @@ describe("QR device linking", () => {
       }),
     ).rejects.toBeInstanceOf(LinkError);
     await p;
+  });
+});
+
+/** Plays the existing device by hand so tests can send frames a real one never would. */
+async function scripted(t: ReturnType<typeof pair>, fresh: { qrText: string }) {
+  const qr = parseLinkQr(fresh.qrText)!;
+  const eph = createEphemeralKey();
+  const ch = createLinkChannel({
+    role: "existing",
+    nonce: qr.nonce,
+    ownSecret: eph.secret,
+    newPub: qr.pub,
+    existingPub: eph.pub,
+  });
+  await t.existing.send({ t: "hello", r: "existing", pub: eph.pub });
+  return {
+    ch,
+    send: (m: unknown) => t.existing.send(ch.seal(m)),
+  };
+}
+
+function newSide(
+  t: ReturnType<typeof pair>,
+  dst: LocalStore,
+  extra: object = {},
+) {
+  const seeds: Uint8Array[] = [];
+  const fresh = startNewDeviceLink({
+    transport: t.fresh,
+    store: dst,
+    device,
+    confirmSafetyCode: async () => true,
+    onAccountKey: (s) => void seeds.push(s),
+    timeoutMs: 1000,
+    ...extra,
+  });
+  return { fresh, seeds };
+}
+
+const SEED = toB64(new Uint8Array(32).fill(3));
+const goodMsg = (id: string) => ({ t: "message", row: msg(1, "c0", id) });
+
+describe("hardened QR link", () => {
+  it("ignores a second hello once one is bound", async () => {
+    const t = pair();
+    const injected: ((f: LinkFrame) => void)[] = [];
+    const fresh = startNewDeviceLink({
+      transport: {
+        send: (f) => t.fresh.send(f),
+        subscribe: (l) => {
+          injected.push(l);
+          return t.fresh.subscribe(l);
+        },
+      },
+      store: await openStore(),
+      device,
+      confirmSafetyCode: async () => true,
+      timeoutMs: 1000,
+      onSafetyCode: () => {
+        codes++;
+        const evil = createEphemeralKey();
+        queueMicrotask(() =>
+          injected.forEach((l) =>
+            l({ t: "hello", r: "existing", pub: evil.pub }),
+          ),
+        );
+      },
+    });
+    let codes = 0;
+    const run = fresh.run();
+    const ex = runExistingDeviceLink({
+      transport: t.existing,
+      qrText: fresh.qrText,
+      store: await openStore(),
+      accountSeed: new Uint8Array(32).fill(5),
+      confirm: async () => true,
+    });
+    const [out] = await Promise.all([run, ex]);
+    expect(out.accountSeed).toEqual(new Uint8Array(32).fill(5));
+    expect(codes).toBe(1);
+  });
+
+  it("rejects malformed and oversized frames", async () => {
+    expect(
+      parseLinkFrame({ t: "hello", r: "existing", pub: "AAAA" }),
+    ).toBeNull();
+    expect(parseLinkFrame({ t: "msg", r: "new", n: "1", c: "x" })).toBeNull();
+    expect(
+      parseLinkFrame({ t: "msg", r: "new", n: 1, c: "x".repeat(500_000) }),
+    ).toBeNull();
+    expect(parseLinkFrame({ t: "nope" })).toBeNull();
+    expect(parseLinkFrame(null)).toBeNull();
+    const e = createEphemeralKey();
+    expect(
+      parseLinkFrame({ t: "hello", r: "existing", pub: e.pub }),
+    ).not.toBeNull();
+    const t = pair();
+    const dst = await openStore();
+    const { fresh, seeds } = newSide(t, dst);
+    const run = fresh.run().catch((x) => x);
+    const s = await scripted(t, fresh);
+    await s.send({ t: "account_key", seed: "not a key!!" });
+    expect(await run).toMatchObject({ code: "protocol" });
+    expect(seeds).toHaveLength(0);
+    // frame-level: oversized ciphertext never reaches decryption
+    const a = createEphemeralKey();
+    const b = createEphemeralKey();
+    const ch = createLinkChannel({
+      role: "new",
+      nonce: "n",
+      ownSecret: a.secret,
+      newPub: a.pub,
+      existingPub: b.pub,
+    });
+    expect(() =>
+      ch.open({ t: "msg", r: "existing", n: 1, c: "x".repeat(500_000) }),
+    ).toThrow(LinkError);
+  });
+
+  it("fails history_end when a chunk is missing", async () => {
+    const t = pair();
+    const { fresh } = newSide(t, await openStore());
+    const run = fresh.run().catch((x) => x);
+    const s = await scripted(t, fresh);
+    await s.send({ t: "account_key", seed: SEED });
+    await s.send({
+      t: "history_begin",
+      records: 2,
+      messages: 2,
+      chunks: 2,
+      mode: "chunks",
+    });
+    await s.send({ t: "history_chunk", i: 0, records: [goodMsg("a")] });
+    await s.send({ t: "history_end" });
+    expect(await run).toMatchObject({ code: "history" });
+  });
+
+  it("rejects out-of-order and surplus chunks", async () => {
+    const t = pair();
+    const { fresh } = newSide(t, await openStore());
+    const run = fresh.run().catch((x) => x);
+    const s = await scripted(t, fresh);
+    await s.send({ t: "account_key", seed: SEED });
+    await s.send({
+      t: "history_begin",
+      records: 1,
+      messages: 1,
+      chunks: 1,
+      mode: "chunks",
+    });
+    await s.send({ t: "history_chunk", i: 1, records: [goodMsg("a")] });
+    expect(await run).toMatchObject({ code: "history" });
+  });
+
+  it("a bad record rejects the whole import and writes nothing", async () => {
+    const t = pair();
+    const dst = await openStore();
+    const { fresh } = newSide(t, dst);
+    const run = fresh.run().catch((x) => x);
+    const s = await scripted(t, fresh);
+    await s.send({ t: "account_key", seed: SEED });
+    await s.send({
+      t: "history_begin",
+      records: 2,
+      messages: 2,
+      chunks: 2,
+      mode: "chunks",
+    });
+    await s.send({ t: "history_chunk", i: 0, records: [goodMsg("a")] });
+    await s.send({
+      t: "history_chunk",
+      i: 1,
+      records: [{ t: "message", row: { id: 5, body: "x" } }],
+    });
+    await s.send({ t: "history_end" });
+    expect(await run).toMatchObject({ code: "history" });
+    expect(await dst.countMessages("c0")).toBe(0);
+  });
+
+  it("new device refuses account_key until the code is confirmed", async () => {
+    const t = pair();
+    let confirm!: (ok: boolean) => void;
+    const gate = new Promise<boolean>((r) => (confirm = r));
+    const { fresh, seeds } = newSide(t, await openStore(), {
+      confirmSafetyCode: () => gate,
+    });
+    const run = fresh.run().catch((x) => x);
+    const s = await scripted(t, fresh);
+    await s.send({ t: "account_key", seed: SEED });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(seeds).toHaveLength(0);
+    confirm(false);
+    expect(await run).toMatchObject({ code: "declined" });
+    expect(seeds).toHaveLength(0);
+  });
+
+  it("accepts account_key after the code is confirmed", async () => {
+    const t = pair();
+    const { fresh, seeds } = newSide(t, await openStore());
+    const run = fresh.run().catch((x) => x);
+    const s = await scripted(t, fresh);
+    await s.send({ t: "account_key", seed: SEED });
+    await s.send({
+      t: "history_begin",
+      records: 0,
+      messages: 0,
+      chunks: 0,
+      mode: "chunks",
+    });
+    await s.send({ t: "history_end" });
+    expect(await run).toMatchObject({ imported: 0 });
+    expect(seeds).toHaveLength(1);
   });
 });
