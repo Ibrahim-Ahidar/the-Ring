@@ -20,5 +20,10 @@
   "cancel": "Annuler",
   "confirmPrompt": "Continuez seulement si ce nombre est identique sur les deux appareils.",
   "confirmMatch": "Les nombres correspondent",
-  "confirmDecline": "Ils ne correspondent pas"
+  "confirmDecline": "Ils ne correspondent pas",
+  "scan": "Scanner avec la caméra",
+  "stopScan": "Arrêter la caméra",
+  "scanHint": "Pointez la caméra vers le code affiché sur le nouvel appareil.",
+  "scanDenied": "L'accès à la caméra a été refusé. Collez plutôt le code d'association.",
+  "scanUnavailable": "Aucune caméra n'est disponible. Collez plutôt le code d'association."
 }

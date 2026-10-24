@@ -20,5 +20,10 @@
   "cancel": "Cancel",
   "confirmPrompt": "Only continue if this number is identical on both devices.",
   "confirmMatch": "The numbers match",
-  "confirmDecline": "They do not match"
+  "confirmDecline": "They do not match",
+  "scan": "Scan with camera",
+  "stopScan": "Stop camera",
+  "scanHint": "Point the camera at the code on the new device.",
+  "scanDenied": "Camera access was denied. Paste the link code instead.",
+  "scanUnavailable": "No camera is available. Paste the link code instead."
 }

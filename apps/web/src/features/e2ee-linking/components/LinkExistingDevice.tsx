@@ -13,6 +13,7 @@ import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 
 import { openLinkTransport, type LinkBroadcastClient } from "../broadcast-transport";
 import styles from "../e2ee-linking.module.css";
+import { QrScanner, type ScanFailure } from "../scanner/QrScanner";
 
 type Phase = "idle" | "connecting" | "confirm" | "sending" | "done" | "error";
 
@@ -24,11 +25,13 @@ export function LinkExistingDevice({ onLinked }: { onLinked?: () => void }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [scanFailure, setScanFailure] = useState<ScanFailure | null>(null);
   const answer = useRef<((ok: boolean) => void) | null>(null);
 
-  async function connect() {
+  async function connect(source: string = text) {
     setError(null);
-    const qrText = text.trim();
+    const qrText = source.trim();
     const qr = parseLinkQr(qrText);
     if (!qr) {
       setError(t("errorInvalid"));
@@ -85,6 +88,17 @@ export function LinkExistingDevice({ onLinked }: { onLinked?: () => void }) {
     }
   }
 
+  function onScanned(decoded: string) {
+    setScanning(false);
+    setText(decoded);
+    void connect(decoded);
+  }
+
+  function onScanFailure(reason: ScanFailure) {
+    setScanning(false);
+    setScanFailure(reason);
+  }
+
   function decide(ok: boolean) {
     answer.current?.(ok);
     answer.current = null;
@@ -118,6 +132,27 @@ export function LinkExistingDevice({ onLinked }: { onLinked?: () => void }) {
       <label className={styles.meta} htmlFor="link-code">
         {t("enterCode")}
       </label>
+      {scanning ? (
+        <>
+          <p className={styles.meta}>{t("scanHint")}</p>
+          <QrScanner label={t("scanHint")} onDecode={onScanned} onFailure={onScanFailure} />
+        </>
+      ) : null}
+      <button
+        type="button"
+        disabled={phase === "connecting" || phase === "sending"}
+        onClick={() => {
+          setScanFailure(null);
+          setScanning((on) => !on);
+        }}
+      >
+        {scanning ? t("stopScan") : t("scan")}
+      </button>
+      {scanFailure ? (
+        <p role="alert" className={styles.error}>
+          {scanFailure === "denied" ? t("scanDenied") : t("scanUnavailable")}
+        </p>
+      ) : null}
       <textarea
         id="link-code"
         className={styles.field}

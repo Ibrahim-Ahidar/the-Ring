@@ -40,3 +40,11 @@
 .error {
   color: var(--color-danger);
 }
+
+.video {
+  inline-size: 100%;
+  max-block-size: 20rem;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  object-fit: cover;
+}
