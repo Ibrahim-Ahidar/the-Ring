@@ -7,6 +7,9 @@ import {
   ENCRYPTED_ENVELOPE_KIND,
   encodeOlmPayload,
   encodePlainEnvelope,
+  type ControlBodies,
+  type ControlEnvelope,
+  type ControlKind,
   type PlainEnvelope,
 } from "./plain-envelope";
 
@@ -77,4 +80,41 @@ export async function sendEncrypted(args: {
     return err("messaging.forbidden");
   }
   return sent;
+}
+
+/**
+ * `sendControl(conversationId, kind, body)`: wraps a Control Message in a fresh envelope and
+ * fans it out exactly like a text (peer Devices plus my own other Devices).
+ */
+export function createControlSender(args: {
+  client: RpcClient;
+  sessions: OlmSessionManager;
+  userId: string;
+  deviceId?: string;
+  deriveId(messageId: string, deviceId: string): string;
+  newId(): string;
+  now?: () => Date;
+}) {
+  return async function sendControl<K extends ControlKind>(
+    conversationId: string,
+    kind: K,
+    body: ControlBodies[K],
+  ): Promise<Result<SendResult[]>> {
+    const envelope = {
+      v: 1,
+      id: args.newId(),
+      conversationId,
+      sentAt: (args.now?.() ?? new Date()).toISOString(),
+      kind,
+      body,
+    } as ControlEnvelope;
+    return sendEncrypted({
+      client: args.client,
+      sessions: args.sessions,
+      userId: args.userId,
+      deviceId: args.deviceId,
+      body: envelope,
+      deriveId: args.deriveId,
+    });
+  };
 }

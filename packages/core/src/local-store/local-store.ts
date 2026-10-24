@@ -33,6 +33,15 @@ export interface LocalStore {
     opts?: { limit?: number; before?: MessagePageCursor | null },
   ): Promise<MessageRow[]>;
   countMessages(conversationId: string): Promise<number>;
+  /**
+   * Local unread count: other people's visible messages in the conversation sent after
+   * `afterSentAt` (null counts all). Computed from stored messages only.
+   */
+  countUnread(args: {
+    conversationId: string;
+    selfUserId: string;
+    afterSentAt: string | null;
+  }): Promise<number>;
   /** FTS5 search over message bodies: ranked, with highlighted snippets. */
   searchMessages(opts: MessageSearchOptions): Promise<MessageSearchHit[]>;
 
@@ -51,6 +60,7 @@ export interface LocalStore {
   getKv(key: string): Promise<string | null>;
   setKv(key: string, value: string): Promise<void>;
   listKv(prefix: string): Promise<{ key: string; value: string }[]>;
+  deleteKv(key: string): Promise<void>;
 
   /** Drops all user data (logout). The schema is recreated empty. */
   wipe(): Promise<void>;
@@ -190,6 +200,19 @@ export function createSqlLocalStore(db: SqlExecutor): LocalStore {
       return Number(rows[0]?.n ?? 0);
     },
 
+    async countUnread({ conversationId, selfUserId, afterSentAt }) {
+      const rows = await db.query<{ n: number }>(
+        `SELECT COUNT(*) AS n FROM messages
+         WHERE conversation_id = ? AND deleted = 0
+           AND (sender_user_id IS NULL OR sender_user_id <> ?)
+           AND (status IS NULL OR status NOT IN ('pending', 'failed'))
+           AND kind IN ('text', 'media')
+           AND (? IS NULL OR sent_at > ?)`,
+        [conversationId, selfUserId, afterSentAt, afterSentAt],
+      );
+      return Number(rows[0]?.n ?? 0);
+    },
+
     searchMessages(opts) {
       return searchLocalMessages(db, opts);
     },
@@ -269,6 +292,10 @@ export function createSqlLocalStore(db: SqlExecutor): LocalStore {
         `SELECT key, value FROM kv WHERE key LIKE ? ESCAPE '\\' ORDER BY key`,
         [escaped + "%"],
       );
+    },
+
+    async deleteKv(key) {
+      await db.exec(`DELETE FROM kv WHERE key = ?`, [key]);
     },
 
     async wipe() {

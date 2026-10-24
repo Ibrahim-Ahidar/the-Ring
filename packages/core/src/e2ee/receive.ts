@@ -1,16 +1,29 @@
-import type { LocalStore, MessageRow } from "../local-store";
+import type { MessageRow } from "../local-store";
 import type { MailboxEnvelope } from "../mailbox/types";
 import type { OlmSessionManager } from "./olm-sessions";
 import {
   ENCRYPTED_ENVELOPE_KIND,
   decodeOlmPayload,
   decodePlainEnvelope,
+  isControlEnvelope,
   type PlainEnvelope,
+  type TextEnvelope,
 } from "./plain-envelope";
+import { applyControl, replayQueuedControls, type ControlOutcome, type ControlStore } from "./controls";
 
 export type EncryptedHandlerOptions = {
   sessions: OlmSessionManager;
-  store: Pick<LocalStore, "upsertMessages">;
+  store: ControlStore;
+  /** The signed-in user. Needed to tell my own Devices from the peer and to send receipts. */
+  selfUserId?: string;
+  /** Sends a control (used for the automatic delivery receipt); failures are swallowed. */
+  sendControl?(
+    conversationId: string,
+    kind: "receipt",
+    body: { messageIds: string[] },
+  ): Promise<unknown>;
+  /** Called after a control was applied, queued or dropped. */
+  onControl?(p: PlainEnvelope, outcome: ControlOutcome): void;
   /** Called after a message was written, for UI refresh. */
   onMessage?(row: MessageRow): void;
   /** Called for an envelope that could not be decrypted or was malformed (dropped). */
@@ -20,7 +33,7 @@ export type EncryptedHandlerOptions = {
 
 /** Maps a decrypted body to its local row. `sender_user_id` comes from the server envelope. */
 export function plainToRow(
-  p: PlainEnvelope,
+  p: TextEnvelope,
   e: Pick<MailboxEnvelope, "senderUserId" | "senderDeviceId">,
   receivedAt: string,
 ): MessageRow {
@@ -66,8 +79,28 @@ export function createEncryptedEnvelopeHandler(
     if (e.conversationId && e.conversationId !== plain.conversationId) {
       return reject("e2ee.mismatch");
     }
+    const store = opts.store;
+    const selfUserId = opts.selfUserId ?? "";
+    if (isControlEnvelope(plain)) {
+      const outcome = await applyControl(store, plain, {
+        selfUserId,
+        senderUserId: e.senderUserId ?? null,
+      });
+      opts.onControl?.(plain, outcome);
+      return;
+    }
+    // A redelivered text must not overwrite a row that was since edited or deleted.
+    if (await store.getMessage(plain.id)) return;
     const row = plainToRow(plain, e, (opts.now?.() ?? new Date()).toISOString());
-    await opts.store.upsertMessages([row]);
+    await store.upsertMessages([row]);
+    await replayQueuedControls(store, plain.id, selfUserId);
     opts.onMessage?.(row);
+    if (opts.sendControl && selfUserId && e.senderUserId && e.senderUserId !== selfUserId) {
+      try {
+        await opts.sendControl(plain.conversationId, "receipt", { messageIds: [plain.id] });
+      } catch {
+        // a lost receipt only delays the double tick; never fail the drain for it
+      }
+    }
   };
 }

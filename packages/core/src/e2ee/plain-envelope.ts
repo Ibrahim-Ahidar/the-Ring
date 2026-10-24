@@ -1,16 +1,96 @@
 import { padPlaintext } from "./padding";
 
-/** The decrypted body of a message envelope (spec 6.2). */
-export type PlainEnvelope = {
+type EnvelopeBase = {
   v: 1;
-  /** Client-generated message id (the outbox client id); the local row id. */
+  /** Client-generated id; for text it is the message id and the local row id. */
   id: string;
   conversationId: string;
   sentAt: string;
+};
+
+export type TextEnvelope = EnvelopeBase & {
   kind: "text";
   body: string;
   replyToId?: string | null;
 };
+
+/** Control Message bodies (spec 5.1): every one names the message(s) it is about. */
+export type ControlBodies = {
+  reaction: { messageId: string; emoji: string; remove?: boolean };
+  edit: { messageId: string; body: string };
+  delete: { messageId: string };
+  receipt: { messageIds: string[] };
+  read: { messageIds: string[] };
+  audio_play: { messageId: string };
+  pin: { messageId: string; pinned: boolean };
+};
+
+export type ControlKind = keyof ControlBodies;
+
+export type ControlEnvelope = {
+  [K in ControlKind]: EnvelopeBase & { kind: K; body: ControlBodies[K] };
+}[ControlKind];
+
+/** The decrypted body of a message envelope (spec 5.1 / 6.2). */
+export type PlainEnvelope = TextEnvelope | ControlEnvelope;
+
+export const CONTROL_KINDS: readonly ControlKind[] = [
+  "reaction",
+  "edit",
+  "delete",
+  "receipt",
+  "read",
+  "audio_play",
+  "pin",
+];
+
+export function isControlKind(kind: string): kind is ControlKind {
+  return (CONTROL_KINDS as readonly string[]).includes(kind);
+}
+
+export function isControlEnvelope(p: PlainEnvelope): p is ControlEnvelope {
+  return p.kind !== "text";
+}
+
+const MAX_IDS = 500;
+const MAX_EMOJI = 32;
+const MAX_EDIT_BODY = 20_000;
+
+const str = (v: unknown): v is string => typeof v === "string" && v.length > 0;
+
+function parseControlBody(kind: ControlKind, b: unknown): ControlBodies[ControlKind] | null {
+  if (!b || typeof b !== "object" || Array.isArray(b)) return null;
+  const o = b as Record<string, unknown>;
+  switch (kind) {
+    case "reaction":
+      if (!str(o.messageId) || !str(o.emoji) || o.emoji.length > MAX_EMOJI) return null;
+      if (o.remove !== undefined && typeof o.remove !== "boolean") return null;
+      return { messageId: o.messageId, emoji: o.emoji, remove: o.remove === true };
+    case "edit":
+      if (!str(o.messageId) || typeof o.body !== "string" || o.body.length > MAX_EDIT_BODY) {
+        return null;
+      }
+      return { messageId: o.messageId, body: o.body };
+    case "receipt":
+    case "read":
+      if (
+        !Array.isArray(o.messageIds) ||
+        o.messageIds.length === 0 ||
+        o.messageIds.length > MAX_IDS ||
+        !o.messageIds.every(str)
+      ) {
+        return null;
+      }
+      return { messageIds: [...new Set(o.messageIds as string[])] };
+    case "pin":
+      if (!str(o.messageId) || typeof o.pinned !== "boolean") return null;
+      return { messageId: o.messageId, pinned: o.pinned };
+    case "delete":
+    case "audio_play":
+      if (!str(o.messageId)) return null;
+      return { messageId: o.messageId };
+  }
+}
 
 /** Mailbox envelope `kind` for an Olm-encrypted message (type 0/1 is inside the payload). */
 export const ENCRYPTED_ENVELOPE_KIND = 2;
@@ -19,7 +99,7 @@ export function encodePlainEnvelope(p: PlainEnvelope): string {
   return padPlaintext(JSON.stringify(p));
 }
 
-/** Parses and validates a decrypted body; returns null when it is not a v1 text envelope. */
+/** Strictly parses a decrypted body; returns null for anything malformed or unknown. */
 export function decodePlainEnvelope(text: string): PlainEnvelope | null {
   let v: unknown;
   try {
@@ -27,19 +107,30 @@ export function decodePlainEnvelope(text: string): PlainEnvelope | null {
   } catch {
     return null;
   }
-  if (!v || typeof v !== "object") return null;
+  if (!v || typeof v !== "object" || Array.isArray(v)) return null;
   const o = v as Record<string, unknown>;
   if (
     o.v !== 1 ||
-    o.kind !== "text" ||
-    typeof o.id !== "string" ||
-    typeof o.conversationId !== "string" ||
+    typeof o.kind !== "string" ||
+    !str(o.id) ||
+    !str(o.conversationId) ||
     typeof o.sentAt !== "string" ||
-    typeof o.body !== "string"
+    Number.isNaN(Date.parse(o.sentAt))
   ) {
     return null;
   }
-  return o as unknown as PlainEnvelope;
+  const base = { v: 1 as const, id: o.id, conversationId: o.conversationId, sentAt: o.sentAt };
+  if (o.kind === "text") {
+    if (typeof o.body !== "string") return null;
+    if (o.replyToId !== undefined && o.replyToId !== null && typeof o.replyToId !== "string") {
+      return null;
+    }
+    return { ...base, kind: "text", body: o.body, replyToId: (o.replyToId as string | null) ?? null };
+  }
+  if (!isControlKind(o.kind)) return null;
+  const body = parseControlBody(o.kind, o.body);
+  if (!body) return null;
+  return { ...base, kind: o.kind, body } as ControlEnvelope;
 }
 
 /** Wire form of an Olm message inside the mailbox payload: JSON {t, b} as UTF-8. */
