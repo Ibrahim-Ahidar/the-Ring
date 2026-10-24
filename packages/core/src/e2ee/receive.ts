@@ -13,7 +13,14 @@ import {
   type PlainEnvelope,
   type TextEnvelope,
 } from "./plain-envelope";
-import { applyControl, replayQueuedControls, type ControlOutcome, type ControlStore } from "./controls";
+import {
+  applyControl,
+  replayQueuedControls,
+  type ControlOutcome,
+  type ControlStore,
+} from "./controls";
+
+const MAX_EARLY_GROUP_MESSAGES = 500;
 
 export type EncryptedHandlerOptions = {
   sessions: OlmSessionManager;
@@ -21,7 +28,22 @@ export type EncryptedHandlerOptions = {
   /** Megolm sessions; without them group envelopes and `sender_key` are rejected. */
   groups?: GroupSessionManager;
   /** Receives a `group_state_key` from an Olm-authenticated Device. */
-  onStateKey?(conversationId: string, key: string, version: number, senderDeviceId: string): Promise<void>;
+  onStateKey?(
+    conversationId: string,
+    key: string,
+    version: number,
+    senderDeviceId: string,
+  ): Promise<void>;
+  /**
+   * True when `userId` is an owner or admin of the conversation (the put_group_state rule).
+   * A `group_state_key` is accepted only from such a user; without this lookup it is dropped.
+   */
+  isConversationAdmin?(
+    conversationId: string,
+    userId: string,
+  ): Promise<boolean>;
+  /** Called when a group message arrived before its Megolm session key and was queued. */
+  onQueued?(envelope: MailboxEnvelope): void;
   /** The signed-in user. Needed to tell my own Devices from the peer and to send receipts. */
   selfUserId?: string;
   /** Sends a control (used for the automatic delivery receipt); failures are swallowed. */
@@ -70,7 +92,12 @@ export function plainToRow(
 export function createEncryptedEnvelopeHandler(
   opts: EncryptedHandlerOptions,
 ): (e: MailboxEnvelope) => Promise<void> {
-  return async (e) => {
+  // Group messages whose Megolm sender_key has not arrived yet, by Device + conversation +
+  // session. In memory and bounded: a lost entry only costs a message the server redelivers.
+  const early = new Map<string, MailboxEnvelope[]>();
+  let earlyCount = 0;
+  const earlyKey = (d: string, c: string, s: string) => `${d}|${c}|${s}`;
+  const handle = async (e: MailboxEnvelope): Promise<void> => {
     const reject = (reason: string) => opts.onRejected?.(e, reason);
     if (!e.senderDeviceId) return reject("e2ee.unsupported");
     let text: string;
@@ -80,10 +107,33 @@ export function createEncryptedEnvelopeHandler(
       const g = decodeGroupPayload(e.payload);
       if (!g) return reject("e2ee.malformed");
       try {
-        text = await opts.groups.decrypt(e.senderDeviceId, e.conversationId, g.sessionId, g.ciphertext);
+        text = await opts.groups.decrypt(
+          e.senderDeviceId,
+          e.conversationId,
+          g.sessionId,
+          g.ciphertext,
+        );
       } catch (err) {
         const m = err instanceof Error ? err.message : "";
-        return reject(m === "e2ee.no_group_key" || m === "e2ee.mismatch" ? m : "e2ee.decrypt_failed");
+        if (
+          m === "e2ee.no_group_key" &&
+          earlyCount < MAX_EARLY_GROUP_MESSAGES
+        ) {
+          const k = earlyKey(e.senderDeviceId, e.conversationId, g.sessionId);
+          const q = early.get(k) ?? [];
+          if (!q.some((x) => x.id === e.id)) {
+            q.push(e);
+            earlyCount++;
+          }
+          early.set(k, q);
+          opts.onQueued?.(e);
+          return;
+        }
+        return reject(
+          m === "e2ee.no_group_key" || m === "e2ee.mismatch"
+            ? m
+            : "e2ee.decrypt_failed",
+        );
       }
       viaGroup = true;
     } else if (e.kind === ENCRYPTED_ENVELOPE_KIND) {
@@ -110,8 +160,34 @@ export function createEncryptedEnvelopeHandler(
           plain.body.sessionKey,
         );
         if (!okKey) return reject("e2ee.bad_key");
+        const k = earlyKey(
+          e.senderDeviceId,
+          plain.conversationId,
+          plain.body.sessionId,
+        );
+        const waiting = early.get(k);
+        if (waiting) {
+          early.delete(k);
+          earlyCount -= waiting.length;
+          for (const w of waiting) await handle(w);
+        }
       } else {
-        await opts.onStateKey?.(plain.conversationId, plain.body.key, plain.body.version, e.senderDeviceId);
+        if (
+          !e.senderUserId ||
+          !opts.isConversationAdmin ||
+          !(await opts.isConversationAdmin(
+            plain.conversationId,
+            e.senderUserId,
+          ))
+        ) {
+          return reject("e2ee.not_admin");
+        }
+        await opts.onStateKey?.(
+          plain.conversationId,
+          plain.body.key,
+          plain.body.version,
+          e.senderDeviceId,
+        );
       }
       return;
     }
@@ -131,16 +207,28 @@ export function createEncryptedEnvelopeHandler(
     }
     // A redelivered text must not overwrite a row that was since edited or deleted.
     if (await store.getMessage(plain.id)) return;
-    const row = plainToRow(plain, e, (opts.now?.() ?? new Date()).toISOString());
+    const row = plainToRow(
+      plain,
+      e,
+      (opts.now?.() ?? new Date()).toISOString(),
+    );
     await store.upsertMessages([row]);
     await replayQueuedControls(store, plain.id, selfUserId);
     opts.onMessage?.(row);
-    if (opts.sendControl && selfUserId && e.senderUserId && e.senderUserId !== selfUserId) {
+    if (
+      opts.sendControl &&
+      selfUserId &&
+      e.senderUserId &&
+      e.senderUserId !== selfUserId
+    ) {
       try {
-        await opts.sendControl(plain.conversationId, "receipt", { messageIds: [plain.id] });
+        await opts.sendControl(plain.conversationId, "receipt", {
+          messageIds: [plain.id],
+        });
       } catch {
         // a lost receipt only delays the double tick; never fail the drain for it
       }
     }
   };
+  return handle;
 }
