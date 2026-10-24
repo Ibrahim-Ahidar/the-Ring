@@ -21,7 +21,7 @@ export function DevicesSettings({ devices }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { supabase, rpc, announce } = useDevicesSession();
+  const { supabase, rpc } = useDevicesSession();
   const [requireApproval, setRequireApproval] = useState(true);
 
   useEffect(() => {
@@ -73,7 +73,6 @@ export function DevicesSettings({ devices }: Props) {
       return;
     }
     setRemoved((prev) => new Set(prev).add(device.id));
-    announce("device_changed");
     router.refresh();
   }
 

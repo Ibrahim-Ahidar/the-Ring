@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { isE2eeEnabled } from "@pulse/core";
 
-import { classifyChange } from "../devices-changed";
+import { classifyChange, isChangeFor } from "../devices-changed";
 import styles from "../e2ee-devices.module.css";
 import { useDevicesSession } from "../hooks/use-devices-session";
 import { useDevicesTopic } from "../hooks/use-devices-topic";
@@ -15,7 +15,7 @@ type Props = { otherUserId?: string };
 
 function Notice({ otherUserId }: { otherUserId: string }) {
   const t = useTranslations("e2ee-devices");
-  const { supabase, rpc } = useDevicesSession();
+  const { supabase, rpc, userId } = useDevicesSession();
   const version = useRef<number | undefined>(undefined);
   const [kind, setKind] = useState<"new_device" | "security_code_changed" | null>(null);
 
@@ -29,7 +29,8 @@ function Notice({ otherUserId }: { otherUserId: string }) {
     };
   }, [rpc, otherUserId]);
 
-  useDevicesTopic(supabase, otherUserId, () => {
+  useDevicesTopic(supabase, userId, (payload) => {
+    if (!isChangeFor(payload, otherUserId)) return;
     void accountKeyVersions(rpc, [otherUserId]).then((res) => {
       if (!res.ok) return;
       const after = res.value[0]?.version;

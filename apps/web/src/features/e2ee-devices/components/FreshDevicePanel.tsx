@@ -21,7 +21,7 @@ type Phase = "idle" | "waiting" | "approved" | "denied" | "error";
 export function FreshDevicePanel() {
   const t = useTranslations("e2ee-devices");
   const router = useRouter();
-  const { rpc, announce } = useDevicesSession();
+  const { rpc } = useDevicesSession();
   const [phase, setPhase] = useState<Phase>("idle");
   const [confirmLost, setConfirmLost] = useState(false);
   const cancelled = useRef(false);
@@ -52,7 +52,6 @@ export function FreshDevicePanel() {
       setPhase("error");
       return;
     }
-    announce(lost ? "security_code_changed" : "device_changed");
     if (started.value !== "pending") {
       setPhase("approved");
       router.refresh();

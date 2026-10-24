@@ -21,12 +21,12 @@ export type DevicesChangeKind = "device_changed" | "security_code_changed";
 export type DevicesChangedPayload = {
   userId: string;
   kind: DevicesChangeKind;
-  /** Random id of the tab that made the change, so it does not alert itself. */
+  /** Unused: the server sends the event, so no tab can name itself as the origin. */
   origin: string;
   at: number;
 };
 
-/** Broadcast topic carrying one user's device-list changes. */
+/** Private Broadcast topic a user listens on. The server sends here for the user and their contacts. */
 export function devicesTopic(userId: string): string {
   return `devices:${userId}`;
 }
@@ -54,42 +54,9 @@ export function classifyChange(
     : "new_device";
 }
 
-type BroadcastChannel = {
-  subscribe(cb?: (status: string) => void): unknown;
-  send(msg: { type: "broadcast"; event: string; payload: unknown }): Promise<unknown>;
-};
-export type BroadcastClient = {
-  channel(topic: string): BroadcastChannel;
-  removeChannel(channel: unknown): unknown;
-};
-
-/** Sends one devices_changed event on the user's topic, then leaves the channel. */
-export function announceDevicesChanged(
-  client: BroadcastClient,
-  payload: DevicesChangedPayload,
-): Promise<boolean> {
-  return new Promise((resolve) => {
-    const channel = client.channel(devicesTopic(payload.userId));
-    let settled = false;
-    const finish = (sent: boolean) => {
-      if (settled) return;
-      settled = true;
-      void client.removeChannel(channel);
-      resolve(sent);
-    };
-    channel.subscribe((status) => {
-      if (status === "SUBSCRIBED") {
-        channel
-          .send({ type: "broadcast", event: DEVICES_CHANGED_EVENT, payload })
-          .then(
-            () => finish(true),
-            () => finish(false),
-          );
-      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-        finish(false);
-      }
-    });
-  });
+/** The server sends every change to our own topic; keep only those about this user. */
+export function isChangeFor(payload: DevicesChangedPayload, userId: string | null | undefined): boolean {
+  return !!userId && payload.userId === userId;
 }
 
 export type FreshDeviceInfo = { deviceId: string; name: string; platform: string };

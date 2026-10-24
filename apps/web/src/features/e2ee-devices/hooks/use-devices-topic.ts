@@ -10,7 +10,7 @@ import {
   type DevicesChangedPayload,
 } from "../devices-changed";
 
-/** Listens for devices_changed on one user's topic. */
+/** Listens for devices_changed on the signed-in user's own private topic (server-sent). */
 export function useDevicesTopic(
   supabase: SupabaseClient,
   userId: string | null | undefined,
@@ -23,7 +23,7 @@ export function useDevicesTopic(
   useEffect(() => {
     if (!userId) return;
     const channel = supabase
-      .channel(devicesTopic(userId))
+      .channel(devicesTopic(userId), { config: { private: true } })
       .on("broadcast", { event: DEVICES_CHANGED_EVENT }, (msg) => {
         const parsed = parseDevicesChanged((msg as { payload?: unknown }).payload);
         if (parsed) handler.current(parsed);

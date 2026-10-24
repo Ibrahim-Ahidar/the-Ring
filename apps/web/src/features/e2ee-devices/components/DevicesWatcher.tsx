@@ -7,9 +7,9 @@ import { isE2eeEnabled } from "@pulse/core";
 
 import { openAccountKeyStore } from "@/platform/crypto/account-key";
 
-import { allowPendingDevice } from "../devices-changed";
+import { allowPendingDevice, isChangeFor } from "../devices-changed";
 import styles from "../e2ee-devices.module.css";
-import { TAB_ORIGIN, useDevicesSession } from "../hooks/use-devices-session";
+import { useDevicesSession } from "../hooks/use-devices-session";
 import { useDevicesTopic } from "../hooks/use-devices-topic";
 import { denyDevice, listPendingDevices, type PendingDevice } from "../service";
 
@@ -17,12 +17,13 @@ const POLL_MS = 10_000;
 
 function Watcher() {
   const t = useTranslations("e2ee-devices");
-  const { supabase, rpc, userId, announce } = useDevicesSession();
+  const { supabase, rpc, userId } = useDevicesSession();
   const [pending, setPending] = useState<PendingDevice[]>([]);
   const [alert, setAlert] = useState(false);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const alive = useRef(true);
+  const decidedAt = useRef(0);
 
   const refresh = useCallback(async () => {
     const res = await listPendingDevices(rpc);
@@ -41,8 +42,10 @@ function Watcher() {
 
   // Our own topic: our device list changed. Refresh, and alert unless this tab did it.
   useDevicesTopic(supabase, userId, (payload) => {
+    if (!isChangeFor(payload, userId)) return;
     void refresh();
-    if (payload.origin !== TAB_ORIGIN) setAlert(true);
+    // Skip the alert for a change this tab just made itself.
+    if (Date.now() - decidedAt.current > 5_000) setAlert(true);
   });
 
   async function decide(device: PendingDevice, allow: boolean) {
@@ -56,7 +59,7 @@ function Watcher() {
       setError(true);
       return;
     }
-    announce("device_changed");
+    decidedAt.current = Date.now();
     await refresh();
   }
 
