@@ -10,12 +10,15 @@
   "done": "Linked. {count} messages moved.",
   "enterCode": "On the signed-in device, paste the link code from the new device:",
   "connect": "Connect",
-  "confirmTitle": "Does this number match the new device? {code}",
+  "confirmTitle": "Confirm the code",
   "confirmYes": "It matches, link it",
   "confirmNo": "Cancel",
   "sent": "Device linked. History sent.",
   "errorInvalid": "That link code is not valid.",
   "errorNoKey": "This device cannot link others yet.",
   "errorUnexpected": "Linking failed. Try again.",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "confirmPrompt": "Only continue if this number is identical on both devices.",
+  "confirmMatch": "The numbers match",
+  "confirmDecline": "They do not match"
 }

@@ -10,12 +10,15 @@
   "done": "Associé. {count} messages transférés.",
   "enterCode": "Sur l'appareil connecté, collez le code d'association du nouvel appareil :",
   "connect": "Connecter",
-  "confirmTitle": "Ce nombre est-il identique sur le nouvel appareil ? {code}",
+  "confirmTitle": "Confirmer le code",
   "confirmYes": "Identique, associer",
   "confirmNo": "Annuler",
   "sent": "Appareil associé. Historique envoyé.",
   "errorInvalid": "Ce code d'association n'est pas valide.",
   "errorNoKey": "Cet appareil ne peut pas encore en associer d'autres.",
   "errorUnexpected": "L'association a échoué. Réessayez.",
-  "cancel": "Annuler"
+  "cancel": "Annuler",
+  "confirmPrompt": "Continuez seulement si ce nombre est identique sur les deux appareils.",
+  "confirmMatch": "Les nombres correspondent",
+  "confirmDecline": "Ils ne correspondent pas"
 }

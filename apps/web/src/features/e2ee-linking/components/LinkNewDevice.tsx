@@ -28,8 +28,22 @@ export function LinkNewDevice() {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [count, setCount] = useState(0);
   const close = useRef<(() => void) | null>(null);
+  const decide = useRef<((ok: boolean) => void) | null>(null);
+  const [asking, setAsking] = useState(false);
 
-  useEffect(() => () => close.current?.(), []);
+  useEffect(
+    () => () => {
+      decide.current?.(false);
+      close.current?.();
+    },
+    [],
+  );
+
+  function answer(ok: boolean) {
+    setAsking(false);
+    decide.current?.(ok);
+    decide.current = null;
+  }
 
   async function start() {
     setPhase("waiting");
@@ -61,6 +75,11 @@ export function LinkNewDevice() {
           signingKey: me.signing_key,
         },
         onSafetyCode: (c) => setCode(c),
+        confirmSafetyCode: () =>
+          new Promise<boolean>((resolve) => {
+            decide.current = resolve;
+            setAsking(true);
+          }),
         onProgress: (p) => {
           setPhase("linking");
           setProgress({ done: p.done, total: p.total });
@@ -116,6 +135,17 @@ export function LinkNewDevice() {
             </>
           ) : null}
           {code ? <p className={styles.code}>{t("safetyCode", { code })}</p> : null}
+          {asking ? (
+            <div role="group" aria-label={t("confirmTitle")}>
+              <p className={styles.meta}>{t("confirmPrompt")}</p>
+              <button type="button" onClick={() => answer(true)}>
+                {t("confirmMatch")}
+              </button>{" "}
+              <button type="button" onClick={() => answer(false)}>
+                {t("confirmDecline")}
+              </button>
+            </div>
+          ) : null}
           <p role="status" className={styles.meta}>
             {progress
               ? t("progress", { done: progress.done, total: progress.total })

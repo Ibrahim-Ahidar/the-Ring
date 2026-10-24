@@ -4,6 +4,8 @@
  * bridge and imported as a non-extractable AES-GCM key. Web: a non-extractable AES-GCM
  * CryptoKey generated once and kept in IndexedDB (the raw bytes never exist in JS).
  */
+import { fromB64 } from "@pulse/core/linking";
+
 import { getDesktopBridge } from "../desktop-bridge";
 import { idbKv } from "./state-store";
 
@@ -25,20 +27,13 @@ export type LocalKeyDeps = {
   desktopKey?: () => Promise<string | null>;
 };
 
-function b64ToBytes(s: string): Uint8Array<ArrayBuffer> {
-  const bin = atob(s);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
-
 export async function getLocalStorageKey(deps: LocalKeyDeps = {}): Promise<CryptoKey> {
   const bridge = getDesktopBridge();
   const desktopKey = deps.desktopKey ?? (bridge ? () => bridge.getLocalStorageKey() : undefined);
   if (desktopKey) {
     const raw = await desktopKey();
     if (raw) {
-      return crypto.subtle.importKey("raw", b64ToBytes(raw), "AES-GCM", false, [
+      return crypto.subtle.importKey("raw", fromB64(raw) as Uint8Array<ArrayBuffer>, "AES-GCM", false, [
         "encrypt",
         "decrypt",
       ]);

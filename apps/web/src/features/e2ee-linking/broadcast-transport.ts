@@ -1,4 +1,4 @@
-import type { LinkFrame, LinkTransport } from "@pulse/core/linking";
+import { type LinkFrame, type LinkTransport, parseLinkFrame } from "@pulse/core/linking";
 
 type Channel = {
   on(type: "broadcast", filter: { event: string }, cb: (msg: { payload: unknown }) => void): Channel;
@@ -11,6 +11,8 @@ export type LinkBroadcastClient = {
 };
 
 const FRAME_EVENT = "link";
+/** Frames kept for a listener that has not attached yet; the rest are dropped. */
+export const MAX_EARLY_FRAMES = 64;
 
 export type OpenedTransport = { transport: LinkTransport; close(): void };
 
@@ -29,8 +31,11 @@ export function openLinkTransport(
     const early: LinkFrame[] = [];
     let ready = false;
     channel.on("broadcast", { event: FRAME_EVENT }, ({ payload }) => {
-      const frame = payload as LinkFrame;
-      if (listeners.size === 0) early.push(frame);
+      const frame = parseLinkFrame(payload);
+      if (!frame) return; // malformed or oversized: never reaches the protocol
+      if (listeners.size === 0) {
+        if (early.length < MAX_EARLY_FRAMES) early.push(frame);
+      }
       else for (const l of [...listeners]) l(frame);
     });
     const transport: LinkTransport = {
