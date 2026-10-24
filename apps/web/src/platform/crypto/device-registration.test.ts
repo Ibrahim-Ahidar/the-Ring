@@ -126,3 +126,23 @@ describe("registerThisDevice", () => {
     expect(calls).toHaveLength(1);
   });
 });
+
+describe("registerThisDevice with an existing identity (issue #251)", () => {
+  it("reuses the engine's account instead of creating a new one", async () => {
+    const { client, calls } = fakeRpc(0);
+    const { engine, log } = fakeEngine();
+    (engine as unknown as { identityKeys: () => Promise<unknown> }).identityKeys = async () => ({
+      curve25519: "OLD-CURVE",
+      ed25519: "OLD-ED",
+    });
+    const res = await registerThisDevice(
+      client,
+      engine,
+      { deviceId: "dev", name: "Laptop", platform: "web" },
+      memoryKeys(),
+    );
+    expect(res.ok).toBe(true);
+    expect(log).not.toContain("createAccount");
+    expect(calls[0]!.args).toMatchObject({ p_identity_key: "OLD-CURVE", p_signing_key: "OLD-ED" });
+  });
+});

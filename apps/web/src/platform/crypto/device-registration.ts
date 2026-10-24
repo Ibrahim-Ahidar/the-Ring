@@ -55,7 +55,7 @@ export async function registerThisDevice(
   info: DeviceInfo,
   accountKeys: AccountKeyStore,
 ): Promise<Result<number>> {
-  const keys = await engine.createAccount();
+  const keys = await ensureAccount(engine);
   // The Account Signing Key is its own key (spec 4); reuse this install's seed if it has one.
   const existing = await accountKeys.load();
   const seed = existing ?? generateAccountSeed();
@@ -71,7 +71,25 @@ export async function registerThisDevice(
   });
   if (!reg.ok) return err(reg.error.code);
   if (!existing) await accountKeys.save(seed);
-  const counted = await callRpc<number>(client, "one_time_key_count", { p_device_id: info.deviceId });
+  return publishKeys(client, engine, info.deviceId);
+}
+
+/** Tops the device up to the full pool and publishes a fallback key (first publication). */
+export async function publishKeys(
+  client: RpcClient,
+  engine: CryptoEngine,
+  deviceId: string,
+): Promise<Result<number>> {
+  const counted = await callRpc<number>(client, "one_time_key_count", { p_device_id: deviceId });
   if (!counted.ok) return counted;
-  return uploadFresh(client, engine, info.deviceId, ONE_TIME_KEY_TARGET - counted.value, true);
+  return uploadFresh(client, engine, deviceId, ONE_TIME_KEY_TARGET - counted.value, true);
+}
+
+/** The engine's identity when it already has an account; only a blank engine creates one. */
+export async function ensureAccount(engine: CryptoEngine) {
+  try {
+    return await engine.identityKeys();
+  } catch {
+    return engine.createAccount();
+  }
 }

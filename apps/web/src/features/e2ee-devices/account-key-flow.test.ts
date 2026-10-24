@@ -13,6 +13,11 @@ function memoryKeys(initial: Uint8Array | null = null): AccountKeyStore {
 
 const engine = {
   createAccount: async () => ({ curve25519: "CURVE", ed25519: "ED" }),
+  generateOneTimeKeys: async () => undefined,
+  generateFallbackKey: async () => undefined,
+  oneTimeKeys: async () => ({}),
+  fallbackKey: async () => ({}),
+  markKeysAsPublished: async () => undefined,
 } as unknown as CryptoEngine;
 
 function rpcReturning(outcome: string) {

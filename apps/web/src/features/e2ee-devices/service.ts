@@ -1,4 +1,4 @@
-import { callRpc, type Result, type RpcClient } from "@pulse/core";
+import { callRpc, ok, type Result, type RpcClient } from "@pulse/core";
 
 export type E2eeDevice = {
   id: string;
@@ -117,4 +117,22 @@ export function accountKeyVersions(
   userIds: string[] | null,
 ): Promise<Result<AccountKeyVersion[]>> {
   return callRpc<AccountKeyVersion[]>(client, "account_key_versions", { p_user_ids: userIds });
+}
+
+export type OwnDevice = {
+  id: string;
+  name: string | null;
+  platform: string;
+  identity_key: string;
+  signing_key: string;
+  approval_status: ApprovalStatus;
+};
+
+/** This device's own row in any approval state (list_devices only shows approved ones). */
+export async function getOwnDevice(
+  client: RpcClient,
+  deviceId: string,
+): Promise<Result<OwnDevice | null>> {
+  const res = await callRpc<OwnDevice[]>(client, "get_own_device", { p_device_id: deviceId });
+  return res.ok ? ok(res.value[0] ?? null) : res;
 }

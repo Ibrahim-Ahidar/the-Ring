@@ -40,13 +40,21 @@ import { getLocalStore } from "@/platform/local-store";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 
 import { createAccountKeyStore } from "./account-key";
-import { registerThisDevice, topUpKeys } from "./device-registration";
+import { establishDevice } from "./device-bootstrap";
 import { loadEngineState, saveEngineState } from "./encrypted-state";
 import { createCryptoEngine } from "./create-engine";
 import { getLocalStorageKey } from "./local-key";
 import { IdbCryptoStateStore } from "./state-store";
 
-const DEVICE_ID_KV = "e2ee.device_id";
+/** This browser's device is waiting for another device (or a QR link) to approve it. */
+export type E2eePendingState = { state: "pending"; deviceId: string };
+
+let pending: E2eePendingState | null = null;
+
+/** Set once the runtime found its device unapproved; the Fresh Device panel reads it. */
+export function getE2eePendingState(): E2eePendingState | null {
+  return pending;
+}
 
 export type E2eeRuntime = {
   deviceId: string;
@@ -74,27 +82,26 @@ async function build(
   const accountKeys = createAccountKeyStore(states, key);
   const persist = () => saveEngineState(engine, states, key);
 
-  let deviceId = await store.getKv(DEVICE_ID_KV);
-  const restored = deviceId
-    ? await loadEngineState(engine, states, key)
-    : false;
-  if (!deviceId || !restored) {
-    deviceId = crypto.randomUUID();
-    const reg = await registerThisDevice(client, engine, {
-      deviceId,
+  const boot = await establishDevice({
+    client,
+    engine,
+    store,
+    accountKeys,
+    persist,
+    load: () => loadEngineState(engine, states, key),
+    info: (id) => ({
+      deviceId: id,
       name:
         typeof navigator === "undefined"
           ? "Browser"
           : navigator.userAgent.slice(0, 60),
       platform: "web",
-    }, accountKeys);
-    if (!reg.ok) return null;
-    await persist();
-    await store.setKv(DEVICE_ID_KV, deviceId);
-  } else {
-    const topped = await topUpKeys(client, engine, deviceId);
-    if (topped.ok) await persist();
-  }
+    }),
+    newId: () => crypto.randomUUID(),
+  });
+  pending = boot.kind === "pending" ? { state: "pending", deviceId: boot.deviceId } : null;
+  if (boot.kind !== "ready") return null;
+  const deviceId = boot.deviceId;
 
   const sessions = createOlmSessionManager({
     engine,

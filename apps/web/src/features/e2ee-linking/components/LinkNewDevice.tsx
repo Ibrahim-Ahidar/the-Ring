@@ -4,26 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import QRCode from "qrcode";
 
-import { callRpc } from "@pulse/core";
 import { linkTopic, startNewDeviceLink, type LinkTransport } from "@pulse/core/linking";
 import { asRpcClient } from "@pulse/core/rpc";
 
+import { getOwnDevice } from "@/features/e2ee-devices/service";
 import { openAccountKeyStore } from "@/platform/crypto/account-key";
+import { readDeviceId } from "@/platform/crypto/device-id";
 import { getLocalStore } from "@/platform/local-store";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 
 import { openLinkTransport, type LinkBroadcastClient } from "../broadcast-transport";
 import styles from "../e2ee-linking.module.css";
 
-const DEVICE_ID_KEY = "pulse.e2ee.deviceId";
-
-type Row = {
-  id: string;
-  name: string | null;
-  platform: string;
-  identity_key: string;
-  signing_key: string;
-};
 type Phase = "idle" | "waiting" | "linking" | "done" | "error";
 
 /** New device: shows the link QR, the safety code and the history progress. */
@@ -44,10 +36,11 @@ export function LinkNewDevice() {
     try {
       const supabase = createSupabaseBrowserClient();
       const rpc = asRpcClient(supabase);
-      const deviceId = window.localStorage.getItem(DEVICE_ID_KEY);
+      const deviceId = await readDeviceId();
       const store = await getLocalStore();
-      const listed = await callRpc<Row[]>(rpc, "list_devices", {});
-      const me = listed.ok ? listed.value.find((d) => d.id === deviceId) : undefined;
+      // list_devices only returns approved devices; a pending one reads its own row instead.
+      const own = deviceId ? await getOwnDevice(rpc, deviceId) : null;
+      const me = own?.ok ? own.value : null;
       if (!deviceId || !store || !me) throw new Error("no pending device");
       const keys = await openAccountKeyStore();
 

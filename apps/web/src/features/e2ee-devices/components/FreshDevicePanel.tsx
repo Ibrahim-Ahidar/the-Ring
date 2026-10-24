@@ -4,28 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { openAccountKeyStore } from "@/platform/crypto/account-key";
-import { createCryptoEngine } from "@/platform/crypto/create-engine";
+import { openPersistentEngine } from "@/platform/crypto/account-key";
+import { ensureDeviceId } from "@/platform/crypto/device-id";
+import { getActiveE2eeRuntime, getE2eePendingState } from "@/platform/crypto/e2ee-runtime";
 
 import { startFreshDevice, waitForApproval } from "../devices-changed";
 import styles from "../e2ee-devices.module.css";
 import { useDevicesSession } from "../hooks/use-devices-session";
 
-const DEVICE_ID_KEY = "pulse.e2ee.deviceId";
 const POLL_MS = 3000;
 const MAX_POLLS = 600;
-
-function localDeviceId(): string {
-  try {
-    const existing = window.localStorage.getItem(DEVICE_ID_KEY);
-    if (existing) return existing;
-    const created = crypto.randomUUID();
-    window.localStorage.setItem(DEVICE_ID_KEY, created);
-    return created;
-  } catch {
-    return crypto.randomUUID();
-  }
-}
 
 type Phase = "idle" | "waiting" | "approved" | "denied" | "error";
 
@@ -47,15 +35,20 @@ export function FreshDevicePanel() {
 
   async function begin(lost: boolean) {
     setPhase("idle");
-    const deviceId = localDeviceId();
-    const started = await startFreshDevice(
-      rpc,
-      createCryptoEngine(),
-      { deviceId, name: t("unnamedWeb"), platform: "web" },
-      lost,
-      await openAccountKeyStore(),
-    ).catch(() => null);
-    if (!started || !started.ok) {
+    const deviceId = await ensureDeviceId().catch(() => null);
+    const opened = deviceId ? await openPersistentEngine().catch(() => null) : null;
+    const started =
+      deviceId && opened
+        ? await startFreshDevice(
+            rpc,
+            opened.engine,
+            { deviceId, name: t("unnamedWeb"), platform: "web" },
+            lost,
+            opened.accountKeys,
+            opened.persist,
+          ).catch(() => null)
+        : null;
+    if (!deviceId || !started || !started.ok) {
       setPhase("error");
       return;
     }
@@ -65,6 +58,19 @@ export function FreshDevicePanel() {
       router.refresh();
       return;
     }
+    await wait(deviceId);
+  }
+
+  // The runtime found this device unapproved: go straight to the waiting screen.
+  useEffect(() => {
+    void getActiveE2eeRuntime().then(() => {
+      const state = getE2eePendingState();
+      if (state && !cancelled.current) void wait(state.deviceId);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function wait(deviceId: string) {
     setPhase("waiting");
     const done = await waitForApproval(rpc, deviceId, {
       intervalMs: POLL_MS,

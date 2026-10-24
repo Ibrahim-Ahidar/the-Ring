@@ -43,3 +43,23 @@ export async function openAccountKeyStore(): Promise<AccountKeyStore> {
   ]);
   return createAccountKeyStore(new IdbCryptoStateStore(), await getLocalStorageKey());
 }
+
+/** The browser's engine restored from its sealed state, with the matching saver and key store. */
+export async function openPersistentEngine() {
+  const [{ getLocalStorageKey }, { IdbCryptoStateStore }, { loadEngineState, saveEngineState }, { createCryptoEngine }] =
+    await Promise.all([
+      import("./local-key"),
+      import("./state-store"),
+      import("./encrypted-state"),
+      import("./create-engine"),
+    ]);
+  const key = await getLocalStorageKey();
+  const states = new IdbCryptoStateStore();
+  const engine = createCryptoEngine();
+  await loadEngineState(engine, states, key);
+  return {
+    engine,
+    accountKeys: createAccountKeyStore(states, key),
+    persist: () => saveEngineState(engine, states, key),
+  };
+}

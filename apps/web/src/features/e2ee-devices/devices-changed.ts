@@ -2,6 +2,7 @@ import { err, ok, type CryptoEngine, type Result, type RpcClient } from "@pulse/
 import { accountPublicKey, generateAccountSeed, signAsAccount } from "@pulse/core/linking";
 
 import type { AccountKeyStore } from "@/platform/crypto/account-key";
+import { ensureAccount, publishKeys } from "@/platform/crypto/device-registration";
 
 import {
   addFreshDevice,
@@ -100,8 +101,9 @@ export async function startFreshDevice(
   info: FreshDeviceInfo,
   lostDevices: boolean,
   accountKeys: AccountKeyStore,
+  persist: () => Promise<void> = async () => undefined,
 ): Promise<Result<FreshDeviceOutcome>> {
-  const keys = await engine.createAccount();
+  const keys = await ensureAccount(engine);
   // A candidate Account Signing Key: kept only when this device ends up holding the account key.
   const seed = generateAccountSeed();
   const signature = signAsAccount(seed, keys.curve25519);
@@ -118,7 +120,14 @@ export async function startFreshDevice(
     ? await replaceAccountKey(client, input)
     : await addFreshDevice(client, { ...input, lostDevices: false });
   // A "pending" device receives the seed later, through QR linking.
-  if (res.ok && res.value !== "pending") await accountKeys.save(seed);
+  if (!res.ok) return res;
+  if (res.value !== "pending") await accountKeys.save(seed);
+  // Keys are published for pending devices too: upload_keys only checks ownership, and the
+  // approved device needs them to reach this one once it is allowed in.
+  await persist();
+  const published = await publishKeys(client, engine, info.deviceId);
+  if (!published.ok) return err(published.error.code);
+  await persist();
   return res;
 }
 
