@@ -1,11 +1,15 @@
 import type { MessageRow } from "../local-store";
 import type { MailboxEnvelope } from "../mailbox/types";
 import type { OlmSessionManager } from "./olm-sessions";
+import type { GroupSessionManager } from "./megolm-sessions";
 import {
   ENCRYPTED_ENVELOPE_KIND,
+  GROUP_ENVELOPE_KIND,
+  decodeGroupPayload,
   decodeOlmPayload,
   decodePlainEnvelope,
   isControlEnvelope,
+  isKeyEnvelope,
   type PlainEnvelope,
   type TextEnvelope,
 } from "./plain-envelope";
@@ -14,6 +18,10 @@ import { applyControl, replayQueuedControls, type ControlOutcome, type ControlSt
 export type EncryptedHandlerOptions = {
   sessions: OlmSessionManager;
   store: ControlStore;
+  /** Megolm sessions; without them group envelopes and `sender_key` are rejected. */
+  groups?: GroupSessionManager;
+  /** Receives a `group_state_key` from an Olm-authenticated Device. */
+  onStateKey?(conversationId: string, key: string, version: number, senderDeviceId: string): Promise<void>;
   /** The signed-in user. Needed to tell my own Devices from the peer and to send receipts. */
   selfUserId?: string;
   /** Sends a control (used for the automatic delivery receipt); failures are swallowed. */
@@ -64,17 +72,49 @@ export function createEncryptedEnvelopeHandler(
 ): (e: MailboxEnvelope) => Promise<void> {
   return async (e) => {
     const reject = (reason: string) => opts.onRejected?.(e, reason);
-    if (e.kind !== ENCRYPTED_ENVELOPE_KIND || !e.senderDeviceId) return reject("e2ee.unsupported");
-    const msg = decodeOlmPayload(e.payload);
-    if (!msg) return reject("e2ee.malformed");
+    if (!e.senderDeviceId) return reject("e2ee.unsupported");
     let text: string;
-    try {
-      text = await opts.sessions.decryptFrom(e.senderDeviceId, msg);
-    } catch {
-      return reject("e2ee.decrypt_failed");
+    let viaGroup = false;
+    if (e.kind === GROUP_ENVELOPE_KIND) {
+      if (!opts.groups || !e.conversationId) return reject("e2ee.unsupported");
+      const g = decodeGroupPayload(e.payload);
+      if (!g) return reject("e2ee.malformed");
+      try {
+        text = await opts.groups.decrypt(e.senderDeviceId, e.conversationId, g.sessionId, g.ciphertext);
+      } catch (err) {
+        const m = err instanceof Error ? err.message : "";
+        return reject(m === "e2ee.no_group_key" || m === "e2ee.mismatch" ? m : "e2ee.decrypt_failed");
+      }
+      viaGroup = true;
+    } else if (e.kind === ENCRYPTED_ENVELOPE_KIND) {
+      const msg = decodeOlmPayload(e.payload);
+      if (!msg) return reject("e2ee.malformed");
+      try {
+        text = await opts.sessions.decryptFrom(e.senderDeviceId, msg);
+      } catch {
+        return reject("e2ee.decrypt_failed");
+      }
+    } else {
+      return reject("e2ee.unsupported");
     }
     const plain = decodePlainEnvelope(text);
     if (!plain) return reject("e2ee.malformed");
+    // Key material only ever arrives inside an Olm envelope, never inside a group message.
+    if (isKeyEnvelope(plain)) {
+      if (viaGroup) return reject("e2ee.malformed");
+      if (plain.kind === "sender_key") {
+        const okKey = await opts.groups?.acceptSenderKey(
+          e.senderDeviceId,
+          plain.conversationId,
+          plain.body.sessionId,
+          plain.body.sessionKey,
+        );
+        if (!okKey) return reject("e2ee.bad_key");
+      } else {
+        await opts.onStateKey?.(plain.conversationId, plain.body.key, plain.body.version, e.senderDeviceId);
+      }
+      return;
+    }
     // The server-side envelope names the conversation; it must match the decrypted body.
     if (e.conversationId && e.conversationId !== plain.conversationId) {
       return reject("e2ee.mismatch");

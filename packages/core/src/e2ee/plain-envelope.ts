@@ -31,8 +31,28 @@ export type ControlEnvelope = {
   [K in ControlKind]: EnvelopeBase & { kind: K; body: ControlBodies[K] };
 }[ControlKind];
 
+/** Key-sharing Control Messages (spec 5.4). They only ever travel inside Olm envelopes. */
+export type KeyBodies = {
+  /** Megolm session key of the sender Device for this group. */
+  sender_key: { sessionId: string; sessionKey: string };
+  /** Symmetric key (base64) that seals the group_state blob, with its version. */
+  group_state_key: { key: string; version: number };
+};
+
+export type KeyKind = keyof KeyBodies;
+
+export type KeyEnvelope = {
+  [K in KeyKind]: EnvelopeBase & { kind: K; body: KeyBodies[K] };
+}[KeyKind];
+
+export const KEY_KINDS: readonly KeyKind[] = ["sender_key", "group_state_key"];
+
+export function isKeyKind(kind: string): kind is KeyKind {
+  return (KEY_KINDS as readonly string[]).includes(kind);
+}
+
 /** The decrypted body of a message envelope (spec 5.1 / 6.2). */
-export type PlainEnvelope = TextEnvelope | ControlEnvelope;
+export type PlainEnvelope = TextEnvelope | ControlEnvelope | KeyEnvelope;
 
 export const CONTROL_KINDS: readonly ControlKind[] = [
   "reaction",
@@ -49,7 +69,11 @@ export function isControlKind(kind: string): kind is ControlKind {
 }
 
 export function isControlEnvelope(p: PlainEnvelope): p is ControlEnvelope {
-  return p.kind !== "text";
+  return p.kind !== "text" && !isKeyKind(p.kind);
+}
+
+export function isKeyEnvelope(p: PlainEnvelope): p is KeyEnvelope {
+  return isKeyKind(p.kind);
 }
 
 const MAX_IDS = 500;
@@ -94,6 +118,24 @@ function parseControlBody(kind: ControlKind, b: unknown): ControlBodies[ControlK
 
 /** Mailbox envelope `kind` for an Olm-encrypted message (type 0/1 is inside the payload). */
 export const ENCRYPTED_ENVELOPE_KIND = 2;
+/** Mailbox envelope `kind` for a Megolm group message (payload {s: sessionId, c: ciphertext}). */
+export const GROUP_ENVELOPE_KIND = 3;
+
+export function encodeGroupPayload(m: { sessionId: string; ciphertext: string }): Uint8Array {
+  return new TextEncoder().encode(JSON.stringify({ s: m.sessionId, c: m.ciphertext }));
+}
+
+export function decodeGroupPayload(
+  payload: Uint8Array,
+): { sessionId: string; ciphertext: string } | null {
+  try {
+    const o = JSON.parse(new TextDecoder().decode(payload)) as { s?: unknown; c?: unknown };
+    if (typeof o.s !== "string" || !o.s || typeof o.c !== "string" || !o.c) return null;
+    return { sessionId: o.s, ciphertext: o.c };
+  } catch {
+    return null;
+  }
+}
 
 export function encodePlainEnvelope(p: PlainEnvelope): string {
   return padPlaintext(JSON.stringify(p));
@@ -126,6 +168,18 @@ export function decodePlainEnvelope(text: string): PlainEnvelope | null {
       return null;
     }
     return { ...base, kind: "text", body: o.body, replyToId: (o.replyToId as string | null) ?? null };
+  }
+  if (isKeyKind(o.kind)) {
+    const b = o.body as Record<string, unknown> | null;
+    if (!b || typeof b !== "object" || Array.isArray(b)) return null;
+    if (o.kind === "sender_key") {
+      if (!str(b.sessionId) || !str(b.sessionKey)) return null;
+      return { ...base, kind: "sender_key", body: { sessionId: b.sessionId, sessionKey: b.sessionKey } };
+    }
+    if (!str(b.key) || typeof b.version !== "number" || !Number.isInteger(b.version) || b.version < 1) {
+      return null;
+    }
+    return { ...base, kind: "group_state_key", body: { key: b.key, version: b.version } };
   }
   if (!isControlKind(o.kind)) return null;
   const body = parseControlBody(o.kind, o.body);

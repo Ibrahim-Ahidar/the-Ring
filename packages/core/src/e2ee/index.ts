@@ -6,3 +6,6 @@ export * from "./receive";
 export * from "./controls";
 export * from "./control-actions";
 export * from "./security-code";
+export * from "./megolm-sessions";
+export * from "./group-state";
+export * from "./group-sender";
