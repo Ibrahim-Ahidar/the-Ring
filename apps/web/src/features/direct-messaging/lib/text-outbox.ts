@@ -6,8 +6,10 @@ import type { RpcMessageRow } from "@pulse/core/messaging-types";
 import type { Result } from "@pulse/core/result";
 
 import { getLocalDb } from "@/platform/local-store";
+import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
+import { asRpcClient } from "@pulse/core/rpc";
 
-import { sendTextAction } from "../actions";
+import { createMailboxTextSender } from "./mailbox-send";
 
 export type TextPayload = {
   conversationId: string;
@@ -115,7 +117,11 @@ export function getTextOutbox(userId: string): Promise<TextOutbox | null> {
           const box = createTextOutbox({
             db: h.db,
             store: h.store,
-            sendText: (input) => sendTextAction(input) as Promise<Result<RpcMessageRow>>,
+            // With the flag on, sends go through the mailbox (send_envelopes).
+            sendText: createMailboxTextSender({
+              client: asRpcClient(createSupabaseBrowserClient()),
+              userId,
+            }),
             events: () => events,
             userId,
           });
