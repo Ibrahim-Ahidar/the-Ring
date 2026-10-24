@@ -7,7 +7,8 @@ const nodeBuiltins = [
 
 // @pulse/core is platform-neutral: no Next.js, server-only, react-dom, or Node built-ins.
 export default [
-  { ignores: ["node_modules/**", "coverage/**"] },
+  // node-sqlite-executor is a test-only executor for vitest; runs on Node, never shipped to clients.
+  { ignores: ["node_modules/**", "coverage/**", "src/local-store/node-sqlite-executor.ts"] },
   {
     files: ["**/*.ts"],
     languageOptions: { parser: tsParser },
