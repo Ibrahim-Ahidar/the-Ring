@@ -28,8 +28,15 @@ function storageAvailable(): boolean {
 }
 
 async function openHandle(): Promise<Handle> {
-  requestPersistence();
-  const worker = new Worker(new URL("./sqlite.worker.ts", import.meta.url), { type: "module" });
+  const localDb = getDesktopBridge()?.localDb;
+  let worker: WorkerLike;
+  if (localDb) {
+    // Desktop: the main process owns an encrypted SQLite file, reached over the preload bridge.
+    worker = createBridgeWorker(localDb);
+  } else {
+    requestPersistence();
+    worker = new Worker(new URL("./sqlite.worker.ts", import.meta.url), { type: "module" });
+  }
   const executor = createWorkerExecutor(worker);
   const store = createSqlLocalStore(executor);
   await store.init();
