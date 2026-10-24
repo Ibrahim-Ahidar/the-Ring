@@ -38,7 +38,9 @@ function openFile(path: string) {
 describe("local-first chat data (mobile)", () => {
   let dir: string;
   beforeEach(() => void (dir = mkdtempSync(join(tmpdir(), "pulse-"))));
-  afterEach(() => rmSync(dir, { recursive: true, force: true }));
+  afterEach(() => {
+    try { rmSync(dir, { recursive: true, force: true, maxRetries: 5 }); } catch { /* Windows may hold the sqlite file briefly */ }
+  });
 
   function make(path: string, remoteOverrides: Partial<{ listMessages: jest.Mock; listConversations: jest.Mock; sendText: jest.Mock }> = {}) {
     const { node, handle } = openFile(path);

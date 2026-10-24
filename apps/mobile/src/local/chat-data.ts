@@ -160,7 +160,9 @@ export function createLocalChatData(deps: LocalChatDeps): LocalChatData {
     },
 
     async resume() {
-      await textOutbox();
+      const box = await textOutbox();
+      // App launch/foreground: retry anything queued right away, ignoring backoff.
+      if (box) await box.drain({ force: true }).then(notify, notify);
     },
 
     reset() {
