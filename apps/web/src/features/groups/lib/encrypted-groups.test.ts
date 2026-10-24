@@ -3,7 +3,10 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { claimKeysRpc } from "@pulse/core/e2ee/encrypted-sender";
 import { createGroupSender } from "@pulse/core/e2ee/group-sender";
 import { createGroupStateManager } from "@pulse/core/e2ee/group-state";
-import { createGroupSessionManager, MAX_GROUP_MEMBERS } from "@pulse/core/e2ee/megolm-sessions";
+import {
+  createGroupSessionManager,
+  MAX_GROUP_MEMBERS,
+} from "@pulse/core/e2ee/megolm-sessions";
 import { createOlmSessionManager } from "@pulse/core/e2ee/olm-sessions";
 import { GROUP_ENVELOPE_KIND } from "@pulse/core/e2ee/plain-envelope";
 import { createEncryptedEnvelopeHandler } from "@pulse/core/e2ee/receive";
@@ -13,6 +16,10 @@ import { base64ToBytes } from "@pulse/core/mailbox/codec";
 import { createMailboxReceiver } from "@pulse/core/mailbox/receiver";
 import type { RpcClient } from "@pulse/core/rpc";
 
+import {
+  createAdminLookup,
+  createConversationSendRouter,
+} from "@/features/groups/lib/send-router";
 import { derivedId } from "@/features/direct-messaging/lib/mailbox-send";
 import { loadVodozemacNode } from "@/platform/crypto/load-node";
 import { VodozemacEngine } from "@/platform/crypto/vodozemac-engine";
@@ -42,12 +49,18 @@ type Wire = {
   ciphertext: string;
   created_at: string;
 };
-type DeviceRow = { user: string; identity: string; otks: string[]; deleted: boolean };
+type DeviceRow = {
+  user: string;
+  identity: string;
+  otks: string[];
+  deleted: boolean;
+};
 
 /** In-memory stand-in for the mailbox and group_state RPCs: it only stores what clients send. */
 class FakeServer {
   devices = new Map<string, DeviceRow>();
   members = new Set<string>();
+  admins = new Set<string>([ALICE]);
   rows: Wire[] = [];
   state: { version: number; ciphertext: string } | null = null;
   private seq = 0;
@@ -90,7 +103,8 @@ class FakeServer {
             const batch = args.p_batch as Record<string, unknown>[];
             return ok(
               batch.map((b) => {
-                if (this.rows.some((r) => r.id === b.id)) return { id: b.id, status: "duplicate" };
+                if (this.rows.some((r) => r.id === b.id))
+                  return { id: b.id, status: "duplicate" };
                 this.rows.push({
                   seq: ++this.seq,
                   id: b.id as string,
@@ -109,11 +123,30 @@ class FakeServer {
           case "fetch_mailbox":
             return ok(
               this.rows
-                .filter((r) => r.recipient === args.p_device_id && r.seq > (args.p_after as number))
+                .filter(
+                  (r) =>
+                    r.recipient === args.p_device_id &&
+                    r.seq > (args.p_after as number),
+                )
                 .slice(0, args.p_limit as number),
             );
           case "ack_envelopes":
             return ok((args.p_ids as string[]).length);
+          case "groups_get":
+            return ok([{ id: args.p_conversation_id, my_role: "member" }]);
+          case "groups_list_members":
+            return ok(
+              [...this.devices.values()]
+                .filter(
+                  (d, i, a) =>
+                    this.members.has(d.user) &&
+                    a.findIndex((x) => x.user === d.user) === i,
+                )
+                .map((d) => ({
+                  user_id: d.user,
+                  role: this.admins.has(d.user) ? "admin" : "member",
+                })),
+            );
           case "put_group_state":
             this.state = {
               version: (this.state?.version ?? 0) + 1,
@@ -130,13 +163,22 @@ class FakeServer {
   }
 }
 
-async function makeDevice(server: FakeServer, userId: string, deviceId: string) {
+async function makeDevice(
+  server: FakeServer,
+  userId: string,
+  deviceId: string,
+) {
   const engine = new VodozemacEngine(vz);
   const keys = await engine.createAccount();
   await engine.generateOneTimeKeys(10);
   const otks = Object.values(await engine.oneTimeKeys());
   await engine.markKeysAsPublished();
-  server.devices.set(deviceId, { user: userId, identity: keys.curve25519, otks, deleted: false });
+  server.devices.set(deviceId, {
+    user: userId,
+    identity: keys.curve25519,
+    otks,
+    deleted: false,
+  });
   server.members.add(userId);
 
   const store = createSqlLocalStore(createNodeSqliteExecutor());
@@ -150,9 +192,15 @@ async function makeDevice(server: FakeServer, userId: string, deviceId: string) 
     persist,
   });
   const clock = { t: Date.now() };
-  const groups = createGroupSessionManager({ engine, kv: store, persist, now: () => clock.t });
+  const groups = createGroupSessionManager({
+    engine,
+    kv: store,
+    persist,
+    now: () => clock.t,
+  });
   const state = createGroupStateManager({ client, kv: store });
   const rejected: string[] = [];
+  const queued: string[] = [];
   const sender = createGroupSender({
     client,
     sessions,
@@ -172,23 +220,46 @@ async function makeDevice(server: FakeServer, userId: string, deviceId: string) 
       store,
       selfUserId: userId,
       onStateKey: (c, key, version) => state.acceptKey(c, key, version),
+      isConversationAdmin: createAdminLookup(client),
+      onQueued: () => {
+        queued.push("e2ee.no_group_key");
+      },
       onRejected: (_e, reason) => {
         rejected.push(reason);
       },
     }),
   });
-  const say = (body: string) =>
-    sender.send({
-      v: 1,
-      id: crypto.randomUUID(),
+  // The same path the UI text outbox takes (runtime.sendText), group branch.
+  const route = createConversationSendRouter({
+    client,
+    userId,
+    groupSender: sender,
+    sendDirect: async () => {
+      throw new Error("a group must not take the 1:1 path");
+    },
+  });
+  const say = async (body: string) => {
+    const r = await route({
       conversationId: CONV,
-      sentAt: new Date().toISOString(),
-      kind: "text",
+      clientId: crypto.randomUUID(),
       body,
     });
+    return r.ok ? ({ ok: true } as const) : r;
+  };
   const texts = async () =>
     (await store.listMessages(CONV, { limit: 50 })).map((m) => m.body).sort();
-  return { server, state, sender, receiver, rejected, say, texts, clock, deviceId };
+  return {
+    server,
+    state,
+    sender,
+    receiver,
+    rejected,
+    queued,
+    say,
+    texts,
+    clock,
+    deviceId,
+  };
 }
 
 describe("encrypted group messages (Megolm)", () => {
@@ -204,10 +275,14 @@ describe("encrypted group messages (Megolm)", () => {
     expect(await c.texts()).toEqual([SECRET]);
     expect(b.rejected).toEqual([]);
     for (const r of server.rows) {
-      expect(new TextDecoder().decode(base64ToBytes(r.ciphertext))).not.toContain("secret");
+      expect(
+        new TextDecoder().decode(base64ToBytes(r.ciphertext)),
+      ).not.toContain("secret");
     }
     // one Megolm ciphertext fanned out to two members, plus their Olm key shares
-    expect(server.rows.filter((r) => r.kind === GROUP_ENVELOPE_KIND).length).toBe(2);
+    expect(
+      server.rows.filter((r) => r.kind === GROUP_ENVELOPE_KIND).length,
+    ).toBe(2);
   });
 
   it("a member who left cannot decrypt new messages", async () => {
@@ -228,10 +303,19 @@ describe("encrypted group messages (Megolm)", () => {
     expect(await c.texts()).toEqual(["before leaving"]);
 
     // even if the server handed her the new group ciphertext she holds no key for it
-    const leaked = server.rows.filter((r) => r.recipient === dev("b1") && r.kind === GROUP_ENVELOPE_KIND).at(-1)!;
-    server.rows.push({ ...leaked, id: crypto.randomUUID(), recipient: dev("c1"), seq: 999 });
+    const leaked = server.rows
+      .filter(
+        (r) => r.recipient === dev("b1") && r.kind === GROUP_ENVELOPE_KIND,
+      )
+      .at(-1)!;
+    server.rows.push({
+      ...leaked,
+      id: crypto.randomUUID(),
+      recipient: dev("c1"),
+      seq: 999,
+    });
     await c.receiver.sync();
-    expect(c.rejected).toContain("e2ee.no_group_key");
+    expect(c.queued).toContain("e2ee.no_group_key");
     expect(await c.texts()).toEqual(["before leaving"]);
   });
 
@@ -248,10 +332,17 @@ describe("encrypted group messages (Megolm)", () => {
     expect(await d.texts()).toEqual(["welcome Dave"]);
 
     // replaying the old ciphertext to Dave does not decrypt
-    const old = server.rows.find((r) => r.recipient === dev("b1") && r.kind === GROUP_ENVELOPE_KIND)!;
-    server.rows.push({ ...old, id: crypto.randomUUID(), recipient: dev("d1"), seq: 999 });
+    const old = server.rows.find(
+      (r) => r.recipient === dev("b1") && r.kind === GROUP_ENVELOPE_KIND,
+    )!;
+    server.rows.push({
+      ...old,
+      id: crypto.randomUUID(),
+      recipient: dev("d1"),
+      seq: 999,
+    });
     await d.receiver.sync();
-    expect(d.rejected).toContain("e2ee.no_group_key");
+    expect(d.queued).toContain("e2ee.no_group_key");
     expect(await d.texts()).toEqual(["welcome Dave"]);
   });
 
@@ -259,7 +350,10 @@ describe("encrypted group messages (Megolm)", () => {
     const server = new FakeServer();
     const a = await makeDevice(server, ALICE, dev("a1"));
     const b = await makeDevice(server, BOB, dev("b1"));
-    const pub = await a.state.publish(CONV, dev("a1"), { name: "Weekend Hikers", description: "trails" });
+    const pub = await a.state.publish(CONV, dev("a1"), {
+      name: "Weekend Hikers",
+      description: "trails",
+    });
     expect(pub.ok).toBe(true);
     // the server holds only ciphertext
     expect(atob(server.state!.ciphertext)).not.toContain("Weekend");
@@ -273,20 +367,46 @@ describe("encrypted group messages (Megolm)", () => {
     await fresh.receiver.sync();
     await b.receiver.sync();
     const shown = await fresh.state.load(CONV);
-    expect(shown.ok && shown.value).toEqual({ name: "Weekend Hikers", description: "trails" });
+    expect(shown.ok && shown.value).toEqual({
+      name: "Weekend Hikers",
+      description: "trails",
+    });
+  });
+
+  it("ignores a group_state_key sent by a non-admin member", async () => {
+    const server = new FakeServer();
+    const a = await makeDevice(server, ALICE, dev("a1"));
+    const b = await makeDevice(server, BOB, dev("b1"));
+    const c = await makeDevice(server, CAROL, dev("c1"));
+    // Bob is a plain member: his state key must not be adopted by Carol
+    expect((await b.sender.shareStateKey(CONV)).ok).toBe(true);
+    await c.receiver.sync();
+    expect(c.rejected).toContain("e2ee.not_admin");
+    await a.state.publish(CONV, dev("a1"), { name: "Real", description: "" });
+    expect(await c.state.load(CONV)).toEqual({ ok: true, value: "no_key" });
   });
 
   it("refuses the 257th member", async () => {
     const server = new FakeServer();
     const a = await makeDevice(server, ALICE, dev("a1"));
     for (let i = 0; i < MAX_GROUP_MEMBERS - 1; i++) {
-      server.devices.set(`f${i}`, { user: `u${i}`, identity: "x", otks: [], deleted: false });
+      server.devices.set(`f${i}`, {
+        user: `u${i}`,
+        identity: "x",
+        otks: [],
+        deleted: false,
+      });
       server.members.add(`u${i}`);
     }
     // 256 members: the cap is not hit (stub members have no keys, so the send fails elsewhere)
     const atCap = await a.say("x");
     expect(!atCap.ok && atCap.error.code).not.toBe("groups.member_limit");
-    server.devices.set("f-extra", { user: "u-extra", identity: "x", otks: [], deleted: false });
+    server.devices.set("f-extra", {
+      user: "u-extra",
+      identity: "x",
+      otks: [],
+      deleted: false,
+    });
     server.members.add("u-extra");
     const over = await a.say("x");
     expect(over).toEqual({ ok: false, error: { code: "groups.member_limit" } });
