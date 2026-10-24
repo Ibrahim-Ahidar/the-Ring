@@ -6,17 +6,36 @@
 import { asRpcClient } from "@pulse/core/rpc";
 import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
 import { createControlActions } from "@pulse/core/e2ee/control-actions";
-import { claimKeysRpc, createControlSender } from "@pulse/core/e2ee/encrypted-sender";
+import {
+  claimKeysRpc,
+  createControlSender,
+} from "@pulse/core/e2ee/encrypted-sender";
 import { createGroupSender } from "@pulse/core/e2ee/group-sender";
-import { createGroupStateManager, type GroupStateManager } from "@pulse/core/e2ee/group-state";
+import {
+  createGroupStateManager,
+  type GroupStateManager,
+} from "@pulse/core/e2ee/group-state";
 import { createGroupSessionManager } from "@pulse/core/e2ee/megolm-sessions";
-import { createOlmSessionManager, type OlmSessionManager } from "@pulse/core/e2ee/olm-sessions";
+import {
+  createOlmSessionManager,
+  type OlmSessionManager,
+} from "@pulse/core/e2ee/olm-sessions";
 import { createEncryptedEnvelopeHandler } from "@pulse/core/e2ee/receive";
 import type { RpcClient } from "@pulse/core/rpc";
 
-import { createEncryptedTextSender, derivedId } from "@/features/direct-messaging/lib/mailbox-send";
+import {
+  createAdminLookup,
+  createConversationSendRouter,
+} from "@/features/groups/lib/send-router";
+import {
+  createEncryptedTextSender,
+  derivedId,
+} from "@/features/direct-messaging/lib/mailbox-send";
 import type { TextPayload } from "@/features/direct-messaging/lib/text-outbox";
-import { startBrowserMailbox, type MailboxSubscription } from "@/platform/mailbox/device-channel";
+import {
+  startBrowserMailbox,
+  type MailboxSubscription,
+} from "@/platform/mailbox/device-channel";
 import { getLocalStore } from "@/platform/local-store";
 import { createSupabaseBrowserClient } from "@/platform/supabase/browser";
 
@@ -36,11 +55,16 @@ export type E2eeRuntime = {
   /** Encrypted groups (Megolm + group_state): send to a group and read its encrypted name. */
   groupSender: ReturnType<typeof createGroupSender>;
   groupState: GroupStateManager;
-  sendText(input: TextPayload): ReturnType<ReturnType<typeof createEncryptedTextSender>>;
+  sendText(
+    input: TextPayload,
+  ): ReturnType<ReturnType<typeof createEncryptedTextSender>>;
   stop(): void;
 };
 
-async function build(userId: string, client: RpcClient): Promise<E2eeRuntime | null> {
+async function build(
+  userId: string,
+  client: RpcClient,
+): Promise<E2eeRuntime | null> {
   const store = await getLocalStore();
   if (!store) return null;
   const engine = createCryptoEngine();
@@ -49,12 +73,17 @@ async function build(userId: string, client: RpcClient): Promise<E2eeRuntime | n
   const persist = () => saveEngineState(engine, states, key);
 
   let deviceId = await store.getKv(DEVICE_ID_KV);
-  const restored = deviceId ? await loadEngineState(engine, states, key) : false;
+  const restored = deviceId
+    ? await loadEngineState(engine, states, key)
+    : false;
   if (!deviceId || !restored) {
     deviceId = crypto.randomUUID();
     const reg = await registerThisDevice(client, engine, {
       deviceId,
-      name: typeof navigator === "undefined" ? "Browser" : navigator.userAgent.slice(0, 60),
+      name:
+        typeof navigator === "undefined"
+          ? "Browser"
+          : navigator.userAgent.slice(0, 60),
       platform: "web",
     });
     if (!reg.ok) return null;
@@ -101,6 +130,7 @@ async function build(userId: string, client: RpcClient): Promise<E2eeRuntime | n
     sessions,
     groups,
     onStateKey: (c, k, v) => groupState.acceptKey(c, k, v),
+    isConversationAdmin: createAdminLookup(client),
     store,
     selfUserId: userId,
     sendControl,
@@ -113,16 +143,29 @@ async function build(userId: string, client: RpcClient): Promise<E2eeRuntime | n
     actions,
     groupSender,
     groupState,
-    sendText: createEncryptedTextSender({ client, sessions, userId, deviceId }),
+    // Groups go through Megolm, everything else through the 1:1 Olm sender.
+    sendText: createConversationSendRouter({
+      client,
+      userId,
+      groupSender,
+      sendDirect: createEncryptedTextSender({
+        client,
+        sessions,
+        userId,
+        deviceId,
+      }),
+    }),
     stop: () => sub.stop(),
   };
 }
 
-let current: { userId: string; promise: Promise<E2eeRuntime | null> } | null = null;
+let current: { userId: string; promise: Promise<E2eeRuntime | null> } | null =
+  null;
 
 /** The runtime for this user, or null with the flag off / no local database. */
 export function getE2eeRuntime(userId: string): Promise<E2eeRuntime | null> {
-  if (!isE2eeEnabled() || typeof window === "undefined") return Promise.resolve(null);
+  if (!isE2eeEnabled() || typeof window === "undefined")
+    return Promise.resolve(null);
   if (!current || current.userId !== userId) {
     current?.promise.then((r) => r?.stop());
     const client = asRpcClient(createSupabaseBrowserClient());
