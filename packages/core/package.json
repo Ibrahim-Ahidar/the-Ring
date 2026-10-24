@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./local-store": "./src/local-store/index.ts",
     "./backup": "./src/backup/index.ts",
+    "./linking": "./src/linking/index.ts",
     "./local-store/*": "./src/local-store/*.ts",
     "./*": "./src/*.ts"
   },
@@ -18,6 +19,7 @@
   },
   "dependencies": {
     "@noble/ciphers": "1.3.0",
+    "@noble/curves": "1.9.7",
     "@noble/hashes": "1.8.0",
     "@supabase/supabase-js": "^2.117.3"
   }
