@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { err, ok, type RpcMessageRow } from "@pulse/core";
+import { ok, type ConversationSummary, type RpcMessageRow } from "@pulse/core";
 import { createSqlLocalStore } from "@pulse/core/local-store";
 import { createNodeSqliteExecutor } from "@pulse/core/local-store/node-sqlite-executor";
 
@@ -17,10 +17,12 @@ function msg(id: string, body: string, at: string, conv = "c1"): RpcMessageRow {
   };
 }
 
-const summary = {
-  id: "c1", type: "direct" as const, title: "Ana", last_message_at: "2026-01-01T00:00:03.000Z",
-  last_message_preview: "hello", unread_count: 0,
-} as never;
+const summary: ConversationSummary = {
+  id: "c1", type: "direct", title: "Ana", last_message_at: "2026-01-01T00:00:03.000Z",
+  last_message_id: "m2", last_message_preview: "hello", last_message_deletion_scope: "none",
+  unread_count: 0, pinned_at: null, archived_at: null, muted_until: null,
+  other_user_id: "u2", other_username: "ana", other_display_name: "Ana", other_avatar_url: null,
+};
 
 /** Opens a file-backed db like expo-sqlite would, through the expo executor adapter. */
 function openFile(path: string) {
@@ -49,7 +51,7 @@ describe("local-first chat data (mobile)", () => {
       listMessages: remoteOverrides.listMessages ?? jest.fn(async () =>
         ok({ items: [msg("m2", "second hello", "2026-01-01T00:00:02.000Z"), msg("m1", "first hello", "2026-01-01T00:00:01.000Z")], hasMore: false })),
     };
-    const sendText = remoteOverrides.sendText ?? jest.fn(async () => err("network.offline"));
+    const sendText = remoteOverrides.sendText ?? jest.fn(async (): Promise<ReturnType<typeof ok<RpcMessageRow>>> => { throw new Error("offline"); });
     const data = createLocalChatData({
       getDb: async () => { await handle.store.init(); return handle; },
       getUserId: async () => "u1",
