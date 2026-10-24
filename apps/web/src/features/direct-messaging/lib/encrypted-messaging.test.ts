@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { claimKeysRpc } from "@pulse/core/e2ee/encrypted-sender";
+import { createControlActions } from "@pulse/core/e2ee/control-actions";
+import { countLocalUnread, deriveTick } from "@pulse/core/e2ee/controls";
+import { claimKeysRpc, createControlSender } from "@pulse/core/e2ee/encrypted-sender";
 import { createOlmSessionManager } from "@pulse/core/e2ee/olm-sessions";
 import { decodeOlmPayload } from "@pulse/core/e2ee/plain-envelope";
 import { createEncryptedEnvelopeHandler } from "@pulse/core/e2ee/receive";
@@ -136,12 +138,28 @@ async function makeDevice(server: FakeServer, userId: string, deviceId: string) 
     persist: async () => {},
   });
   const rejected: string[] = [];
+  const sendControl = createControlSender({
+    client,
+    sessions,
+    userId,
+    deviceId,
+    deriveId: derivedId,
+    newId: () => crypto.randomUUID(),
+  });
+  const actions = createControlActions({
+    store,
+    selfUserId: userId,
+    send: sendControl,
+    newId: () => crypto.randomUUID(),
+  });
   const receiver = createMailboxReceiver({
     client,
     deviceId,
     onEnvelope: createEncryptedEnvelopeHandler({
       sessions,
       store,
+      selfUserId: userId,
+      sendControl,
       onRejected: (_e, reason) => {
         rejected.push(reason);
       },
@@ -153,7 +171,7 @@ async function makeDevice(server: FakeServer, userId: string, deviceId: string) 
       body: m.body,
       from: m.sender_user_id,
     }));
-  return { engine, store, receiver, rejected, send, texts };
+  return { engine, store, receiver, rejected, send, texts, actions, userId };
 }
 
 async function world() {
@@ -258,5 +276,113 @@ describe("encrypted 1:1 text messages", () => {
     const c = crypto.randomUUID();
     expect(derivedId(c, A1)).toBe(derivedId(c, A1));
     expect(derivedId(c, A1)).not.toBe(derivedId(c, A2));
+  });
+});
+
+type Dev = Awaited<ReturnType<typeof makeDevice>>;
+
+/** What the outbox does on the sender: keep my own sent text in the local store. */
+async function sendTracked(d: Dev, body: string, sentAt = new Date().toISOString()) {
+  const id = crypto.randomUUID();
+  await d.store.upsertMessages([
+    {
+      id,
+      conversation_id: CONV,
+      sender_user_id: d.userId,
+      sender_device_id: "x",
+      sent_at: sentAt,
+      received_at: sentAt,
+      kind: "text",
+      body,
+      reply_to_id: null,
+      edited_at: null,
+      deleted: 0,
+      status: "sent",
+      media_json: null,
+    },
+  ]);
+  const res = await d.send({ conversationId: CONV, clientId: id, body });
+  expect(res.ok).toBe(true);
+  return id;
+}
+
+const tick = async (d: Dev, id: string) =>
+  deriveTick((await d.store.getMessage(id))?.status ?? null, await d.store.listReceipts([id]), d.userId);
+
+describe("encrypted control messages", () => {
+  it("ticks go check, double (auto receipt), blue (read) and never back", async () => {
+    const { a1, a2, b1 } = await world();
+    const id = await sendTracked(a1, "hello");
+    expect(await tick(a1, id)).toBe("check");
+    await b1.receiver.sync(); // Bob's Device stores the text and auto-sends a receipt
+    await a1.receiver.sync();
+    expect(await tick(a1, id)).toBe("double");
+    await a2.receiver.sync();
+    await b1.actions.markRead(CONV);
+    await a1.receiver.sync();
+    expect(await tick(a1, id)).toBe("blue");
+    await a2.receiver.sync();
+    expect(await tick(a2, id)).toBe("blue");
+    // a replayed delivery receipt afterwards cannot lower it
+    await a1.receiver.sync();
+    expect(await tick(a1, id)).toBe("blue");
+    expect(b1.rejected).toEqual([]);
+  });
+
+  it("edit, reaction and delete converge on every Device; a non-author edit is ignored", async () => {
+    const { a1, a2, b1 } = await world();
+    const id = await sendTracked(a1, "v1");
+    await b1.receiver.sync();
+    await a2.receiver.sync();
+
+    await b1.actions.react(CONV, id, "+1");
+    await b1.actions.edit(CONV, id, "hijacked"); // Bob is not the author
+    await a1.actions.edit(CONV, id, "v2");
+    for (const d of [a1, a2, b1]) await d.receiver.sync();
+    for (const d of [a1, a2, b1]) {
+      expect((await d.store.getMessage(id))?.body).toBe("v2");
+      expect((await d.store.listReactions([id])).map((r) => [r.user_id, r.emoji])).toEqual([
+        [BOB, "+1"],
+      ]);
+    }
+
+    await b1.actions.react(CONV, id, "+1", true);
+    await a1.actions.remove(CONV, id);
+    for (const d of [a1, a2, b1]) await d.receiver.sync();
+    for (const d of [a1, a2, b1]) {
+      const row = await d.store.getMessage(id);
+      expect(row?.deleted).toBe(1);
+      expect(row?.body).toBeNull();
+      expect(await d.store.listReactions([id])).toEqual([]);
+    }
+    expect(a2.rejected).toEqual([]);
+  });
+
+  it("computes unread locally and my other Device's read clears it", async () => {
+    const { a1, a2, b1 } = await world();
+    await sendTracked(b1, "one", "2026-01-01T00:00:01.000Z");
+    await sendTracked(b1, "two", "2026-01-01T00:00:02.000Z");
+    await a1.receiver.sync();
+    await a2.receiver.sync();
+    expect(await countLocalUnread(a1.store, CONV, ALICE)).toBe(2);
+    expect(await countLocalUnread(a2.store, CONV, ALICE)).toBe(2);
+    expect(await a1.actions.markRead(CONV)).toBe(0);
+    await a2.receiver.sync();
+    expect(await countLocalUnread(a2.store, CONV, ALICE)).toBe(0);
+    // Bob sees blue ticks for what Alice read
+    await b1.receiver.sync();
+    expect(b1.rejected).toEqual([]);
+  });
+
+  it("handles a control that arrives before its text", async () => {
+    const { server, a1, b1 } = await world();
+    const id = await sendTracked(a1, "v1");
+    await a1.actions.edit(CONV, id, "v2");
+    const mine = server.rows.filter((r) => r.recipient === B1);
+    expect(mine.length).toBe(2);
+    [mine[0]!.seq, mine[1]!.seq] = [mine[1]!.seq, mine[0]!.seq]; // edit now comes first
+    await b1.receiver.sync();
+    expect((await b1.store.getMessage(id))?.body).toBe("v2");
+    expect(await b1.store.countMessages(CONV)).toBe(1);
   });
 });

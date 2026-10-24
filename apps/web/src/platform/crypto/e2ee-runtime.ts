@@ -5,12 +5,13 @@
  */
 import { asRpcClient } from "@pulse/core/rpc";
 import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
-import { claimKeysRpc } from "@pulse/core/e2ee/encrypted-sender";
+import { createControlActions } from "@pulse/core/e2ee/control-actions";
+import { claimKeysRpc, createControlSender } from "@pulse/core/e2ee/encrypted-sender";
 import { createOlmSessionManager, type OlmSessionManager } from "@pulse/core/e2ee/olm-sessions";
 import { createEncryptedEnvelopeHandler } from "@pulse/core/e2ee/receive";
 import type { RpcClient } from "@pulse/core/rpc";
 
-import { createEncryptedTextSender } from "@/features/direct-messaging/lib/mailbox-send";
+import { createEncryptedTextSender, derivedId } from "@/features/direct-messaging/lib/mailbox-send";
 import type { TextPayload } from "@/features/direct-messaging/lib/text-outbox";
 import { startBrowserMailbox, type MailboxSubscription } from "@/platform/mailbox/device-channel";
 import { getLocalStore } from "@/platform/local-store";
@@ -27,6 +28,8 @@ const DEVICE_ID_KV = "e2ee.device_id";
 export type E2eeRuntime = {
   deviceId: string;
   sessions: OlmSessionManager;
+  /** Encrypted Control Messages: react, edit, remove, pin, markRead, retry of failed sends. */
+  actions: ReturnType<typeof createControlActions>;
   sendText(input: TextPayload): ReturnType<ReturnType<typeof createEncryptedTextSender>>;
   stop(): void;
 };
@@ -62,11 +65,32 @@ async function build(userId: string, client: RpcClient): Promise<E2eeRuntime | n
     claimKeys: (ids) => claimKeysRpc(client, ids),
     persist,
   });
-  const handler = createEncryptedEnvelopeHandler({ sessions, store });
+  const sendControl = createControlSender({
+    client,
+    sessions,
+    userId,
+    deviceId,
+    deriveId: derivedId,
+    newId: () => crypto.randomUUID(),
+  });
+  const actions = createControlActions({
+    store,
+    selfUserId: userId,
+    send: sendControl,
+    newId: () => crypto.randomUUID(),
+  });
+  const handler = createEncryptedEnvelopeHandler({
+    sessions,
+    store,
+    selfUserId: userId,
+    sendControl,
+  });
+  void actions.flushPendingControls().catch(() => 0);
   const sub: MailboxSubscription = startBrowserMailbox(deviceId, handler);
   return {
     deviceId,
     sessions,
+    actions,
     sendText: createEncryptedTextSender({ client, sessions, userId, deviceId }),
     stop: () => sub.stop(),
   };
@@ -84,6 +108,12 @@ export function getE2eeRuntime(userId: string): Promise<E2eeRuntime | null> {
     current = { userId, promise };
   }
   return current.promise;
+}
+
+/** The already-started runtime of the signed-in user (null with the flag off or not started). */
+export function getActiveE2eeRuntime(): Promise<E2eeRuntime | null> {
+  if (!isE2eeEnabled()) return Promise.resolve(null);
+  return current?.promise ?? Promise.resolve(null);
 }
 
 export function resetE2eeRuntime(): void {

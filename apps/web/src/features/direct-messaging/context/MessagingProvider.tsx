@@ -18,6 +18,7 @@ import {
 } from "react";
 
 import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
+import { getE2eeRuntime } from "@/platform/crypto/e2ee-runtime";
 import { emitComposerActivity } from "@/platform/composer-events";
 import { joinConversation, joinInbox } from "@/platform/realtime-hub";
 import { timingArrival, timingTapStart } from "@/platform/timing/hooks";
@@ -806,6 +807,20 @@ export function MessagingProvider({
 
   const markSeenUpTo = useCallback(
     async (conversationId: string, message: TimelineMessage) => {
+      // e2ee flag on: unread is local; tell the sender and my other Devices with an encrypted read.
+      if (isE2eeEnabled()) {
+        const rt = await getE2eeRuntime(userId);
+        if (rt) {
+          await rt.actions.markRead(conversationId);
+          dispatch({
+            type: "detail/patchOwnRead",
+            conversationId,
+            lastReadMessageId: message.id,
+            lastReadAt: new Date().toISOString(),
+          });
+          return true;
+        }
+      }
       const result = await markReadAction({
         conversationId,
         messageId: message.id,
@@ -820,7 +835,7 @@ export function MessagingProvider({
       }
       return result.ok;
     },
-    [],
+    [userId],
   );
 
   // e2ee flag on: outbox results update the UI; unsent sends of an earlier session come back.

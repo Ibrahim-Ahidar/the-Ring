@@ -4,6 +4,9 @@ import { useCallback } from "react";
 
 import type { MessageReaction } from "@pulse/core/timeline";
 
+import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
+import { getActiveE2eeRuntime } from "@/platform/crypto/e2ee-runtime";
+
 import { addReactionAction, removeReactionAction } from "../actions";
 import { dispatchConversationReaction } from "../context/conversation-reactions-store";
 
@@ -22,6 +25,21 @@ export function useToggleReaction(input: {
         emoji,
         created_at: new Date().toISOString(),
       };
+
+      // e2ee flag on: the reaction is a local write plus an encrypted control, not a server call.
+      if (isE2eeEnabled()) {
+        const rt = await getActiveE2eeRuntime();
+        if (rt) {
+          dispatchConversationReaction(
+            conversationId,
+            reactedByMe
+              ? { type: "optimistic_remove", messageId, userId, emoji }
+              : { type: "optimistic_add", reaction: optimistic },
+          );
+          await rt.actions.react(conversationId, messageId, emoji, reactedByMe);
+          return;
+        }
+      }
 
       if (reactedByMe) {
         dispatchConversationReaction(conversationId, {

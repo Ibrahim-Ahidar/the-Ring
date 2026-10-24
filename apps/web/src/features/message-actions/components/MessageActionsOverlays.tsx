@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import { listConversationsAction } from "@/features/direct-messaging/actions";
 import type { ConversationSummary } from "@/features/direct-messaging/types";
 import { randomUUID } from "@pulse/core/uuid";
+import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
+import { getActiveE2eeRuntime } from "@/platform/crypto/e2ee-runtime";
 
 import {
   deleteForEveryoneAction,
@@ -116,6 +118,20 @@ function EditDialog({
   const submit = async () => {
     setBusy(true);
     setError(null);
+    if (isE2eeEnabled()) {
+      const rt = await getActiveE2eeRuntime();
+      if (rt) {
+        await rt.actions.edit(request.conversationId, request.message.id, body);
+        setBusy(false);
+        emitMessageMutation({
+          kind: "upsert",
+          conversationId: request.conversationId,
+          message: { ...request.message, body, edited_at: new Date().toISOString() },
+        });
+        onClose();
+        return;
+      }
+    }
     const result = await editMessageAction({
       messageId: request.message.id,
       body,
@@ -200,6 +216,25 @@ function DeleteDialog({
       return;
     }
 
+    if (isE2eeEnabled()) {
+      const rt = await getActiveE2eeRuntime();
+      if (rt) {
+        await rt.actions.remove(request.conversationId, request.message.id);
+        setBusy(false);
+        emitMessageMutation({
+          kind: "upsert",
+          conversationId: request.conversationId,
+          message: {
+            ...request.message,
+            body: null,
+            deleted_at: new Date().toISOString(),
+            deletion_scope: "everyone",
+          },
+        });
+        onClose();
+        return;
+      }
+    }
     const result = await deleteForEveryoneAction({ messageId: request.message.id });
     setBusy(false);
     if (!result.ok) {
