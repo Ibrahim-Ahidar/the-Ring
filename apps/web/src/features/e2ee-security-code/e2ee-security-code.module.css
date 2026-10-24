@@ -1,0 +1,38 @@
+.groups {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: var(--space-8) var(--space-16);
+  justify-content: center;
+  margin: var(--space-16) 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.125rem;
+  letter-spacing: 0.05em;
+  direction: ltr;
+}
+
+.qr {
+  display: flex;
+  justify-content: center;
+  margin: var(--space-16) 0;
+  background: #fff;
+  padding: var(--space-12);
+  border-radius: var(--radius-card);
+  inline-size: fit-content;
+  margin-inline: auto;
+}
+
+.qr svg {
+  inline-size: 200px;
+  block-size: 200px;
+}
+
+.status {
+  text-align: center;
+  font-weight: 600;
+}
+
+.scan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}

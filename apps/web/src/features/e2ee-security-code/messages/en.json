@@ -1,0 +1,19 @@
+{
+  "title": "Security code",
+  "intro": "Compare this code with {name}, or scan their QR code, to confirm your messages are end-to-end encrypted with the right person.",
+  "computing": "Computing code…",
+  "codeLabel": "Security code",
+  "qrLabel": "Security code QR",
+  "verified": "Verified",
+  "notVerified": "Not verified",
+  "scanLabel": "Paste the scanned code from {name}",
+  "scanSubmit": "Verify",
+  "scanOk": "The codes match. {name} is now verified.",
+  "scanMismatch": "The codes do not match. Do not mark this contact as verified.",
+  "scanInvalid": "That is not a security code.",
+  "unverify": "Remove verification",
+  "warnTitle": "{name}'s security code changed",
+  "warnBody": "{name} was verified before, but their security code is different now. They may have reinstalled the app or switched phones, or someone may be intercepting your messages. Verify the new code before sending anything private.",
+  "warnSend": "Send anyway",
+  "warnCancel": "Cancel"
+}

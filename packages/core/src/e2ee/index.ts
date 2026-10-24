@@ -5,3 +5,4 @@ export * from "./encrypted-sender";
 export * from "./receive";
 export * from "./controls";
 export * from "./control-actions";
+export * from "./security-code";

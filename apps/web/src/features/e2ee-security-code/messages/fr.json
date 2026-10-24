@@ -1,0 +1,19 @@
+{
+  "title": "Code de sécurité",
+  "intro": "Comparez ce code avec {name}, ou scannez son QR code, pour confirmer que vos messages sont chiffrés de bout en bout avec la bonne personne.",
+  "computing": "Calcul du code…",
+  "codeLabel": "Code de sécurité",
+  "qrLabel": "QR code de sécurité",
+  "verified": "Vérifié",
+  "notVerified": "Non vérifié",
+  "scanLabel": "Collez le code scanné de {name}",
+  "scanSubmit": "Vérifier",
+  "scanOk": "Les codes correspondent. {name} est maintenant vérifié.",
+  "scanMismatch": "Les codes ne correspondent pas. Ne marquez pas ce contact comme vérifié.",
+  "scanInvalid": "Ce n'est pas un code de sécurité.",
+  "unverify": "Retirer la vérification",
+  "warnTitle": "Le code de sécurité de {name} a changé",
+  "warnBody": "{name} était vérifié, mais son code de sécurité est différent maintenant. Il a peut-être réinstallé l'application ou changé de téléphone, ou quelqu'un intercepte vos messages. Vérifiez le nouveau code avant d'envoyer quoi que ce soit de privé.",
+  "warnSend": "Envoyer quand même",
+  "warnCancel": "Annuler"
+}
