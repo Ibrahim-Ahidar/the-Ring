@@ -18,13 +18,20 @@ export type Deps = {
   isMember(authorization: string, conversationId: string): Promise<boolean>;
 };
 
-const json = (body: unknown, status = 200) => Response.json(body, { status });
+// Called from the browser and Electron with a bearer token, never cookies, so any origin is fine.
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, content-type, apikey, x-client-info",
+};
+const json = (body: unknown, status = 200) => Response.json(body, { status, headers: CORS });
 const fail = (code: string, status = 400) => json({ ok: false, error: { code } }, status);
 const str = (v: unknown) => (typeof v === "string" && v.length > 0 && v.length <= 200 ? v : null);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SAFE_ID = /^[A-Za-z0-9-]{8,64}$/;
 
 export async function handle(req: Request, deps: Deps): Promise<Response> {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   if (req.method !== "POST") return fail("platform.method_not_allowed", 405);
   const auth = req.headers.get("Authorization") ?? "";
   if (!auth.toLowerCase().startsWith("bearer ")) return fail("platform.unauthenticated", 401);

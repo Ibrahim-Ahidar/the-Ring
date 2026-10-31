@@ -23,6 +23,26 @@ function deps(over: Partial<Deps> = {}): Deps {
 const call = (body: unknown, d: Deps = deps(), headers: Record<string, string> = { Authorization: "Bearer t" }) =>
   handle(new Request("https://x/media-upload-url", { method: "POST", headers, body: JSON.stringify(body) }), d);
 
+describe("browser CORS", () => {
+  it("answers the preflight without auth and allows the headers the client sends", async () => {
+    const res = await handle(new Request("https://x/media-upload-url", { method: "OPTIONS" }), deps());
+    expect(res.status).toBe(204);
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    expect(res.headers.get("Access-Control-Allow-Methods")).toContain("POST");
+    const allowed = res.headers.get("Access-Control-Allow-Headers")?.toLowerCase();
+    expect(allowed).toContain("authorization");
+    expect(allowed).toContain("content-type");
+  });
+
+  it("puts the CORS header on success and on errors, so the browser can read the error code", async () => {
+    const ok = await call({ action: "upload", conversationId: CONV, mimeType: "image/png", sizeBytes: encryptedSize(10) });
+    expect(ok.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    const denied = await call({ conversationId: CONV }, deps(), {});
+    expect(denied.status).toBe(401);
+    expect(denied.headers.get("Access-Control-Allow-Origin")).toBe("*");
+  });
+});
+
 describe("presignUrl (SigV4)", () => {
   it("matches the published AWS example vector", async () => {
     const url = await presignUrl(
