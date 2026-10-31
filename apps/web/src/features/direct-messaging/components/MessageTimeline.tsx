@@ -23,6 +23,8 @@ import { useReadTracker } from "../hooks/useReadReceipts";
 import { useHydrated } from "../lib/use-hydrated";
 import { conversationTitle } from "../lib/titles";
 import type { ConversationDetail } from "../types";
+import { mediaTimelineType } from "@pulse/core/local-store";
+
 import type { PendingSend } from "../context/types";
 import {
   useConversationView,
@@ -97,7 +99,7 @@ function pendingAsMessage(pending: PendingSend): TimelineMessage {
     conversation_id: pending.conversationId,
     sender_id: "",
     client_id: pending.clientId,
-    type: "text",
+    type: pending.media ? mediaTimelineType(pending.media.mimeType) : "text",
     body: pending.body,
     reply_to_id: pending.replyToId ?? null,
     created_at: pending.createdAt,
@@ -106,7 +108,7 @@ function pendingAsMessage(pending: PendingSend): TimelineMessage {
     deletion_scope: "none",
     pinned_at: null,
     forwarded: false,
-    metadata: null,
+    metadata: pending.media ? { e2eeMedia: pending.media } : null,
     status: pending.status,
   };
 }

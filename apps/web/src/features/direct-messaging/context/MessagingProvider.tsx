@@ -43,6 +43,8 @@ import {
   storeRealtimeMessage,
 } from "../lib/data-source";
 import { needsAttachmentFetch } from "../lib/realtime-message";
+import type { StoredMediaRef } from "@pulse/core/local-store";
+
 import { getTextOutbox, setTextOutboxEvents } from "../lib/text-outbox";
 import { firstUnreadMessageId } from "../delivery";
 import { mapMessageRow, messagePageNextCursor } from "../service";
@@ -858,7 +860,34 @@ export function MessagingProvider({
         );
         dispatch({ type: "pending/update", clientId, status: "failed" });
       },
+      // Encrypted media: the upload is done, so the bubble appears when the send is queued and
+      // follows each attempt (failed while it waits for backoff, pending again on the retry).
+      onQueued(p, createdAt) {
+        if (pendingSendsRef.current.some((x) => x.clientId === p.clientId)) return;
+        const pending: PendingSend = {
+          clientId: p.clientId,
+          conversationId: p.conversationId,
+          body: p.media?.caption ?? p.body,
+          replyToId: p.replyToId ?? null,
+          createdAt,
+          status: "pending",
+          ...(p.media ? { media: p.media as StoredMediaRef } : {}),
+        };
+        pendingSendsRef.current = [...pendingSendsRef.current, pending];
+        dispatch({ type: "pending/add", pending });
+      },
+      onAttempt(clientId) {
+        setPendingStatus(clientId, "pending");
+      },
+      onRetry(clientId) {
+        setPendingStatus(clientId, "failed");
+      },
     });
+    function setPendingStatus(clientId: string, status: "pending" | "failed") {
+      if (!pendingSendsRef.current.some((p) => p.clientId === clientId)) return;
+      pendingSendsRef.current = pendingSendsRef.current.map((p) => (p.clientId === clientId ? { ...p, status } : p));
+      dispatch({ type: "pending/update", clientId, status });
+    }
     void getTextOutbox(userId).then(async (box) => {
       if (!box || cancelled) return;
       const unsent = await box.listPending();

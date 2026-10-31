@@ -1,6 +1,6 @@
 import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
-import type { LocalStore, MessageRow, SqlExecutor } from "@pulse/core/local-store";
-import { rowToRpcMessage, rpcMessageToRow } from "@pulse/core/local-store";
+import type { LocalStore, MessageRow, SqlExecutor, StoredMediaRef } from "@pulse/core/local-store";
+import { readStoredMediaRef, rowToRpcMessage, rpcMessageToRow } from "@pulse/core/local-store";
 import type { MediaBody } from "@pulse/core/e2ee/plain-envelope";
 import { createOutbox, type Outbox, type SendOutcome } from "@pulse/core/local-store/outbox";
 import type { RpcMessageRow } from "@pulse/core/messaging-types";
@@ -32,13 +32,17 @@ function mediaRow(p: TextPayload & { media: MediaBody }, base: MessageRow): Mess
 export type TextOutboxEvents = {
   onSent(clientId: string, message: RpcMessageRow): void;
   onFailed(clientId: string): void;
+  /** Media sends only: queued (a pending bubble is due), attempt started, attempt failed and will be retried. */
+  onQueued?(p: TextPayload, createdAt: string): void;
+  onAttempt?(clientId: string): void;
+  onRetry?(clientId: string): void;
 };
 
 export type TextOutbox = {
   /** Queues a send; for a payload with `media` the local row is the media message. */
   enqueueText(p: TextPayload, createdAt: string): Promise<boolean>;
   /** Unsent sends of earlier sessions (and this one), oldest first, for restoring bubbles. */
-  listPending(): Promise<(TextPayload & { createdAt: string; status: "pending" | "failed" })[]>;
+  listPending(): Promise<(Omit<TextPayload, "media"> & { createdAt: string; status: "pending" | "failed"; media?: StoredMediaRef })[]>;
   drain(opts?: { force?: boolean }): Promise<void>;
   start(): void;
   stop(): void;
@@ -61,7 +65,14 @@ export function createTextOutbox(args: {
     async send(entry): Promise<SendOutcome> {
       const payload = JSON.parse(entry.payload) as TextPayload;
       // A thrown error (network drop) is retried with backoff by the outbox.
-      const res = await args.sendText(payload);
+      if (payload.media) args.events().onAttempt?.(entry.id);
+      let res: Result<RpcMessageRow>;
+      try {
+        res = await args.sendText(payload);
+      } catch (e) {
+        if (payload.media) args.events().onRetry?.(entry.id);
+        throw e;
+      }
       if (!res.ok) return { status: "failed", reason: res.error.code };
       const row = rpcMessageToRow(res.value, new Date().toISOString());
       if (payload.media) {
@@ -99,15 +110,21 @@ export function createTextOutbox(args: {
         status: "pending",
         media_json: JSON.stringify({ client_id: p.clientId }),
       };
-      return outbox.enqueue(p.media ? mediaRow({ ...p, media: p.media }, row) : row, JSON.stringify(p));
+      return outbox
+        .enqueue(p.media ? mediaRow({ ...p, media: p.media }, row) : row, JSON.stringify(p))
+        .then((queued) => {
+          if (queued && p.media) args.events().onQueued?.(p, createdAt);
+          return queued;
+        });
     },
     async listPending() {
       const rows = await outbox.listUnsent();
-      // Media rows are resent from the stored payload; a text bubble for them would be empty.
-      return rows.filter((r) => r.kind !== "media").map((r) => ({
+      // A media row carries its reference, so the bubble renders as an attachment, not empty text.
+      return rows.map((r) => ({
         clientId: r.id,
         conversationId: r.conversation_id,
         body: r.body ?? "",
+        ...(readStoredMediaRef(r) ? { media: readStoredMediaRef(r)! } : {}),
         replyToId: r.reply_to_id,
         createdAt: r.sent_at,
         status: r.status === "failed" ? ("failed" as const) : ("pending" as const),

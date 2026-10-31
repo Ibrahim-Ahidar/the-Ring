@@ -182,4 +182,46 @@ describe("MessagingProvider sending with the e2ee flag on", () => {
     await vi.waitFor(() => expect(second().state.pendingSends).toEqual([]));
     expect(sendTextAction).toHaveBeenCalledTimes(1);
   }, 10_000);
+
+  const MEDIA = {
+    r2Key: "obj-1", key: "a2V5", sha256: "abc", mimeType: "image/png", size: 12, fileName: "pic.png",
+    width: 10, height: 20, durationMs: null, thumbnail: null, caption: null,
+  };
+
+  it("restores queued media as a pending media bubble after a reload (not empty text)", async () => {
+    sendTextAction.mockRejectedValue(new Error("offline"));
+    const { getTextOutbox, resetTextOutbox } = await import("../lib/text-outbox");
+    const box = await getTextOutbox("user-1");
+    await box!.enqueueText({ conversationId: "conv-1", clientId: "m1", body: "", media: MEDIA as never }, "2026-10-31T10:00:00.000Z");
+    resetTextOutbox();
+    sendTextAction.mockReset();
+    sendTextAction.mockRejectedValue(new Error("offline"));
+    const api = renderProvider();
+    await vi.waitFor(() => expect(api().state.pendingSends).toHaveLength(1));
+    expect(api().state.pendingSends[0]).toMatchObject({ clientId: "m1", media: { r2Key: "obj-1" } });
+  }, 10_000);
+
+  it("shows a queued media send as pending, failed while it waits to retry, pending on the retry, then gone", async () => {
+    sendTextAction.mockRejectedValue(new Error("offline"));
+    const api = renderProvider();
+    const { getTextOutbox } = await import("../lib/text-outbox");
+    const box = await getTextOutbox("user-1");
+    await act(async () => {
+      await box!.enqueueText({ conversationId: "conv-1", clientId: "m2", body: "", media: MEDIA as never }, "2026-10-31T10:00:00.000Z");
+    });
+    await vi.waitFor(() => expect(api().state.pendingSends[0]).toMatchObject({ clientId: "m2", status: "failed" }));
+    sendTextAction.mockReset();
+    let release: () => void = () => {};
+    sendTextAction.mockImplementation((input: { clientId: string; conversationId: string; body: string }) =>
+      new Promise((resolve) => { release = () => resolve(okMessage(input)); }),
+    );
+    await act(async () => {
+      void box!.drain({ force: true });
+    });
+    await vi.waitFor(() => expect(api().state.pendingSends[0]?.status).toBe("pending"));
+    await act(async () => {
+      release();
+    });
+    await vi.waitFor(() => expect(api().state.pendingSends).toEqual([]));
+  }, 10_000);
 });

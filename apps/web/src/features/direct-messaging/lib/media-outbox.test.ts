@@ -75,7 +75,7 @@ describe("text outbox with a media payload", () => {
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({ type: "image", metadata: { e2eeMedia: { r2Key: "obj-1", expired: false } } });
   });
-  it("leaves a queued media row out of listPending and still resends it after a restart", async () => {
+  it("lists a queued media row with its reference in listPending and still resends it after a restart", async () => {
     const db = createNodeSqliteExecutor();
     const store = createSqlLocalStore(db);
     await store.init();
@@ -89,9 +89,67 @@ describe("text outbox with a media payload", () => {
     await first.enqueueText({ conversationId: "c1", clientId: "t1", body: "hi" }, AT);
     const second = make();
     const pending = await second.listPending();
-    expect(pending.map((p) => p.clientId)).toEqual(["t1"]);
+    expect(pending.map((p) => p.clientId)).toEqual(["m2", "t1"]);
+    const m2 = pending.find((p) => p.clientId === "m2")!;
+    expect(m2.media).toMatchObject({ r2Key: "obj-1", mimeType: "image/png" });
+    expect(m2.body).toBe("");
+    expect(pending.find((p) => p.clientId === "t1")!.media).toBeUndefined();
     await second.drain({ force: true });
     const sentMedia = sendText.mock.calls.map((c) => c[0]).find((p) => p.clientId === "m2");
     expect(sentMedia?.media).toEqual(MEDIA);
+  });
+
+  it("reports queued, attempt, retry and sent for media so the pending bubble follows the outcome", async () => {
+    const db = createNodeSqliteExecutor();
+    const store = createSqlLocalStore(db);
+    await store.init();
+    let fail = true;
+    const sendText = vi.fn(async (input: TextPayload) => {
+      if (fail) throw new Error("network");
+      return ok({ id: "srv-3", conversation_id: input.conversationId, sender_id: "u1", client_id: input.clientId, type: "text", body: null, reply_to_id: null, created_at: AT, edited_at: null, deleted_at: null, deletion_scope: "none", pinned_at: null, forwarded: false, metadata: {} } as never);
+    });
+    const log: string[] = [];
+    const box = createTextOutbox({
+      db,
+      store,
+      sendText,
+      events: () => ({
+        onSent: (id) => void log.push(`sent:${id}`),
+        onFailed: (id) => void log.push(`failed:${id}`),
+        onQueued: (p) => void log.push(`queued:${p.clientId}:${p.media ? "media" : "text"}`),
+        onAttempt: (id) => void log.push(`attempt:${id}`),
+        onRetry: (id) => void log.push(`retry:${id}`),
+      }),
+      userId: "u1",
+    });
+    await box.enqueueText({ conversationId: "c1", clientId: "m3", body: "", media: MEDIA }, AT);
+    await box.drain({ force: true });
+    fail = false;
+    await box.drain({ force: true });
+    expect(log).toEqual(["queued:m3:media", "attempt:m3", "retry:m3", "attempt:m3", "sent:m3"]);
+  });
+
+  it("does not report queued/attempt/retry for a text send", async () => {
+    const db = createNodeSqliteExecutor();
+    const store = createSqlLocalStore(db);
+    await store.init();
+    const sendText = vi.fn(async () => { throw new Error("network"); });
+    const log: string[] = [];
+    const box = createTextOutbox({
+      db,
+      store,
+      sendText,
+      events: () => ({
+        onSent: () => undefined,
+        onFailed: () => undefined,
+        onQueued: () => void log.push("queued"),
+        onAttempt: () => void log.push("attempt"),
+        onRetry: () => void log.push("retry"),
+      }),
+      userId: "u1",
+    });
+    await box.enqueueText({ conversationId: "c1", clientId: "t9", body: "hi" }, AT);
+    await box.drain({ force: true });
+    expect(log).toEqual([]);
   });
 });

@@ -1,3 +1,4 @@
+import type { StoredMediaRef } from "@pulse/core/local-store";
 import type { TimelineMessage } from "@pulse/core/timeline";
 
 import type {
@@ -16,6 +17,8 @@ export type PendingSend = {
   replyToId?: string | null;
   status: "pending" | "failed";
   createdAt: string;
+  /** Encrypted media send (flag on): `body` is the caption; the file is already uploaded. */
+  media?: StoredMediaRef;
 };
 
 export type MessagingState = {
