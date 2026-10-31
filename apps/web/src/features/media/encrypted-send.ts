@@ -5,6 +5,7 @@ import { getTextOutbox, type TextOutbox } from "@/features/direct-messaging/lib/
 
 import { getCurrentUserId, uploadWithGrant } from "./encrypted-media-runtime";
 import { readImageDimensions } from "./image-dimensions";
+import { makeImageThumbnail } from "./image-thumbnail";
 
 export type EncryptedSendDeps = {
   getUserId(): Promise<string | null>;
@@ -16,9 +17,12 @@ export type EncryptedSendDeps = {
     width: number | null;
     height: number | null;
     durationMs: number | null;
+    thumbnail?: Uint8Array | null;
   }): Promise<Result<MediaBody>>;
   getOutbox(userId: string): Promise<TextOutbox | null>;
   readDimensions(file: File): Promise<{ width: number; height: number } | null>;
+  /** Optional small preview; encrypted with the file key inside the envelope, never sent in the clear. */
+  makeThumbnail?(file: File): Promise<Uint8Array | null>;
   now(): string;
 };
 
@@ -27,6 +31,7 @@ export const defaultEncryptedSendDeps: EncryptedSendDeps = {
   upload: uploadWithGrant,
   getOutbox: getTextOutbox,
   readDimensions: readImageDimensions,
+  makeThumbnail: makeImageThumbnail,
   now: () => new Date().toISOString(),
 };
 
@@ -45,6 +50,9 @@ export async function sendEncryptedMedia(
   if (!box) return err("e2ee.runtime_unavailable");
 
   const dims = input.file.type.startsWith("image/") ? await deps.readDimensions(input.file) : null;
+  const thumbnail = input.file.type.startsWith("image/")
+    ? await deps.makeThumbnail?.(input.file).catch(() => null)
+    : null;
   const bytes = new Uint8Array(await input.file.arrayBuffer());
   const uploaded = await deps.upload({
     conversationId: input.conversationId,
@@ -54,6 +62,7 @@ export async function sendEncryptedMedia(
     width: dims?.width ?? null,
     height: dims?.height ?? null,
     durationMs: input.durationMs ?? null,
+    thumbnail: thumbnail ?? null,
   });
   if (!uploaded.ok) return uploaded;
 

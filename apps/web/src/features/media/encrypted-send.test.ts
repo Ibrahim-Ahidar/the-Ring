@@ -57,6 +57,32 @@ describe("sendEncryptedMedia", () => {
     expect(typeof payload.media.sha256).toBe("string");
   });
 
+  it("carries an encrypted thumbnail in the envelope and never uploads it in the clear", async () => {
+    const THUMB = new Uint8Array([255, 216, 255, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]);
+    const { deps, puts, enqueueText } = makeDeps({ makeThumbnail: async () => THUMB });
+    const file = new File([PLAIN], "pic.png", { type: "image/png" });
+    const res = await sendEncryptedMedia({ conversationId: "c1", clientId: "m1", file }, deps);
+    expect(res.ok).toBe(true);
+    expect(puts).toHaveLength(1);
+    const [payload] = enqueueText.mock.calls[0] as unknown as [{ media: { thumbnail: string; key: string } }];
+    expect(typeof payload.media.thumbnail).toBe("string");
+    const { openThumbnail } = await import("@pulse/core/e2ee-media/media-transfer");
+    expect(Buffer.from((await openThumbnail(payload.media as never))!)).toEqual(Buffer.from(THUMB));
+    expect(Buffer.from(payload.media.thumbnail, "base64").includes(Buffer.from(THUMB))).toBe(false);
+  });
+
+  it("sends without a thumbnail when generation fails", async () => {
+    const { deps, enqueueText } = makeDeps({
+      makeThumbnail: async () => {
+        throw new Error("canvas");
+      },
+    });
+    const file = new File([PLAIN], "pic.png", { type: "image/png" });
+    expect((await sendEncryptedMedia({ conversationId: "c1", clientId: "m1", file }, deps)).ok).toBe(true);
+    const [payload] = enqueueText.mock.calls[0] as unknown as [{ media: { thumbnail: unknown } }];
+    expect(payload.media.thumbnail ?? null).toBeNull();
+  });
+
   it("does not enqueue when the upload fails", async () => {
     const { deps, enqueueText } = makeDeps({ upload: async () => err("media.upload_failed") });
     const file = new File([PLAIN], "pic.png", { type: "image/png" });
