@@ -10,6 +10,7 @@ import {
   decodePlainEnvelope,
   isControlEnvelope,
   isKeyEnvelope,
+  type MediaEnvelope,
   type PlainEnvelope,
   type TextEnvelope,
 } from "./plain-envelope";
@@ -63,10 +64,11 @@ export type EncryptedHandlerOptions = {
 
 /** Maps a decrypted body to its local row. `sender_user_id` comes from the server envelope. */
 export function plainToRow(
-  p: TextEnvelope,
+  p: TextEnvelope | MediaEnvelope,
   e: Pick<MailboxEnvelope, "senderUserId" | "senderDeviceId">,
   receivedAt: string,
 ): MessageRow {
+  const isMedia = p.kind === "media";
   return {
     id: p.id,
     conversation_id: p.conversationId,
@@ -75,12 +77,14 @@ export function plainToRow(
     sent_at: p.sentAt,
     received_at: receivedAt,
     kind: p.kind,
-    body: p.body,
-    reply_to_id: p.replyToId ?? null,
+    body: isMedia ? (p.body.caption ?? null) : p.body,
+    reply_to_id: isMedia ? null : (p.replyToId ?? null),
     edited_at: null,
     deleted: 0,
     status: "sent",
-    media_json: JSON.stringify({ client_id: p.id }),
+    // Media rows keep the reference (R2 key, file key, hash) so the file can be fetched until
+    // R2 expires it; the local copy is made on first view.
+    media_json: JSON.stringify(isMedia ? { client_id: p.id, ...p.body, expired: false } : { client_id: p.id }),
   };
 }
 

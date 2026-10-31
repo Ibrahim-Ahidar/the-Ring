@@ -14,6 +14,27 @@ export type TextEnvelope = EnvelopeBase & {
   replyToId?: string | null;
 };
 
+/** Reference to an encrypted object in R2 (spec section 9). The file key never leaves envelopes. */
+export type MediaBody = {
+  r2Key: string;
+  /** Base64 of the 32-byte AES-256-GCM file key. */
+  key: string;
+  /** Lowercase hex SHA-256 of the stored (encrypted) object. */
+  sha256: string;
+  mimeType: string;
+  /** Plaintext size in bytes. */
+  size: number;
+  fileName?: string | null;
+  width?: number | null;
+  height?: number | null;
+  durationMs?: number | null;
+  /** Base64 of the small thumbnail, encrypted with the same chunked format and file key. */
+  thumbnail?: string | null;
+  caption?: string | null;
+};
+
+export type MediaEnvelope = EnvelopeBase & { kind: "media"; body: MediaBody };
+
 /** Control Message bodies (spec 5.1): every one names the message(s) it is about. */
 export type ControlBodies = {
   reaction: { messageId: string; emoji: string; remove?: boolean };
@@ -52,7 +73,7 @@ export function isKeyKind(kind: string): kind is KeyKind {
 }
 
 /** The decrypted body of a message envelope (spec 5.1 / 6.2). */
-export type PlainEnvelope = TextEnvelope | ControlEnvelope | KeyEnvelope;
+export type PlainEnvelope = TextEnvelope | MediaEnvelope | ControlEnvelope | KeyEnvelope;
 
 export const CONTROL_KINDS: readonly ControlKind[] = [
   "reaction",
@@ -69,7 +90,7 @@ export function isControlKind(kind: string): kind is ControlKind {
 }
 
 export function isControlEnvelope(p: PlainEnvelope): p is ControlEnvelope {
-  return p.kind !== "text" && !isKeyKind(p.kind);
+  return p.kind !== "text" && p.kind !== "media" && !isKeyKind(p.kind);
 }
 
 export function isKeyEnvelope(p: PlainEnvelope): p is KeyEnvelope {
@@ -114,6 +135,35 @@ function parseControlBody(kind: ControlKind, b: unknown): ControlBodies[ControlK
       if (!str(o.messageId)) return null;
       return { messageId: o.messageId };
   }
+}
+
+const MAX_THUMB_B64 = 16_384;
+const optStr = (v: unknown) => v === undefined || v === null || typeof v === "string";
+const optNum = (v: unknown) =>
+  v === undefined || v === null || (typeof v === "number" && Number.isFinite(v) && v >= 0);
+
+function parseMediaBody(b: unknown): MediaBody | null {
+  if (!b || typeof b !== "object" || Array.isArray(b)) return null;
+  const o = b as Record<string, unknown>;
+  if (!str(o.r2Key) || !str(o.key) || !str(o.mimeType)) return null;
+  if (typeof o.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(o.sha256)) return null;
+  if (typeof o.size !== "number" || !Number.isInteger(o.size) || o.size < 0) return null;
+  if (!optStr(o.fileName) || !optStr(o.caption) || !optStr(o.thumbnail)) return null;
+  if (!optNum(o.width) || !optNum(o.height) || !optNum(o.durationMs)) return null;
+  if (typeof o.thumbnail === "string" && o.thumbnail.length > MAX_THUMB_B64) return null;
+  return {
+    r2Key: o.r2Key,
+    key: o.key,
+    sha256: o.sha256,
+    mimeType: o.mimeType,
+    size: o.size,
+    fileName: (o.fileName as string | null | undefined) ?? null,
+    width: (o.width as number | null | undefined) ?? null,
+    height: (o.height as number | null | undefined) ?? null,
+    durationMs: (o.durationMs as number | null | undefined) ?? null,
+    thumbnail: (o.thumbnail as string | null | undefined) ?? null,
+    caption: (o.caption as string | null | undefined) ?? null,
+  };
 }
 
 /** Mailbox envelope `kind` for an Olm-encrypted message (type 0/1 is inside the payload). */
@@ -168,6 +218,10 @@ export function decodePlainEnvelope(text: string): PlainEnvelope | null {
       return null;
     }
     return { ...base, kind: "text", body: o.body, replyToId: (o.replyToId as string | null) ?? null };
+  }
+  if (o.kind === "media") {
+    const body = parseMediaBody(o.body);
+    return body ? { ...base, kind: "media", body } : null;
   }
   if (isKeyKind(o.kind)) {
     const b = o.body as Record<string, unknown> | null;
