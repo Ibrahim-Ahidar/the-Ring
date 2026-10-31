@@ -23,6 +23,8 @@ type MessageExtra = Pick<
 export function rpcMessageToRow(row: RpcMessageRow, receivedAt: string): MessageRow {
   const mediaRef = readMetadataMediaRef(row.metadata);
   if (mediaRef) {
+    // A deleted message drops its key, like the tombstone in controls.ts.
+    const deleted = Boolean(row.deleted_at);
     return {
       id: row.id,
       conversation_id: row.conversation_id,
@@ -31,12 +33,12 @@ export function rpcMessageToRow(row: RpcMessageRow, receivedAt: string): Message
       sent_at: row.created_at,
       received_at: receivedAt,
       kind: "media",
-      body: row.body,
+      body: deleted ? null : row.body,
       reply_to_id: row.reply_to_id,
       edited_at: row.edited_at,
-      deleted: 0,
+      deleted: deleted ? 1 : 0,
       status: null,
-      media_json: JSON.stringify({ client_id: row.client_id, ...mediaRef }),
+      media_json: deleted ? null : JSON.stringify({ client_id: row.client_id, ...mediaRef }),
     };
   }
   const extra: MessageExtra = {

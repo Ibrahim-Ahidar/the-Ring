@@ -68,4 +68,13 @@ describe("encrypted media rows", () => {
     expect(text.deleted_at).toBe("2026-10-31T10:00:00.000Z");
     expect(media.deleted_at).toBe("2026-10-31T11:00:00.000Z");
   });
+
+  it("does not resurrect a deleted media message or keep its key", () => {
+    const msg = { ...rowToRpcMessage(row({})), deleted_at: "2026-10-31T12:00:00.000Z" };
+    const back = rpcMessageToRow(msg, "2026-10-31T12:00:01.000Z");
+    expect(back.deleted).toBe(1);
+    expect(back.body).toBeNull();
+    expect(back.media_json).toBeNull();
+    expect(rowToRpcMessage(back).deletion_scope).toBe("everyone");
+  });
 });
