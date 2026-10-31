@@ -15,10 +15,24 @@ export function EncryptedMediaView({ message }: Props) {
   const state = useEncryptedMedia(message);
   const ref = getEncryptedMediaRef(message);
 
-  if (state.status === "expired" || state.status === "failed") {
+  if (state.status === "failed") {
+    // A transient failure (network) is retried by a tap; expired media offers no retry.
     return (
-      <span className={styles.missing} role="status" data-media-state={state.status}>
-        {t(state.status === "expired" ? "mediaExpired" : "mediaDownloadFailed")}
+      <button
+        type="button"
+        className={styles.missing}
+        data-media-state="failed"
+        onClick={state.retry}
+      >
+        {t("mediaDownloadFailed")}
+      </button>
+    );
+  }
+
+  if (state.status === "expired") {
+    return (
+      <span className={styles.missing} role="status" data-media-state="expired">
+        {t("mediaExpired")}
       </span>
     );
   }

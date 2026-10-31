@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -21,6 +21,7 @@ const net = vi.hoisted(() => ({
   gets: [] as string[],
   puts: [] as { url: string; body: Uint8Array }[],
   tamper: false,
+  offline: false,
   markExpired: undefined as undefined | ((id: string) => Promise<void>),
 }));
 
@@ -33,6 +34,7 @@ vi.mock("../encrypted-media-runtime", async () => {
       return { ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(0) };
     }
     net.gets.push(url);
+    if (net.offline) return { ok: false, status: 503, arrayBuffer: async () => new ArrayBuffer(0) };
     const stored = net.objects.get(url);
     if (!stored) return { ok: false, status: 404, arrayBuffer: async () => new ArrayBuffer(0) };
     const copy = new Uint8Array(stored);
@@ -119,6 +121,7 @@ beforeEach(() => {
   net.gets.length = 0;
   net.puts.length = 0;
   net.tamper = false;
+  net.offline = false;
   net.markExpired = vi.fn(async () => undefined);
   resetExpiredMediaCache();
   created = [];
@@ -180,6 +183,26 @@ describe("encrypted media view", () => {
     await waitFor(() => expect(net.gets).toHaveLength(1));
     expect(blobs).toHaveLength(0);
     expect(net.markExpired).not.toHaveBeenCalled();
+  });
+
+  it("retries a transient download failure when the failed image is tapped", async () => {
+    const body = await uploaded();
+    net.offline = true;
+    await renderView(messageFor(body));
+    const failed = await screen.findByRole("button", { name: /Could not load this media/ });
+    expect(net.gets).toHaveLength(1);
+    net.offline = false;
+    fireEvent.click(failed);
+    expect(await screen.findByRole("img")).toBeTruthy();
+    expect(net.gets).toHaveLength(2);
+    expect(screen.queryByText("Could not load this media")).toBeNull();
+  });
+
+  it("offers no retry for expired media", async () => {
+    const body = { ...(await uploaded()), r2Key: "gone" };
+    await renderView(messageFor(body));
+    expect(await screen.findByText("This media has expired")).toBeTruthy();
+    expect(screen.queryByRole("button")).toBeNull();
   });
 
   it("is used by the image renderer for an encrypted message only", async () => {

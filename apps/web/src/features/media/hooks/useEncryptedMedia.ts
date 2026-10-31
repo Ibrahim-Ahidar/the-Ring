@@ -12,7 +12,7 @@ export type EncryptedMediaState =
   | { status: "loading"; thumbUrl: string | null }
   | { status: "ready"; url: string }
   | { status: "expired" }
-  | { status: "failed" };
+  | { status: "failed"; retry: () => void };
 
 /** Messages whose file R2 already deleted (this session): never fetched twice. */
 const expiredIds = new Set<string>();
@@ -31,6 +31,7 @@ export function getEncryptedMediaRef(message: Pick<TimelineMessage, "metadata">)
 export function useEncryptedMedia(message: TimelineMessage): EncryptedMediaState {
   const ref = getEncryptedMediaRef(message);
   const [result, setResult] = useState<{ id: string; state: EncryptedMediaState } | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const known = Boolean(ref?.expired) || expiredIds.has(message.id);
 
   useEffect(() => {
@@ -60,15 +61,18 @@ export function useEncryptedMedia(message: TimelineMessage): EncryptedMediaState
         setResult({ id: message.id, state: { status: "expired" } });
         return;
       }
-      setResult({ id: message.id, state: { status: "failed" } });
+      setResult({
+        id: message.id,
+        state: { status: "failed", retry: () => setAttempt((n) => n + 1) },
+      });
     })();
     return () => {
       cancelled = true;
       for (const u of urls) URL.revokeObjectURL(u);
     };
-    // The reference is immutable per message; only the id decides when to refetch.
+    // The reference is immutable per message; only the id (or a tap on the failed state) refetches.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message.id, known]);
+  }, [message.id, known, attempt]);
 
   if (known) return { status: "expired" };
   if (result && result.id === message.id) return result.state;
