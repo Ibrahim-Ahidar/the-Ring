@@ -1,3 +1,4 @@
+import { isE2eeEnabled } from "@pulse/core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Globe, KeyRound, Lock, LogOut, Palette, UserRound } from "lucide-react-native";
@@ -104,6 +105,9 @@ export default function SettingsScreen() {
           chevron
           onPress={() => router.push("/settings-language")}
         />
+        {__DEV__ && isE2eeEnabled() ? (
+          <ListRow icon={Lock} title="E2EE self-test (dev)" chevron onPress={() => router.push("/dev-e2ee")} />
+        ) : null}
         {logoutFailed ? <Banner kind="error" message={t("mobile.logout.error")} /> : null}
         <ListRow icon={LogOut} title={t("mobile.logout.submit")} destructive onPress={confirmLogout} />
       </View>

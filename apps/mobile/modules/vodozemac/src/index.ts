@@ -198,3 +198,58 @@ export function getVodozemac(): Vodozemac {
   }
   return cached;
 }
+
+/** Result of one self-test step. */
+export interface SelfTestStep {
+  name: string;
+  ok: boolean;
+  detail?: string;
+}
+
+/**
+ * Dev-only check that the native module works end to end: Olm pre-key + reply, a pickle
+ * round trip, and a Megolm message. Never throws; reports one entry per step.
+ */
+export async function runVodozemacSelfTest(v: Vodozemac): Promise<SelfTestStep[]> {
+  const enc = new TextEncoder();
+  const dec = new TextDecoder();
+  const steps: SelfTestStep[] = [];
+  const step = async (name: string, fn: () => Promise<string | void>) => {
+    try {
+      const detail = await fn();
+      steps.push({ name, ok: true, detail: detail ?? undefined });
+    } catch (e) {
+      steps.push({ name, ok: false, detail: e instanceof Error ? e.message : String(e) });
+    }
+  };
+  const alice = await v.newAccount().catch(() => null);
+  const bob = await v.newAccount().catch(() => null);
+  if (!alice || !bob) return [{ name: "account", ok: false, detail: "native module not available" }];
+  const key = new Uint8Array(32).fill(7);
+  await step("olm", async () => {
+    await bob.generateOneTimeKeys(1);
+    const [otk] = await bob.oneTimeKeys();
+    const bobKeys = await bob.identityKeys();
+    const aliceKeys = await alice.identityKeys();
+    const out = await alice.createOutboundSession(bobKeys.curve25519, otk);
+    const first = await out.encrypt(enc.encode("hello é"));
+    if (first.type !== 0) throw new Error(`expected pre-key message, got type ${first.type}`);
+    const inbound = await bob.createInboundSession(aliceKeys.curve25519, first);
+    if (dec.decode(inbound.plaintext) !== "hello é") throw new Error("inbound plaintext mismatch");
+    const reply = await inbound.session.encrypt(enc.encode("back"));
+    if (dec.decode(await out.decrypt(reply)) !== "back") throw new Error("reply mismatch");
+    const restored = await v.sessionFromPickle(await out.pickle(key), key);
+    if ((await restored.sessionId()) !== (await out.sessionId())) throw new Error("pickle mismatch");
+    return "pre-key, reply, pickle ok";
+  });
+  await step("megolm", async () => {
+    const outG = await v.newGroupSession();
+    const inG = await v.newInboundGroupSession(await outG.sessionKey());
+    const d = await inG.decrypt(await outG.encrypt(enc.encode("group")));
+    if (dec.decode(d.plaintext) !== "group" || d.messageIndex !== 0) throw new Error("megolm mismatch");
+    return "group message ok";
+  });
+  alice.free();
+  bob.free();
+  return steps;
+}

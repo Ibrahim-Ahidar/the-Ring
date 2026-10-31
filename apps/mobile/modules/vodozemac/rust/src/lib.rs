@@ -100,7 +100,7 @@ impl OlmAccount {
         body: String,
     ) -> R<InboundOlm> {
         let id = Curve25519PublicKey::from_base64(&their_identity_key).map_err(err)?;
-        let msg = OlmMessage::from_parts(message_type as usize, &body).map_err(err)?;
+        let msg = OlmMessage::from_parts(message_type as usize, &vodozemac::base64_decode(&body).map_err(err)?).map_err(err)?;
         let OlmMessage::PreKey(pre) = msg else {
             return Err(CryptoError::Failed("not a pre-key message".into()));
         };
@@ -127,10 +127,10 @@ impl OlmSession {
     }
     pub fn encrypt(&self, plaintext: Vec<u8>) -> EncryptedOlm {
         let (t, body) = self.0.lock().unwrap().encrypt(plaintext).to_parts();
-        EncryptedOlm { message_type: t as u32, body }
+        EncryptedOlm { message_type: t as u32, body: vodozemac::base64_encode(body) }
     }
     pub fn decrypt(&self, message_type: u32, body: String) -> R<Vec<u8>> {
-        let msg = OlmMessage::from_parts(message_type as usize, &body).map_err(err)?;
+        let msg = OlmMessage::from_parts(message_type as usize, &vodozemac::base64_decode(&body).map_err(err)?).map_err(err)?;
         self.0.lock().unwrap().decrypt(&msg).map_err(err)
     }
 }

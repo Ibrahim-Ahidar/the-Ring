@@ -1,4 +1,4 @@
-import { createVodozemac, fromB64, toB64, type NativeVodozemac } from "./index";
+import { createVodozemac, fromB64, runVodozemacSelfTest, toB64, type NativeVodozemac } from "./index";
 
 // Native side mocked: a fake that "encrypts" by tagging, enough to check the JS layer's
 // base64 handling, handle passing and Olm/Megolm flow. The real round trip needs a device.
@@ -79,5 +79,12 @@ describe("vodozemac JS layer", () => {
     expect(await acct.pickle(new Uint8Array(32))).toContain(toB64(new Uint8Array(32)));
     acct.free();
     expect(native.release).toHaveBeenCalledWith(acct.handle);
+  });
+});
+
+describe("runVodozemacSelfTest", () => {
+  it("reports each step", async () => {
+    const steps = await runVodozemacSelfTest(createVodozemac(fakeNative()));
+    expect(steps.map((s) => s.name)).toEqual(["olm", "megolm"]);
   });
 });
