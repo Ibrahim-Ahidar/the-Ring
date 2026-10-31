@@ -33,6 +33,31 @@ The app no longer runs in Expo Go: the vodozemac native module (spec section 6.1
 7. If the phone can't reach port 8081 over Wi-Fi on Windows, set the network to Private and allow Metro through the firewall (admin PowerShell): `Set-NetConnectionProfile -InterfaceAlias Wi-Fi -NetworkCategory Private` then `New-NetFirewallRule -DisplayName "Expo Metro 8081" -Direction Inbound -Protocol TCP -LocalPort 8081 -Action Allow -Profile Private`. `npx expo start --clear` resets a stale Metro cache.
 8. An Android emulator on the same machine reaches a local Supabase at `http://10.0.2.2:54321`.
 
+### Local debug APK on Windows (no EAS)
+
+Tested on Windows 10 with Rust 1.99, NDK 30, Android Studio's bundled JDK. One-time: `rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android`, `cargo install cargo-ndk`, and MSVC Build Tools (host linker for the uniffi bindgen).
+
+```
+# PowerShell, from the repo root
+npm install
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$env:ANDROID_NDK_HOME = "$env:ANDROID_HOME
+dk.0.16248370"
+$env:JAVA_HOME = "C:\Program Files\Android Studio\jbr"   # your Android Studio JBR path
+$env:Path += ";$env:USERPROFILE\.cargoin"
+cd apps\mobile
+npm run build:vodozemac            # .so for arm64-v8a, armeabi-v7a, x86_64 + Kotlin bindings (first run ~5 min)
+$env:EXPO_PUBLIC_PULSE_E2EE = "1"  # optional: shows the dev self-test row in Settings
+npx expo prebuild --platform android
+cd android
+.\gradlew.bat assembleDebug --max-workers=2 "-Dorg.gradle.jvmargs=-Xmx2g"
+adb install -r appuild\outputspk\debugpp-debug.apk
+```
+
+If paths get too long ("Filename too long"), map the checkout to a drive first: `subst W: "D:\path	o\worktree"` and run from `W:pps\mobile`; remove with `subst W: /d`. `apps/mobile/android` is generated and ignored by git.
+
+Check the native module on a phone: start Metro (`npm run start:usb`), open the dev app, Settings, "E2EE self-test (dev)" (needs `EXPO_PUBLIC_PULSE_E2EE=1`, dev build only), tap the button. It runs an Olm pre-key + reply + pickle round trip and a Megolm message through the real Rust library and shows PASS/FAIL per step. With the flag off the row and screen do not exist.
+
 `eas.json` profiles: `development` (dev client, internal APK), `preview` (internal APK), `production` (app bundle).
 
 ## Scripts
