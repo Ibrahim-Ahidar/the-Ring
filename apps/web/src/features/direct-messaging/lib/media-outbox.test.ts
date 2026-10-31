@@ -75,4 +75,23 @@ describe("text outbox with a media payload", () => {
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({ type: "image", metadata: { e2eeMedia: { r2Key: "obj-1", expired: false } } });
   });
+  it("leaves a queued media row out of listPending and still resends it after a restart", async () => {
+    const db = createNodeSqliteExecutor();
+    const store = createSqlLocalStore(db);
+    await store.init();
+    const sendText = vi.fn(async (input: TextPayload) =>
+      ok({ id: "srv-2", conversation_id: input.conversationId, sender_id: "u1", client_id: input.clientId, type: "text", body: null, reply_to_id: null, created_at: AT, edited_at: null, deleted_at: null, deletion_scope: "none", pinned_at: null, forwarded: false, metadata: {} } as never),
+    );
+    const make = () =>
+      createTextOutbox({ db, store, sendText, events: () => ({ onSent: () => undefined, onFailed: () => undefined }), userId: "u1" });
+    const first = make();
+    await first.enqueueText({ conversationId: "c1", clientId: "m2", body: "", media: MEDIA }, AT);
+    await first.enqueueText({ conversationId: "c1", clientId: "t1", body: "hi" }, AT);
+    const second = make();
+    const pending = await second.listPending();
+    expect(pending.map((p) => p.clientId)).toEqual(["t1"]);
+    await second.drain({ force: true });
+    const sentMedia = sendText.mock.calls.map((c) => c[0]).find((p) => p.clientId === "m2");
+    expect(sentMedia?.media).toEqual(MEDIA);
+  });
 });

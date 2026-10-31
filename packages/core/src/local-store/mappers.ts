@@ -21,6 +21,24 @@ type MessageExtra = Pick<
 >;
 
 export function rpcMessageToRow(row: RpcMessageRow, receivedAt: string): MessageRow {
+  const mediaRef = readMetadataMediaRef(row.metadata);
+  if (mediaRef) {
+    return {
+      id: row.id,
+      conversation_id: row.conversation_id,
+      sender_user_id: row.sender_id,
+      sender_device_id: null,
+      sent_at: row.created_at,
+      received_at: receivedAt,
+      kind: "media",
+      body: row.body,
+      reply_to_id: row.reply_to_id,
+      edited_at: row.edited_at,
+      deleted: 0,
+      status: null,
+      media_json: JSON.stringify({ client_id: row.client_id, ...mediaRef }),
+    };
+  }
   const extra: MessageExtra = {
     client_id: row.client_id,
     deleted_at: row.deleted_at,
@@ -64,6 +82,15 @@ export type StoredMediaRef = {
   expired?: boolean;
 };
 
+function readMetadataMediaRef(metadata: unknown): StoredMediaRef | null {
+  const ref = (metadata as { e2eeMedia?: unknown } | null | undefined)?.e2eeMedia;
+  if (!ref || typeof ref !== "object") return null;
+  const o = ref as Partial<StoredMediaRef>;
+  if (typeof o.r2Key !== "string" || typeof o.key !== "string" || typeof o.sha256 !== "string") return null;
+  if (typeof o.mimeType !== "string") return null;
+  return o as StoredMediaRef;
+}
+
 /** The encrypted media reference of a local row, or null for any other row. */
 export function readStoredMediaRef(row: Pick<MessageRow, "kind" | "media_json">): StoredMediaRef | null {
   if (row.kind !== "media" || !row.media_json) return null;
@@ -93,8 +120,9 @@ export function rowToRpcMessage(row: MessageRow): RpcMessageRow {
       extra = {};
     }
   }
-  const ref = readStoredMediaRef(row);
-  if (ref) {
+  const stored = readStoredMediaRef(row);
+  if (stored) {
+    const { client_id: _clientId, ...ref } = stored as StoredMediaRef & { client_id?: string };
     // An encrypted media message renders like an attachment; the reference rides in metadata.
     return {
       id: row.id,
@@ -113,18 +141,20 @@ export function rowToRpcMessage(row: MessageRow): RpcMessageRow {
       metadata: { e2eeMedia: ref },
     };
   }
+  // A tombstone (controls.ts) keeps only `deleted: 1`; show it as a message deleted for everyone.
+  const tombstone = Boolean(row.deleted) && !extra.deleted_at;
   return {
     id: row.id,
     conversation_id: row.conversation_id,
     sender_id: row.sender_user_id ?? "",
     client_id: extra.client_id ?? row.id,
-    type: row.kind as RpcMessageRow["type"],
+    type: (row.kind === "media" ? "text" : row.kind) as RpcMessageRow["type"],
     body: row.body,
     reply_to_id: row.reply_to_id,
     created_at: row.sent_at,
     edited_at: row.edited_at,
-    deleted_at: extra.deleted_at ?? null,
-    deletion_scope: extra.deletion_scope ?? "none",
+    deleted_at: tombstone ? (row.edited_at ?? row.sent_at) : (extra.deleted_at ?? null),
+    deletion_scope: tombstone ? "everyone" : (extra.deletion_scope ?? "none"),
     pinned_at: extra.pinned_at ?? null,
     forwarded: extra.forwarded ?? false,
     metadata: extra.metadata ?? null,

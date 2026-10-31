@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { mediaTimelineType, readStoredMediaRef, rowToRpcMessage } from "./mappers";
+import { mediaTimelineType, readStoredMediaRef, rowToRpcMessage, rpcMessageToRow } from "./mappers";
 import type { MessageRow } from "./types";
 
 const REF = { r2Key: "obj", key: "k", sha256: "h", mimeType: "image/png", size: 3, expired: false };
@@ -42,5 +42,30 @@ describe("encrypted media rows", () => {
     const msg = rowToRpcMessage(row({}));
     expect(msg.type).toBe("image");
     expect((msg.metadata as { e2eeMedia: { r2Key: string } }).e2eeMedia.r2Key).toBe("obj");
+  });
+  it("keeps the reference through a round trip, including a persisted expired flag", () => {
+    const original = row({});
+    const msg = rowToRpcMessage(original);
+    const back = rpcMessageToRow(msg, "2026-10-31T10:01:00.000Z");
+    expect(back.kind).toBe("media");
+    expect(rowToRpcMessage(back)).toEqual(msg);
+
+    const expired = row({ media_json: JSON.stringify({ ...REF, expired: true }) });
+    const again = rpcMessageToRow(rowToRpcMessage(expired), "2026-10-31T10:01:00.000Z");
+    expect(readStoredMediaRef(again)?.expired).toBe(true);
+  });
+
+  it("maps tombstones of text and media rows to deleted messages with a timeline type", () => {
+    const text = rowToRpcMessage(row({ kind: "text", deleted: 1, body: null, media_json: null }));
+    const media = rowToRpcMessage(row({ kind: "media", deleted: 1, body: null, media_json: null, edited_at: "2026-10-31T11:00:00.000Z" }));
+    for (const m of [text, media]) {
+      expect(m.deleted_at).toBeTruthy();
+      expect(m.deletion_scope).toBe("everyone");
+      expect(m.body).toBeNull();
+      expect(m.type).toBe("text");
+      expect((m.metadata as { e2eeMedia?: unknown } | null)?.e2eeMedia).toBeUndefined();
+    }
+    expect(text.deleted_at).toBe("2026-10-31T10:00:00.000Z");
+    expect(media.deleted_at).toBe("2026-10-31T11:00:00.000Z");
   });
 });

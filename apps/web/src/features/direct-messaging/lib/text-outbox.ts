@@ -35,8 +35,8 @@ export type TextOutboxEvents = {
 };
 
 export type TextOutbox = {
+  /** Queues a send; for a payload with `media` the local row is the media message. */
   enqueueText(p: TextPayload, createdAt: string): Promise<boolean>;
-  /** Same as enqueueText; for a payload with `media` the local row is the media message. */
   /** Unsent sends of earlier sessions (and this one), oldest first, for restoring bubbles. */
   listPending(): Promise<(TextPayload & { createdAt: string; status: "pending" | "failed" })[]>;
   drain(opts?: { force?: boolean }): Promise<void>;
@@ -103,7 +103,8 @@ export function createTextOutbox(args: {
     },
     async listPending() {
       const rows = await outbox.listUnsent();
-      return rows.map((r) => ({
+      // Media rows are resent from the stored payload; a text bubble for them would be empty.
+      return rows.filter((r) => r.kind !== "media").map((r) => ({
         clientId: r.id,
         conversationId: r.conversation_id,
         body: r.body ?? "",
