@@ -4,6 +4,8 @@ import { memo } from "react";
 
 import type { TimelineMessage } from "@pulse/core/timeline";
 
+import { getEncryptedMediaRef } from "../hooks/useEncryptedMedia";
+import { EncryptedMediaView } from "./EncryptedMediaView";
 import { useAttachmentList } from "../hooks/useAttachmentList";
 import { uploadPhase } from "../upload-status";
 import { MediaDownloadButton } from "./MediaDownloadButton";
@@ -42,4 +44,13 @@ function FileMessageRendererInner({ message }: Props) {
   );
 }
 
-export const FileMessageRenderer = memo(FileMessageRendererInner);
+function FileMessageRendererSwitch(props: Props) {
+  // Encrypted media (e2ee flag on) has its own view; the legacy attachment path is untouched.
+  return getEncryptedMediaRef(props.message) ? (
+    <EncryptedMediaView {...props} />
+  ) : (
+    <FileMessageRendererInner {...props} />
+  );
+}
+
+export const FileMessageRenderer = memo(FileMessageRendererSwitch);

@@ -1,4 +1,5 @@
 import { sendEncrypted } from "@pulse/core/e2ee/encrypted-sender";
+import type { MediaEnvelope, TextEnvelope } from "@pulse/core/e2ee/plain-envelope";
 import type { OlmSessionManager } from "@pulse/core/e2ee/olm-sessions";
 import type { RpcMessageRow } from "@pulse/core/messaging-types";
 import type { RpcClient } from "@pulse/core/rpc";
@@ -6,6 +7,29 @@ import type { Result } from "@pulse/core/result";
 import { ok } from "@pulse/core/result";
 
 import type { TextPayload } from "./text-outbox";
+
+/** The plaintext envelope of an outbox payload: a media envelope when a file was uploaded. */
+export function buildEnvelope(input: TextPayload, sentAt: string): TextEnvelope | MediaEnvelope {
+  if (input.media) {
+    return {
+      v: 1,
+      id: input.clientId,
+      conversationId: input.conversationId,
+      sentAt,
+      kind: "media",
+      body: input.media,
+    };
+  }
+  return {
+    v: 1,
+    id: input.clientId,
+    conversationId: input.conversationId,
+    sentAt,
+    kind: "text",
+    body: input.body,
+    ...(input.replyToId ? { replyToId: input.replyToId } : {}),
+  };
+}
 
 /**
  * Sends a text as Olm ciphertext through the mailbox: one envelope per recipient Device (the
@@ -28,15 +52,7 @@ export function createEncryptedTextSender(args: {
       userId: args.userId,
       deviceId: args.deviceId,
       deriveId: derivedId,
-      body: {
-        v: 1,
-        id: input.clientId,
-        conversationId: input.conversationId,
-        sentAt: now,
-        kind: "text",
-        body: input.body,
-        ...(input.replyToId ? { replyToId: input.replyToId } : {}),
-      },
+      body: buildEnvelope(input, now),
     });
     if (!sent.ok) return sent;
     return ok({
@@ -45,7 +61,7 @@ export function createEncryptedTextSender(args: {
       sender_id: args.userId,
       client_id: input.clientId,
       type: "text",
-      body: input.body,
+      body: input.media ? (input.media.caption ?? null) : input.body,
       reply_to_id: input.replyToId ?? null,
       created_at: now,
       edited_at: null,

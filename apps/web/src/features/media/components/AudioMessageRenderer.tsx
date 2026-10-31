@@ -8,6 +8,8 @@ import type { TimelineMessage } from "@pulse/core/timeline";
 
 import { markAudioPlayedAction } from "../actions";
 import { shouldRecordPlay } from "../audio-played";
+import { getEncryptedMediaRef } from "../hooks/useEncryptedMedia";
+import { EncryptedMediaView } from "./EncryptedMediaView";
 import { useAttachmentList } from "../hooks/useAttachmentList";
 import { useDownloadUrl } from "../hooks/useDownloadUrl";
 import styles from "../media.module.css";
@@ -163,4 +165,13 @@ function resampleWaveform(samples: number[], bars: number): number[] {
   });
 }
 
-export const AudioMessageRenderer = memo(AudioMessageRendererInner);
+function AudioMessageRendererSwitch(props: Props) {
+  // Encrypted media (e2ee flag on) has its own view; the legacy attachment path is untouched.
+  return getEncryptedMediaRef(props.message) ? (
+    <EncryptedMediaView {...props} />
+  ) : (
+    <AudioMessageRendererInner {...props} />
+  );
+}
+
+export const AudioMessageRenderer = memo(AudioMessageRendererSwitch);

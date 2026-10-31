@@ -14,6 +14,7 @@ import { emitMessageMutation } from "@/features/message-actions/message-actions-
 
 import { validateAttachment } from "@/platform/media";
 import type { AttachmentKind } from "@/platform/media";
+import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
 import { randomUUID } from "@pulse/core/uuid";
 
 import {
@@ -21,6 +22,7 @@ import {
   failUploadAction,
   prepareUploadAction,
 } from "../actions";
+import { sendEncryptedMedia } from "../encrypted-send";
 import { readImageDimensions } from "../image-dimensions";
 import { uploadToSignedTarget } from "../upload-client";
 import { computeWaveform } from "../waveform";
@@ -83,6 +85,28 @@ export function MediaProvider({ children }: { children: ReactNode }) {
           errorCode: null,
         },
       });
+
+      // e2ee flag on: encrypt, upload ciphertext to R2 and send a media envelope (no legacy storage).
+      if (isE2eeEnabled()) {
+        dispatch({ type: "upload/patch", clientId: input.clientId, patch: { status: "uploading", progress: 0.35 } });
+        const sent = await sendEncryptedMedia({
+          conversationId: input.conversationId,
+          clientId: input.clientId,
+          file: input.file,
+          durationMs: input.durationMs,
+        });
+        if (!sent.ok) {
+          dispatch({
+            type: "upload/patch",
+            clientId: input.clientId,
+            patch: { status: "failed", errorCode: sent.error.code },
+          });
+          return;
+        }
+        filesByClientId.current.delete(input.clientId);
+        dispatch({ type: "upload/remove", clientId: input.clientId });
+        return;
+      }
 
       const prepared = await prepareUploadAction({
         conversationId: input.conversationId,

@@ -3,6 +3,7 @@ import type { RpcMessageRow } from "@pulse/core/messaging-types";
 import { ok, type Result } from "@pulse/core/result";
 import { callRpc, type RpcClient } from "@pulse/core/rpc";
 
+import { buildEnvelope } from "@/features/direct-messaging/lib/mailbox-send";
 import type { TextPayload } from "@/features/direct-messaging/lib/text-outbox";
 
 type GroupMember = { user_id: string; role: string };
@@ -59,15 +60,7 @@ export function createConversationSendRouter(args: {
     if (!group.ok) return group;
     if (!group.value) return args.sendDirect(input);
     const now = (args.now?.() ?? new Date()).toISOString();
-    const sent = await args.groupSender.send({
-      v: 1,
-      id: input.clientId,
-      conversationId: input.conversationId,
-      sentAt: now,
-      kind: "text",
-      body: input.body,
-      ...(input.replyToId ? { replyToId: input.replyToId } : {}),
-    });
+    const sent = await args.groupSender.send(buildEnvelope(input, now));
     if (!sent.ok) return sent;
     return ok({
       id: input.clientId,
@@ -75,7 +68,7 @@ export function createConversationSendRouter(args: {
       sender_id: args.userId,
       client_id: input.clientId,
       type: "text",
-      body: input.body,
+      body: input.media ? (input.media.caption ?? null) : input.body,
       reply_to_id: input.replyToId ?? null,
       created_at: now,
       edited_at: null,

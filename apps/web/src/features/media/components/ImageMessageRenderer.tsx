@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 
 import type { TimelineMessage } from "@pulse/core/timeline";
 
+import { getEncryptedMediaRef } from "../hooks/useEncryptedMedia";
+import { EncryptedMediaView } from "./EncryptedMediaView";
 import { useAttachmentList } from "../hooks/useAttachmentList";
 import { useDownloadUrl } from "../hooks/useDownloadUrl";
 import styles from "../media.module.css";
@@ -61,4 +63,13 @@ function ImageMessageRendererInner({ message }: Props) {
   );
 }
 
-export const ImageMessageRenderer = memo(ImageMessageRendererInner);
+function ImageMessageRendererSwitch(props: Props) {
+  // Encrypted media (e2ee flag on) has its own view; the legacy attachment path is untouched.
+  return getEncryptedMediaRef(props.message) ? (
+    <EncryptedMediaView {...props} />
+  ) : (
+    <ImageMessageRendererInner {...props} />
+  );
+}
+
+export const ImageMessageRenderer = memo(ImageMessageRendererSwitch);

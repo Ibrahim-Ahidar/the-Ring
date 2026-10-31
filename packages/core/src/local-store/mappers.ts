@@ -48,6 +48,42 @@ export function rpcMessageToRow(row: RpcMessageRow, receivedAt: string): Message
   };
 }
 
+/** Reference of an end-to-end encrypted media message, as kept in `media_json` (spec 9.1). */
+export type StoredMediaRef = {
+  r2Key: string;
+  key: string;
+  sha256: string;
+  mimeType: string;
+  size: number;
+  fileName?: string | null;
+  width?: number | null;
+  height?: number | null;
+  durationMs?: number | null;
+  thumbnail?: string | null;
+  /** Set once R2 answered 404: the file is gone and is never fetched again. */
+  expired?: boolean;
+};
+
+/** The encrypted media reference of a local row, or null for any other row. */
+export function readStoredMediaRef(row: Pick<MessageRow, "kind" | "media_json">): StoredMediaRef | null {
+  if (row.kind !== "media" || !row.media_json) return null;
+  try {
+    const o = JSON.parse(row.media_json) as Partial<StoredMediaRef>;
+    if (typeof o.r2Key !== "string" || typeof o.key !== "string" || typeof o.sha256 !== "string") return null;
+    if (typeof o.mimeType !== "string") return null;
+    return o as StoredMediaRef;
+  } catch {
+    return null;
+  }
+}
+
+/** Timeline type of an encrypted media message, picked from its MIME type. */
+export function mediaTimelineType(mimeType: string): "image" | "audio" | "file" {
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType.startsWith("audio/")) return "audio";
+  return "file";
+}
+
 export function rowToRpcMessage(row: MessageRow): RpcMessageRow {
   let extra: Partial<MessageExtra> = {};
   if (row.media_json) {
@@ -56,6 +92,26 @@ export function rowToRpcMessage(row: MessageRow): RpcMessageRow {
     } catch {
       extra = {};
     }
+  }
+  const ref = readStoredMediaRef(row);
+  if (ref) {
+    // An encrypted media message renders like an attachment; the reference rides in metadata.
+    return {
+      id: row.id,
+      conversation_id: row.conversation_id,
+      sender_id: row.sender_user_id ?? "",
+      client_id: extra.client_id ?? row.id,
+      type: mediaTimelineType(ref.mimeType),
+      body: row.body,
+      reply_to_id: row.reply_to_id,
+      created_at: row.sent_at,
+      edited_at: row.edited_at,
+      deleted_at: null,
+      deletion_scope: "none",
+      pinned_at: null,
+      forwarded: false,
+      metadata: { e2eeMedia: ref },
+    };
   }
   return {
     id: row.id,

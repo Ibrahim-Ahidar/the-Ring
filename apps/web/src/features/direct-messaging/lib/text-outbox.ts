@@ -1,6 +1,7 @@
 import { isE2eeEnabled } from "@pulse/core/e2ee-flag";
 import type { LocalStore, MessageRow, SqlExecutor } from "@pulse/core/local-store";
-import { rpcMessageToRow } from "@pulse/core/local-store";
+import { rowToRpcMessage, rpcMessageToRow } from "@pulse/core/local-store";
+import type { MediaBody } from "@pulse/core/e2ee/plain-envelope";
 import { createOutbox, type Outbox, type SendOutcome } from "@pulse/core/local-store/outbox";
 import type { RpcMessageRow } from "@pulse/core/messaging-types";
 import type { Result } from "@pulse/core/result";
@@ -14,7 +15,19 @@ export type TextPayload = {
   clientId: string;
   body: string;
   replyToId?: string | null;
+  /** Set for an encrypted media message: `body` is then the caption and the file is already uploaded. */
+  media?: MediaBody;
 };
+
+/** Local row of a media message: kind "media" keeps the reference (spec 9.1). */
+function mediaRow(p: TextPayload & { media: MediaBody }, base: MessageRow): MessageRow {
+  return {
+    ...base,
+    kind: "media",
+    body: p.media.caption ?? (p.body || null),
+    media_json: JSON.stringify({ client_id: p.clientId, ...p.media, expired: false }),
+  };
+}
 
 export type TextOutboxEvents = {
   onSent(clientId: string, message: RpcMessageRow): void;
@@ -23,6 +36,7 @@ export type TextOutboxEvents = {
 
 export type TextOutbox = {
   enqueueText(p: TextPayload, createdAt: string): Promise<boolean>;
+  /** Same as enqueueText; for a payload with `media` the local row is the media message. */
   /** Unsent sends of earlier sessions (and this one), oldest first, for restoring bubbles. */
   listPending(): Promise<(TextPayload & { createdAt: string; status: "pending" | "failed" })[]>;
   drain(opts?: { force?: boolean }): Promise<void>;
@@ -49,8 +63,14 @@ export function createTextOutbox(args: {
       // A thrown error (network drop) is retried with backoff by the outbox.
       const res = await args.sendText(payload);
       if (!res.ok) return { status: "failed", reason: res.error.code };
+      const row = rpcMessageToRow(res.value, new Date().toISOString());
+      if (payload.media) {
+        const media = mediaRow({ ...payload, media: payload.media }, row);
+        sent.set(entry.id, rowToRpcMessage(media));
+        return { status: "sent", message: media };
+      }
       sent.set(entry.id, res.value);
-      return { status: "sent", message: rpcMessageToRow(res.value, new Date().toISOString()) };
+      return { status: "sent", message: row };
     },
     onSettled(entry, outcome) {
       const message = sent.get(entry.id);
@@ -79,7 +99,7 @@ export function createTextOutbox(args: {
         status: "pending",
         media_json: JSON.stringify({ client_id: p.clientId }),
       };
-      return outbox.enqueue(row, JSON.stringify(p));
+      return outbox.enqueue(p.media ? mediaRow({ ...p, media: p.media }, row) : row, JSON.stringify(p));
     },
     async listPending() {
       const rows = await outbox.listUnsent();
