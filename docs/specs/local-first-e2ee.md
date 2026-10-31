@@ -243,6 +243,37 @@ Restoring never brings back keys. If the sign-in replaced the Account Signing Ke
 5. The recipient downloads, checks the hash, decrypts, and keeps the file locally.
 6. An R2 lifecycle rule deletes objects after 30 days. A download that returns 404 marks the media "expired".
 
+### 9.1 Owner setup for R2 (one time, needs your Cloudflare account)
+
+Everything is built and tested against a mocked R2. To go live:
+
+1. In Cloudflare, create an R2 bucket (for example `pulse-media`, private, no public access) and an R2 API token with Object Read & Write on that bucket. Note the account id, the access key id and the secret access key.
+2. Set the secrets on the Supabase project (replace the placeholders):
+
+```
+supabase secrets set R2_ACCOUNT_ID=<cloudflare-account-id> R2_ACCESS_KEY_ID=<r2-access-key-id> R2_SECRET_ACCESS_KEY=<r2-secret-access-key> R2_BUCKET=<bucket-name>
+```
+
+3. Bucket CORS (R2 bucket, Settings, CORS policy). Replace the origins with your web and desktop origins:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://<your-web-origin>", "http://localhost:3000"],
+    "AllowedMethods": ["GET", "PUT"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+4. Lifecycle rule: R2 bucket, Settings, Object lifecycle rules, add a rule on the whole bucket (empty prefix), action "Delete objects", after 30 days. CLI equivalent: `npx wrangler r2 bucket lifecycle add <bucket-name> --name expire-30d --expire-days 30`.
+5. Deploy the function: `supabase functions deploy media-upload-url`.
+6. Turn the flag on for the build (`NEXT_PUBLIC_PULSE_E2EE=1`). With it off, the old Supabase-storage media path is used unchanged.
+
+The function is configured only by these four secrets. Without them it answers `media.not_configured` (503).
+
 ## 10. Push notifications
 
 `push-notify` sends a data-only FCM message containing only `{ mailbox_id }`. It sends no title and no text.

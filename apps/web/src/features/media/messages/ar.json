@@ -14,6 +14,8 @@
   "imageAlt": "صورة مشتركة",
   "loadingImage": "جارٍ تحميل الصورة…",
   "attachmentMissing": "المرفق غير متاح",
+  "mediaExpired": "انتهت صلاحية الوسائط",
+  "mediaDownloadFailed": "تعذر تحميل الوسائط",
   "playAudio": "تشغيل رسالة صوتية",
   "audioPlayed": "تم التشغيل",
   "audioNotPlayed": "لم يتم التشغيل بعد",

@@ -14,6 +14,8 @@
   "imageAlt": "Shared image",
   "loadingImage": "Loading image…",
   "attachmentMissing": "Attachment unavailable",
+  "mediaExpired": "Media expired",
+  "mediaDownloadFailed": "Could not load media",
   "playAudio": "Play voice message",
   "audioPlayed": "Played",
   "audioNotPlayed": "Not played yet",

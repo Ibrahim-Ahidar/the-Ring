@@ -14,6 +14,8 @@
   "imageAlt": "Image partagée",
   "loadingImage": "Chargement de l’image…",
   "attachmentMissing": "Pièce jointe indisponible",
+  "mediaExpired": "Média expiré",
+  "mediaDownloadFailed": "Impossible de charger le média",
   "playAudio": "Lire le message vocal",
   "audioPlayed": "Écouté",
   "audioNotPlayed": "Pas encore écouté",
